@@ -647,13 +647,13 @@
     (cond
      (lvar? v)
      (let [repoint (cond
-                    (-> u clojure.core/meta ::unbound) [u v]
-                    (-> v clojure.core/meta ::unbound) [v u]
+                    (-> u cljs.core/meta ::unbound) [u v]
+                    (-> v cljs.core/meta ::unbound) [v u]
                     :else nil)]
        (if repoint
          (let [[root other] repoint
                s (assoc s :cs (migrate (:cs s) other root))
-               s (if (-> other clojure.core/meta ::unbound)
+               s (if (-> other cljs.core/meta ::unbound)
                    (merge-with-root s other root)
                    s)]
            (when s
@@ -666,7 +666,7 @@
      (not= v ::not-found)
      (if (tree-term? v)
        (ext s u v)
-       (if (-> u clojure.core/meta ::unbound)
+       (if (-> u cljs.core/meta ::unbound)
          (ext-no-check s u (assoc (proto/root-val s u) :v v))
          (ext-no-check s u v)))
 
@@ -909,6 +909,8 @@
   default
   (unify-terms [u v s]
     (cond
+     (sequential? u)
+     (unify-with-sequential* u v s)
      (map? u)
      (cond
       (satisfies? proto/IUnifyWithRecord v)
@@ -918,8 +920,6 @@
       (unify-with-map* u v s)
 
       :else nil)
-     (sequential? u)
-     (unify-with-sequential* u v s)
      :else (if (= u v)
              s
              nil))))
@@ -960,7 +960,7 @@
   default
   (walk-term [v f]
     (cond
-     (sequential? v)
+     (seq? v)
      (with-meta
        (doall (map #(proto/walk-term (f %) f) v))
        (meta v))
@@ -1013,8 +1013,7 @@
   default
   (build-term [u s]
     (cond (coll? u)
-          (proto/build-term [u s]
-                      (reduce build s u))
+          (reduce build s u)
           :else s)))
 
 ;; ===========================================================================
@@ -1073,7 +1072,7 @@
   default
   (bind [this g]
     (cond (fn? this) (-inc (proto/bind (this) g))
-          :else nil)))
+          :else (proto/bind this g))))
 
 (extend-protocol proto/IMPlus
   default
@@ -1084,8 +1083,9 @@
 (extend-protocol proto/ITake
   default
   (take* [this]
-    (when (fn? this)
-      (lazy-seq (take* (this))))))
+    (cond (fn? this)
+          (lazy-seq (proto/take* (this)))
+          :else (proto/take* this))))
 
 ;; ===========================================================================
 ;; Syntax
@@ -1492,18 +1492,20 @@
 
 (defn addcg [c]
   (fn [a]
+    (println a (type a))
     (let [a (reduce (fn [a x]
                       (ext-no-check a x (subst-val ::unbound)))
                     a (unbound-rands a c))]
+      (println a)
       (assoc a :cs (proto/addc (:cs a) a c)))))
 
 (defn updatecg [c]
   (fn [a]
-    (assoc a :cs (updatec (:cs a) a c))))
+    (assoc a :cs (proto/updatec (:cs a) a c))))
 
 (defn remcg [c]
   (fn [a]
-    (assoc a :cs (remc (:cs a) a c))))
+    (assoc a :cs (proto/remc (:cs a) a c))))
 
 (defn runcg [c]
   (fn [a]
@@ -1645,9 +1647,9 @@
   (reify
     cljs.core/IFn
     (-invoke [_ a]
-      (let [c' (proto/-step c a)]
+      (let [c' (proto/-step c a)]        
         (if (proto/-runnable? c')
-          (when-let [a (c' a)]
+          (when-let [a (c' a)]            
             (let [c' (proto/-step c a)]
               (if (and (ientailed? c')
                        (not (entailed? c c' a)))
@@ -1749,22 +1751,28 @@
   (-disunify-terms [u v s cs]
     (if-not (nil? v) nil cs))
 
+  LVar
+  (-disunify-terms [u v s {pc :prefixc :as cs}]
+    (assoc cs :prefixc (assoc pc u v)))
+
   default
   (-disunify-terms [u v s cs]
-    (cond (sequential? v)
-          (loop [u (seq u) v (seq v) cs cs]
-            (if u
-              (if v
-                (let [uv (first u)
-                      vv (first v)
-                      cs (disunify s uv vv cs)]
-                  (if cs
-                    (recur (next u) (next v) cs)
-                    nil))
-                nil)
-              (if (nil? v)
-                cs
-                nil)))
+    (cond (sequential? u)
+          (if (sequential? v)
+            (loop [u (seq u) v (seq v) cs cs]
+              (if u
+                (if v
+                  (let [uv (first u)
+                        vv (first v)
+                        cs (disunify s uv vv cs)]
+                    (if cs
+                      (recur (next u) (next v) cs)
+                      nil))
+                  nil)
+                (if (nil? v)
+                  cs
+                  nil)))
+            nil)
           (map? u)
           (if (and (map? v) (= (count u) (count v)))
             (loop [ks (seq (keys u)) cs cs]
@@ -1777,11 +1785,7 @@
                       nil)))
                 cs))
             nil)
-          :else (if-not (= u v) nil cs)))
-
-  LVar
-  (-disunify-terms [u v s {pc :prefixc :as cs}]
-    (assoc cs :prefixc (assoc pc u v))))
+          :else (if-not (= u v) nil cs))))
 
 #_ (defn prefix-subsumes? [p pp]
      (let [s (-> p meta :s)
@@ -1819,8 +1823,8 @@
     (-step [this s]
       (reify
         cljs.core/IFn
-        (-invoke [_ s]
-          (let [p (loop [sp (seq p) p p]
+        (-invoke [_ s]          
+          (let [p (loop [sp (seq p) p p]                    
                     (if sp
                       (let [[x v] (first sp)
                             xv (walk* s x)
@@ -1831,7 +1835,7 @@
                          :else (recur (next sp) (assoc (dissoc p x) xv vv))))
                       p))]
             (if p
-              (when-not (empty? p)
+              (when-not (empty? p)                
                 ((composeg*
                   (remcg this)
                   (cgoal (!=c p))) s))
@@ -1867,7 +1871,7 @@
       (if-not (nil? cs)
         (let [p (:prefixc cs)]
           (when-not (empty? p)
-            (if  (some (fn [[u v]] (nil? (unify a u v))) p)
+            (if (some (fn [[u v]] (nil? (unify a u v))) p)
               a
               ((cgoal (!=c p)) a))))
         a))))

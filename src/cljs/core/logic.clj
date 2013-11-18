@@ -37,11 +37,16 @@
   ([f s & rest] `(cljs.core.logic/lcons ~f (llist ~s ~@rest))))
 
 (defmacro composeg*
-  ([g0] g0)
-  ([g0 & gs]
-     `(composeg
-       ~g0
-       (composeg* ~@gs))))
+  [g0 & gs]
+  `((fn composeg*# [g0# & gs#]
+      (if-not (seq gs#)
+        g0#
+        `(cljs.core.logic/composeg ~g0# (composeg*# ~@gs#))))
+    ~g0 ~gs))
+
+;; `(composeg
+;;        ~g0
+;;        (composeg* ~@gs))
 
 (defmacro bind*
   ([a g] `(cljs.core.logic.protocols/bind ~a ~g))
