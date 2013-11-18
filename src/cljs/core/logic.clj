@@ -38,11 +38,11 @@
 
 (defmacro composeg*
   [g0 & gs]
-  `((fn composeg*# [g0# & gs#]
+  `((fn composeg# [g0# & gs#]
       (if-not (seq gs#)
         g0#
-        `(cljs.core.logic/composeg ~g0# (composeg*# ~@gs#))))
-    ~g0 ~gs))
+        (apply cljs.core.logic/composeg (cons g0# (apply composeg# gs#)))))
+    ~g0 ~@gs))
 
 ;; `(composeg
 ;;        ~g0

@@ -328,7 +328,7 @@
   (-conj [this [k v]]
     (if (lvar? k)
       (assoc this k v)
-      (throw (Exception. (str "key must be a logic var")))))
+      (throw (ex-info (str "key must be a logic var") {}))))
 
   cljs.core/IEmptyableCollection
   (-empty [this] empty-s)
@@ -738,9 +738,8 @@
 
 (declare lcons?)
 
-(deftype LCons [a d ^{:unsynchronized-mutable true :tag int} cache meta]
-  proto/ITreeTerm
-  
+(deftype LCons [a d ^:unsynchronized-mutable cache meta]
+  proto/ITreeTerm  
   cljs.core/IMeta
   (meta [this] meta)
   
@@ -767,7 +766,7 @@
   cljs.core/IEquiv
   (-equiv [this o]
     (or (identical? this o)
-        (and (instance? ICons o)
+        (and (instance? LCons o)
              (loop [me this
                     you o]
                (cond
@@ -1492,11 +1491,9 @@
 
 (defn addcg [c]
   (fn [a]
-    (println a (type a))
     (let [a (reduce (fn [a x]
                       (ext-no-check a x (subst-val ::unbound)))
                     a (unbound-rands a c))]
-      (println a)
       (assoc a :cs (proto/addc (:cs a) a c)))))
 
 (defn updatecg [c]
@@ -1647,9 +1644,9 @@
   (reify
     cljs.core/IFn
     (-invoke [_ a]
-      (let [c' (proto/-step c a)]        
+      (let [c' (proto/-step c a)]
         (if (proto/-runnable? c')
-          (when-let [a (c' a)]            
+          (when-let [a (c' a)]
             (let [c' (proto/-step c a)]
               (if (and (ientailed? c')
                        (not (entailed? c c' a)))
@@ -1685,24 +1682,25 @@
 
   default
   (-force-ans [v x]
-    (cond (sequential? v) (letfn [(loop [ys]
-                             (if ys
-                               (all
-                                (force-ans (first ys))
-                                (fn [a]
-                                  (if-let [ys (sort-by-strategy (next ys)
-                                                                x a)]
-                                    ((loop ys) a)
-                                    a)))
-                               s#))]
-                     (loop (seq v)))
-          (map? v) (letfn [(loop [ys]
-                             (if ys
-                               (all
-                                (force-ans (val (first ys)))
-                                (loop (next ys)))
-                               s#))]
-                     (loop (seq v)))
+    (cond (sequential? v)
+          (letfn [(loop [ys]
+                    (if ys
+                      (all
+                       (force-ans (first ys))
+                       (fn [a]
+                         (if-let [ys (sort-by-strategy (next ys) x a)]
+                           ((loop ys) a)
+                           a)))
+                      s#))]
+            (loop (seq v)))
+          (map? v)
+          (letfn [(loop [ys]
+                    (if ys
+                      (all
+                       (force-ans (val (first ys)))
+                       (loop (next ys)))
+                      s#))]
+            (loop (seq v)))
           :else (if (lvar? x)
                   (ext-run-csg x v)
                   s#)))
@@ -1855,7 +1853,7 @@
       (let [p* (-reify a (map (fn [[lhs rhs]] `(~lhs ~rhs)) p) r)]
         (if (empty? p*)
           '()
-          `(~(quote !=) ~@p*))))
+          `(~'!= ~@p*))))
     proto/IConstraintOp
     (-rator [_] `!=)
     (-rands [_] (seq (recover-vars p)))
@@ -2185,5 +2183,13 @@
     (conde
      [(== george :born)]
      [(== george :unborn)]))
-  `(+ 1 ~(do 2)))
+  `(+ 1 ~(do 2))
+  (run* [q]
+    (== q [1 2]))
+
+  (run* [q]
+    (fresh [x y]
+      (== q [x y])
+      (!= y "Java")))
+  )
 
