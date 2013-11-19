@@ -356,7 +356,7 @@
        :else
        (let [ps (map #(p->term % vars quoted) p)]
          (cond
-          (satisfies? IMapEntry p) (into [] ps)
+          (instance? clojure.lang.IMapEntry p) (into [] ps)
           :else (into (empty p) ps))))
       (symbol? p) (if quoted
                     (list 'quote p)
@@ -606,9 +606,10 @@
   (let [name (symbol (gensym "fnc"))]
     `(fn ~args
        (letfn [(~name [~@args]
+                 (println ~name ~@args)
                  (reify
                    cljs.core.logic.protocols/IConstraintStep
-                   (-step [this# a#]
+                   (~'-step [this# a#]
                      (reify
                        cljs.core/IFn
                        (~'-invoke [_# a#]
@@ -622,7 +623,8 @@
                          (cljs.core.logic/ground-term? ~args a#))))
                    cljs.core.logic.protocols/IConstraintOp
                    (~'-rator [_#] '~name)
-                   (~'-rands [_#] (filter cljs.core.logic/lvar? (flatten ~args)))
+                   (~'-rands [_#]
+                     (filter cljs.core.logic/lvar? (flatten ~args)))
                    cljs.core.logic.protocols/IReifiableConstraint
                    (~'-reifyc [_# _# r# a#]
                      (list '~name (map #(cljs.core.logic/-reify r# %) ~args)))

@@ -105,7 +105,6 @@
       ((fresh [q]
          (== u w) (== q u)
          (fn [a]
-           (println a)
            (fix-constraints a))
          (reifyg q))
        init-s)))))
@@ -120,7 +119,7 @@
   "Unify the terms ts."
   ([ts] (unify* {} ts))
   ([opts ts]
-     (let [init-s (init-s opts empty-s)]
+     (let [init-s (init-s opts empty-s)]       
        (-unify*
         (vary-meta init-s assoc :reify-vars false)
         (reduce #(-unify* init-s %1 %2) (butlast ts))

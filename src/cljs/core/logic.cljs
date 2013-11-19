@@ -1551,6 +1551,7 @@
         (if (zero? (count cq))
           (assoc a :cq nil)
           (let [c (first cq)]
+            (println a (type a) (type c))
             (recur
              ((run-constraint c)
               (-> a
