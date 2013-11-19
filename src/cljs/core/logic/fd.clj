@@ -1,7 +1,8 @@
 (ns cljs.core.logic.fd
   (:require [cljs.compiler :as comp]
             [cljs.core :as core]
-            [cljs.analyzer :as ana])
+            [cljs.analyzer :as ana]
+            [cljs.core.logic :refer :all])
   (:import [java.util UUID]))
 
 (defmacro extend-to-fd [t]
@@ -57,7 +58,7 @@
         dom (last xs-and-dom)
         domsym (gensym "dom_")]
     `(let [~domsym ~dom]
-       (cljs.core.logic/fresh []
+       (fresh []
          ~@(map (fn [x]
                   `(dom ~x ~domsym))
                 xs)))))

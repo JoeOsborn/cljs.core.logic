@@ -23,6 +23,10 @@
 
 (def fk (js/Error.))
 
+(def fd ::fd)
+
+(def subst ::subst)
+
 ;; Utilities
 
 (defn assoc-meta [x k v]
@@ -435,7 +439,7 @@
   (let [x (proto/root-var s x)
         v (proto/root-val s x)]
     (if (subst-val? v)
-      (update-var s x (assoc-meta v attr attrv))
+      (proto/update-var s x (assoc-meta v attr attrv))
       (let [v (if (lvar? v) ::unbound v)]
         (ext-no-check s x (with-meta (subst-val v) {attr attrv}))))))
 
@@ -445,8 +449,8 @@
     (if (subst-val? v)
       (let [new-meta (dissoc (meta v) attr)]
         (if (and (zero? (count new-meta)) (not= (:v v) ::unbound))
-          (update-var s x (:v v))
-          (update-var s x (with-meta v new-meta))))
+          (proto/update-var s x (:v v))
+          (proto/update-var s x (with-meta v new-meta))))
       s)))
 
 (defn get-attr [s x attr]
@@ -473,7 +477,7 @@
   ([s x dom domv seenset]
      (let [v (proto/root-val s x)
            s (if (subst-val? v)
-               (update-var s x (assoc-dom v dom domv))
+               (proto/update-var s x (assoc-dom v dom domv))
                (let [v (if (lvar? v) ::unbound v)]
                  (ext-no-check s x (subst-val v {dom domv}))))]
        (sync-eset s v seenset
@@ -490,7 +494,7 @@
                (subst-val ::unbound)
                v)
            doms (:doms v)
-           s (update-var s x (assoc-dom v dom (f (get doms dom))))]
+           s (proto/update-var s x (assoc-dom v dom (f (get doms dom))))]
        (sync-eset s v seenset
                   (fn [s y]
                     (update-dom s y dom f (conj (or seenset #{}) x)))))))
@@ -504,8 +508,8 @@
            s (if (subst-val? v)
                (let [new-doms (dissoc (:doms v) dom)]
                  (if (and (zero? (count new-doms)) (not= (:v v) ::unbound))
-                   (update-var s x (:v v))
-                   (update-var s x (assoc v :doms new-doms))))
+                   (proto/update-var s x (:v v))
+                   (proto/update-var s x (assoc v :doms new-doms))))
                s)]
        (sync-eset s v seenset
                   (fn [s y] (rem-dom s y dom (conj (or seenset #{}) x)))))))
@@ -603,8 +607,8 @@
         xv (to-subst-val (proto/root-val s x))
         yv (to-subst-val (proto/root-val s y))]
     (-> s
-        (update-var x (assoc xv :eset (conj (or (:eset xv) #{}) y)))
-        (update-var y (assoc yv :eset (conj (or (:eset yv) #{}) x))))))
+        (proto/update-var x (assoc xv :eset (conj (or (:eset xv) #{}) y)))
+        (proto/update-var y (assoc yv :eset (conj (or (:eset yv) #{}) x))))))
 
 ;; ===========================================================================
 ;; Logic Variables
@@ -652,7 +656,7 @@
                     :else nil)]
        (if repoint
          (let [[root other] repoint
-               s (assoc s :cs (migrate (:cs s) other root))
+               s (assoc s :cs (proto/migrate (:cs s) other root))
                s (if (-> other clojure.core/meta ::unbound)
                    (merge-with-root s other root)
                    s)]
@@ -2189,5 +2193,22 @@
       (!= y "Java")))
 
   (run* [q] (!= q "Java"))
+
+  (run* [q]
+    (fresh [x y]
+      (== [:pizza "Java"] [x y])
+      (== q [x y])
+      (!= y "Java")))
+
+  (run* [q]
+    (fresh [x y]
+      (== [:pizza "Scala"] [x y])
+      (== q [x y])
+      (!= y "Java")))
+  
+  (run* [q]
+    (fresh [n]
+      (!= 0 n)
+      (== q n)))
   )
 

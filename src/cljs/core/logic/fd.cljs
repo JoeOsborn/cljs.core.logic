@@ -67,7 +67,7 @@
   cljs.core/IEquiv
   (-equiv [this that]
     (if (finite-domain? that)
-      (if (= (-member-count this) (-member-count that))
+      (if (= (proto/-member-count this) (proto/-member-count that))
         (= s (:s that))
         false)
       false))
@@ -146,7 +146,7 @@
 
   cljs.core/IPrintWithWriter
   (-pr-writer [x writer opts]
-    (-write writer (str "<domain:" (string/join " " (seq (:s x))) ">"))))
+    (-write writer (str "<domain:" (seq (:s x)) ">"))))
 
 (defn finite-domain? [x]
   (instance? FiniteDomain x))
@@ -452,7 +452,7 @@
   proto/IMemberCount
   (-member-count [this]
     ;; NOTE: ugly hack around http://dev.clojure.org/jira/browse/CLJ-1202 - David
-    (reduce core/+ 0 (map #(-member-count %) is)))
+    (reduce core/+ 0 (map #(proto/-member-count %) is)))
 
   IInterval
   (-lb [_] min)
@@ -543,14 +543,14 @@
 (defn get-dom
   [a x]
   (if (lvar? x)
-    (l/get-dom a x ::l/fd)
+    (l/get-dom a x l/fd)
     x))
 
 (defn ext-dom-fd
   [a x dom domp]
-  (let [a (add-dom a x ::l/fd dom)]
+  (let [a (l/add-dom a x l/fd dom)]
     (if (not= domp dom)
-      ((run-constraints* [x] (:cs a) ::l/fd) a)
+      ((l/run-constraints* [x] (:cs a) l/fd) a)
       a)))
 
 (defn singleton-dom? [x]
@@ -561,7 +561,7 @@
   (if (singleton-dom? dom)
     (let [xv (walk a x)]
       (if (lvar? xv)
-        (ext-run-cs (rem-dom a x ::l/fd) x dom)
+        (proto/ext-run-cs (l/rem-dom a x l/fd) x dom)
         a))
     (ext-dom-fd a x dom domp)))
 
@@ -588,7 +588,7 @@
           dom  (if domp
                  (-intersection dom domp)
                  dom)]
-      ((composeg
+      ((l/composeg
         (process-dom x dom domp)
         (if (and (nil? domp)
                  (not (singleton-dom? dom)))
@@ -600,7 +600,7 @@
     (if (empty? ls)
       (fn [a] nil)
       (fn [a]
-        (mplus
+        (proto/mplus
          ((f (first ls)) a)
          (fn []
            ((loop (rest ls)) a)))))))
@@ -619,15 +619,15 @@
 (extend-protocol proto/IForceAnswerTerm
   FiniteDomain
   (-force-ans [v x]
-    ((map-sum (fn [n] (ext-run-csg x n))) (to-vals v)))
+    ((map-sum (fn [n] (l/ext-run-csg x n))) (to-vals v)))
 
   IntervalFD
   (-force-ans [v x]
-    ((map-sum (fn [n] (ext-run-csg x n))) (to-vals v)))
+    ((map-sum (fn [n] (l/ext-run-csg x n))) (to-vals v)))
 
   MultiIntervalFD
   (-force-ans [v x]
-    ((map-sum (fn [n] (ext-run-csg x n))) (to-vals v))))
+    ((map-sum (fn [n] (l/ext-run-csg x n))) (to-vals v))))
 
 (defn -domc [x]
   (reify
@@ -635,13 +635,13 @@
     proto/IConstraintStep
     (-step [this s]
       (let [xv (walk s x)
-            xd (-> (root-val s x) :doms ::l/fd)]
+            xd (-> (proto/root-val s x) :doms l/fd)]
         (reify
           cljs.core/IFn
           (-invoke [_ s]
             (if xd
               (when (-member? xd xv)
-                (rem-dom s x ::l/fd))
+                (l/rem-dom s x l/fd))
               s))
           proto/IEntailed
           (-entailed? [_]
@@ -653,7 +653,7 @@
     (-rator [_] `domc)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{::l/subst})))
+    (-watched-stores [this] #{l/subst})))
 
 (defn domc [x]
   (l/cgoal (-domc x)))
@@ -668,7 +668,7 @@
                  cljs.core/IFn
                  (-invoke [_ s]
                    (let [i (-intersection du dv)]
-                     ((composeg
+                     ((l/composeg
                        (process-dom u i du)
                        (process-dom v i dv)) s)))
                  proto/IEntailed
@@ -684,7 +684,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{::l/subst ::l/fd})))
+      #{l/subst l/fd})))
 
 (defn ==
   "A finite domain constraint. u and v must be equal. u and v must
@@ -721,7 +721,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{::l/subst ::l/fd})))
+      #{l/subst l/fd})))
 
 (defn !=
   "A finite domain constraint. u and v must not be equal. u and v
@@ -754,7 +754,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{::l/subst ::l/fd})))
+      #{l/subst l/fd})))
 
 (defn <=
   "A finite domain constraint. u must be less than or equal to v.
@@ -841,7 +841,7 @@
     (-rands [_] [u v w])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{::l/subst ::l/fd})))
+      #{l/subst l/fd})))
 
 (defn +
   "A finite domain constraint for addition and subtraction.
@@ -925,7 +925,7 @@
       (-rands [_] [u v w])
       proto/IConstraintWatchedStores
       (-watched-stores [this]
-        #{::l/subst ::l/fd}))))
+        #{l/subst l/fd}))))
 
 (defn *
   "A finite domain constraint for multiplication and
@@ -968,7 +968,7 @@
                             s)]
                     (when s
                       (recur (next y*) s)))
-                  ((remcg this) s)))))
+                  ((l/remcg this) s)))))
           proto/IRunnable
           (-runnable? [_]
             (singleton-dom? x)))))
@@ -976,7 +976,7 @@
     (-rator [_] `-distinct)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{::l/subst})))
+    (-watched-stores [this] #{l/subst})))
 
 (defn -distinct [x y* n*]
   (l/cgoal (-distinctc x y* n*)))
@@ -1006,7 +1006,7 @@
       (let [v* (walk s v*)]
         (reify
           cljs.core/IFn
-          (invoke [_ s]
+          (-invoke [_ s]
             (let [{x* true n* false} (group-by lvar? v*)
                   n* (sort core/< n*)]
               (when (list-sorted? core/< n*)
@@ -1017,15 +1017,15 @@
                       (let [x (first xs)]
                         (when-let [s ((-distinct x (disj x* x) n*) s)]
                           (recur (next xs) s)))
-                      ((remcg this) s)))))))
+                      ((l/remcg this) s)))))))
           proto/IRunnable
           (-runnable? [_]
-            (not (lvar? v*))))))
+            (not (l/lvar? v*))))))
     proto/IConstraintOp
     (-rator [_] `distinct)
     (-rands [_] [v*])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{::l/subst})))
+    (-watched-stores [this] #{l/subst})))
 
 (defn distinct
   "A finite domain constraint that will guarantee that
@@ -1146,4 +1146,62 @@
       (l/!= 0 n)
       (l/== q n)))
 
+  (run* [q]
+    (fresh [n]
+      (in n (domain 0 1))
+      (== q n)))
+
+  (run* [q]
+    (let [coin (domain 0 1)]
+      (fresh [heads tails]
+        (in heads 0 coin)
+        (in tails 1 coin)
+        (l/== q [heads tails]))))
+
   )
+
+(defn get-square [rows x y]
+  (for [x (range x (core/+ x 3))
+        y (range y (core/+ y 3))]
+    (get-in rows [x y])))
+
+(defn init [vars hints]
+  (if (seq vars)
+    (let [hint (first hints)]
+      (all
+       (if-not (zero? hint)
+         (l/== (first vars) hint)
+         l/succeed)
+       (init (next vars) (next hints))))
+    l/succeed))
+
+(defn sudokufd [hints]
+  (let [vars (repeatedly 81 l/lvar)
+        rows (->> vars (partition 9) (map vec) (into []))
+        cols (apply map vector rows)
+        sqs  (for [x (range 0 9 3)
+                   y (range 0 9 3)]
+               (get-square rows x y))]
+    (run 1 [q]
+      (init vars hints)
+      (l/== q vars)
+      (l/everyg #(in % (domain 1 2 3 4 5 6 7 8 9)) vars)
+      (l/everyg distinct rows)
+      (l/everyg distinct cols)
+      (l/everyg distinct sqs)
+      )))
+
+(comment
+  (simple-benchmark
+   [hints [0 0 3  0 2 0  6 0 0
+           9 0 0  3 0 5  0 0 1
+           0 0 1  8 0 6  4 0 0
+
+           0 0 8  1 0 2  9 0 0
+           7 0 0  0 0 0  0 0 8
+           0 0 6  7 0 8  2 0 0
+
+           0 0 2  6 0 9  5 0 0
+           8 0 0  2 0 3  0 0 9
+           0 0 5  0 1 0  3 0 0]]
+   (doall (sudokufd hints)) 1))
