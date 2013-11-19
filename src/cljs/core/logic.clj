@@ -490,8 +490,7 @@
   "Pattern matching macro. All patterns will be tried.
   See conde."
   [xs & cs]
-  (binding [*locals* (env-locals xs (keys &env))]
-    (println *locals*)
+  (binding [*locals* (env-locals xs (-> &env :locals keys))]
     (handle-clauses `conde xs cs)))
 
 ;; ---------------------------------------------------------------------------
