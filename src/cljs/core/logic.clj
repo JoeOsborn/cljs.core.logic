@@ -491,6 +491,7 @@
   See conde."
   [xs & cs]
   (binding [*locals* (env-locals xs (keys &env))]
+    (println *locals*)
     (handle-clauses `conde xs cs)))
 
 ;; ---------------------------------------------------------------------------
@@ -606,7 +607,6 @@
   (let [name (symbol (gensym "fnc"))]
     `(fn ~args
        (letfn [(~name [~@args]
-                 (println ~name ~@args)
                  (reify
                    cljs.core.logic.protocols/IConstraintStep
                    (~'-step [this# a#]

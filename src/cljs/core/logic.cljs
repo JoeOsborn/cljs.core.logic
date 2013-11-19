@@ -747,7 +747,7 @@
 (deftype LCons [a d ^:unsynchronized-mutable cache meta]
   proto/ITreeTerm  
   cljs.core/IMeta
-  (meta [this] meta)
+  (-meta [this] meta)
   
   cljs.core/IWithMeta
   (-with-meta [this new-meta]
@@ -1551,7 +1551,6 @@
         (if (zero? (count cq))
           (assoc a :cq nil)
           (let [c (first cq)]
-            (println a (type a) (type c))
             (recur
              ((run-constraint c)
               (-> a

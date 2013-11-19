@@ -1,9 +1,9 @@
 (ns cljs.core.logic.unifier
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto
-             :refer [queue walk-term take* -unwrap]]
+             :refer [queue walk-term take* -unwrap walk]]
             [cljs.core.logic :as l :refer [lcons == reifyg fix-constraints
-                                           empty-s]])
+                                           empty-s -reify]])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
@@ -104,8 +104,7 @@
     (fn []
       ((fresh [q]
          (== u w) (== q u)
-         (fn [a]
-           (fix-constraints a))
+         (fn [a] (fix-constraints a))
          (reifyg q))
        init-s)))))
 
