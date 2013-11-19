@@ -1192,8 +1192,7 @@
       )))
 
 (comment
-  (simple-benchmark
-   [hints [0 0 3  0 2 0  6 0 0
+  (def b1 [0 0 3  0 2 0  6 0 0
            9 0 0  3 0 5  0 0 1
            0 0 1  8 0 6  4 0 0
 
@@ -1203,5 +1202,8 @@
 
            0 0 2  6 0 9  5 0 0
            8 0 0  2 0 3  0 0 9
-           0 0 5  0 1 0  3 0 0]]
-   (doall (sudokufd hints)) 1))
+           0 0 5  0 1 0  3 0 0])
+  (simple-benchmark
+   [hints b1]
+   (doall (sudokufd hints)) 10)
+  (sudokufd b1))
