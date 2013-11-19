@@ -5,7 +5,8 @@
             [cljs.core.logic.protocols :as proto
              :refer [walk non-storable? reifiable? enforceable?
                      tree-constraint? take* unify-terms ext-no-check id bind
-                     ]]
+                     lfirst lnext ifa -cached? -add reify-tabled
+                     -reify-tabled reuse ready? subunify]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc

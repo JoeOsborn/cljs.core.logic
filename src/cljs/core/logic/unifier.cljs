@@ -1,7 +1,7 @@
 (ns cljs.core.logic.unifier
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l])
+            [cljs.core.logic :as l :refer [lcons]])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc

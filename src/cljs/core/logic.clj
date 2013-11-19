@@ -235,7 +235,7 @@
 (defmacro ifa*
   ([])
   ([[e & gs] & grest]
-     `(ifa ~e [~@gs]
+     `(cljs.core.logic.protocols/ifa ~e [~@gs]
            ~(if (seq grest)
               `(delay (ifa* ~@grest))
               nil))))
@@ -574,7 +574,8 @@
                       ~@grest
                       (master argv# cache#)) a#))
                  (let [cache# (get @table# key#)]
-                   (reuse a# argv# cache# nil nil)))))))))
+                   (cljs.core.logic.protocols/reuse
+                    a# argv# cache# nil nil)))))))))
 
 (defmacro let-dom
   [a vars & body]
