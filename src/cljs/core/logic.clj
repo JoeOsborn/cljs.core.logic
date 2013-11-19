@@ -356,7 +356,7 @@
        :else
        (let [ps (map #(p->term % vars quoted) p)]
          (cond
-          (instance? clojure.lang.MapEntry p) (into [] ps)
+          (satisfies? IMapEntry p) (into [] ps)
           :else (into (empty p) ps))))
       (symbol? p) (if quoted
                     (list 'quote p)
@@ -613,21 +613,21 @@
                        cljs.core/IFn
                        (~'-invoke [_# a#]
                          (let [[~@args :as args#]
-                               (map #(clojure.core.logic/walk* a# %) ~args)
+                               (map #(cljs.core.logic/walk* a# %) ~args)
                                test# (do ~@body)]
                            (when test#
-                             ((clojure.core.logic/remcg this#) a#))))
+                             ((cljs.core.logic/remcg this#) a#))))
                        cljs.core.logic.protocols/IRunnable
                        (~'-runnable? [_#]
-                         (clojure.core.logic/ground-term? ~args a#))))
+                         (cljs.core.logic/ground-term? ~args a#))))
                    cljs.core.logic.protocols/IConstraintOp
                    (~'-rator [_#] '~name)
-                   (~'-rands [_#] (filter clojure.core.logic/lvar? (flatten ~args)))
+                   (~'-rands [_#] (filter cljs.core.logic/lvar? (flatten ~args)))
                    cljs.core.logic.protocols/IReifiableConstraint
                    (~'-reifyc [_# _# r# a#]
-                     (list '~name (map #(clojure.core.logic/-reify r# %) ~args)))
+                     (list '~name (map #(cljs.core.logic/-reify r# %) ~args)))
                    cljs.core.logic.protocols/IConstraintWatchedStores
-                   (~'-watched-stores [_#] #{:clojure.core.logic/subst})))]
+                   (~'-watched-stores [_#] #{:cljs.core.logic/subst})))]
          (cgoal (~name ~@args))))))
 
 (defmacro defnc [name args & body]
