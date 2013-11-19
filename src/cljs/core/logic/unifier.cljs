@@ -1,7 +1,9 @@
 (ns cljs.core.logic.unifier
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l :refer [lcons]])
+  (:require [cljs.core.logic.protocols :as proto
+             :refer [queue walk-term take* -unwrap]]
+            [cljs.core.logic :as l :refer [lcons == reifyg fix-constraints
+                                           empty-s]])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
@@ -71,7 +73,7 @@
                  (prep* expr lvars true)
 
                  :else (walk-term expr (replace-lvar lvars)))]
-    (if (instance? clojure.lang.IMeta prepped)
+    (if (satisfies? cljs.core/IMeta prepped)
       (with-meta prepped {::lvars (keys @lvars)})
       prepped)))
 
@@ -88,9 +90,9 @@
 
    :else
    (throw
-    (Exception.
+    (ex-info
      (str "Only symbol, set of symbols, or vector of symbols allowed "
-          "on left hand side")))))
+          "on left hand side") {}))))
 
 (defn queue-constraints [s [vs cs]]
   (let [cs (if-not (sequential? cs) [cs] cs)]
@@ -118,6 +120,7 @@
   ([ts] (unify* {} ts))
   ([opts ts]
      (let [init-s (init-s opts empty-s)]
+       (println opts ts)
        (-unify*
         (vary-meta init-s assoc :reify-vars false)
         (reduce #(-unify* init-s %1 %2) (butlast ts))
@@ -168,3 +171,4 @@
                       (map #(-> % meta ::lvars))
                       (reduce into))]
        (unifier* (assoc opts :lvars lvars) (map prep ts)))))
+

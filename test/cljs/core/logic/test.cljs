@@ -5,7 +5,7 @@
             [cljs.core.logic :as l
              :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
-                     emptyo resto firsto appendo]]
+                     emptyo resto firsto appendo reifyg]]
             [cljs.core.logic.fd :as fd]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
