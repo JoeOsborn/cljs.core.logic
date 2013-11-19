@@ -1,4 +1,5 @@
-(ns cljs.core.logic.nominal)
+(ns cljs.core.logic.nominal
+  (:require [cljs.core.logic]))
 
 (defn- nom-bind [sym]
   ((juxt identity

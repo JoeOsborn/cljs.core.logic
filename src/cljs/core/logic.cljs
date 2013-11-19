@@ -1959,7 +1959,7 @@
     (-step [this s]
       (reify
         cljs.core/IFn
-        (invoke [_ s]
+        (-invoke [_ s]
           ((composeg
             (== fs x)
             (remcg this)) s))
@@ -2017,7 +2017,7 @@
        (-step [this s]
          (reify
            cljs.core/IFn
-           (invoke [_ s]
+           (-invoke [_ s]
              (let [x (walk s x)]
                (when (p x)
                  ((remcg this) s))))
@@ -2058,7 +2058,7 @@
        (-step [this s]
          (reify
            cljs.core/IFn
-           (invoke [_ s]
+           (-invoke [_ s]
              (when-not (tramp ((apply c args) s))
                ((remcg this) s)))
            proto/IRunnable
@@ -2125,7 +2125,7 @@
          (let [xv (walk s x)]
            (reify
              cljs.core/IFn
-             (invoke [_ s]
+             (-invoke [_ s]
                ((composeg (f xv s reifier) (remcg this)) s))
              proto/IRunnable
              (-runnable? [_]

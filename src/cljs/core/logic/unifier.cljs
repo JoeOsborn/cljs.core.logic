@@ -105,6 +105,7 @@
       ((fresh [q]
          (== u w) (== q u)
          (fn [a]
+           (println a)
            (fix-constraints a))
          (reifyg q))
        init-s)))))
@@ -120,7 +121,6 @@
   ([ts] (unify* {} ts))
   ([opts ts]
      (let [init-s (init-s opts empty-s)]
-       (println opts ts)
        (-unify*
         (vary-meta init-s assoc :reify-vars false)
         (reduce #(-unify* init-s %1 %2) (butlast ts))

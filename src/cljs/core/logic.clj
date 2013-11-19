@@ -610,8 +610,8 @@
                    cljs.core.logic.protocols/IConstraintStep
                    (-step [this# a#]
                      (reify
-                       ~'cljs.core/IFn
-                       (~'invoke [_# a#]
+                       cljs.core/IFn
+                       (~'-invoke [_# a#]
                          (let [[~@args :as args#]
                                (map #(clojure.core.logic/walk* a# %) ~args)
                                test# (do ~@body)]

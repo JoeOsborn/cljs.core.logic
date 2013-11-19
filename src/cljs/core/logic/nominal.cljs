@@ -1,6 +1,6 @@
 (ns cljs.core.logic.nominal
   (:refer-clojure :exclude [== hash -hash])
-  (:require [cljs.core.logic :as l :refer [lvar?]]
+  (:require [cljs.core.logic :as l :refer [ext lvar?]]
             [cljs.core.logic.protocols :as proto :refer [walk]]
             [cljs.core :as core])
   (:require-macros [cljs.core.logic
@@ -51,7 +51,7 @@
             [(into {} tkvs) s])
           :else [t s]))
 
-  LVar
+  l/LVar
   (swap-noms [t swap s]
     (let [t (walk s t)]
       (if (lvar? t)
@@ -63,7 +63,7 @@
           [v s])
         (swap-noms t swap s))))
 
-  LCons
+  l/LCons
   (swap-noms [t swap s]
     (let [[tfirst s] (swap-noms (lfirst t) swap s)
           [tnext s] (swap-noms (lnext t) swap s)]
