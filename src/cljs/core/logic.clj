@@ -18,6 +18,14 @@
 
 (def ^:dynamic *logic-compiler-env* (env/default-compiler-env))
 
+(defn succeed [a] a)
+
+(defn fail [a] nil)
+
+(def s# succeed)
+
+(def u# fail)
+
 (def ^:dynamic *logic-env*
   (env/with-compiler-env *logic-compiler-env*
     (assoc (ana/empty-env) :ns 'cljs.core.logic)))
@@ -37,21 +45,32 @@
   ([f s & rest] `(cljs.core.logic/lcons ~f (llist ~s ~@rest))))
 
 (defmacro composeg*
-  [g0 & gs]
-  `((fn composeg# [g0# & gs#]
-      (if-not (seq gs#)
-        g0#
-        (apply cljs.core.logic/composeg (cons g0# (apply composeg# gs#)))))
-    ~g0 ~@gs))
-
-;; `(composeg
-;;        ~g0
-;;        (composeg* ~@gs))
+  ([g0] g0)
+  ([g0 & gs]
+     `(composeg
+       ~g0
+       (composeg* ~@gs))))
 
 (defmacro bind*
   ([a g] `(cljs.core.logic.protocols/bind ~a ~g))
   ([a g & g-rest]
      `(bind* (cljs.core.logic.protocols/bind ~a ~g) ~@g-rest)))
+
+;; (defmacro composeg*
+;;   [g0 & gs]
+;;   `((fn composeg# [g0# & gs#]
+;;       (if-not (seq gs#)
+;;         g0#
+;;         (apply cljs.core.logic/composeg (cons g0# (apply composeg# gs#)))))
+;;     ~g0 ~@gs))
+
+;; (defmacro bind*
+;;   [a g & g-rest]
+;;   `((fn [a# g# & g-rest#]
+;;       (if-not (seq g-rest#)
+;;         `(cljs.core.logic.protocols/bind ~a# ~g#)
+;;         `(recur (cljs.core.logic.protocols/bind ~a# ~g#) ~@g-rest#)))
+;;     ~a ~g ~@g-rest))
 
 (defmacro mplus*
   ([e] e)

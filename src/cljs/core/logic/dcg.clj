@@ -1,6 +1,8 @@
 (ns cljs.core.logic.dcg
   (:refer-clojure :exclude [==]))
 
+(declare count-clauses)
+
 (defn ->lcons
   ([env [m :as c] i] (->lcons env c i false))
   ([env [m :as c] i quoted]

@@ -4,7 +4,8 @@
             [clojure.string :as string]
             [cljs.core.logic.protocols :as proto
              :refer [walk non-storable? reifiable? enforceable?
-                     tree-constraint? take* unify-terms ext-no-check id]]
+                     tree-constraint? take* unify-terms ext-no-check id bind
+                     ]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -18,7 +19,6 @@
             IMPlus ITake]))
 
 (def ^:dynamic *locals* nil)
-
 (def ^:dynamic *logic-dbs* [])
 
 (def fk (js/Error.))
@@ -224,11 +224,11 @@
 (defn walk* [s v]
   (let [v (walk s v)]
     (proto/walk-term v
-               (fn [x]
-                 (let [x (walk s x)]
-                   (if (tree-term? x)
-                     (walk* s x)
-                     x))))))
+                     (fn [x]
+                       (let [x (walk s x)]
+                         (if (tree-term? x)
+                           (walk* s x)
+                           x))))))
 
 (defn unify [s u v]
   (if (identical? u v)
@@ -365,7 +365,7 @@
             (if (not (bindable? vp))
               (if (subst-val? vp)
                 (let [sv (:v vp)]
-                  (if (identical? sv ::unbound)
+                  (if (keyword-identical? sv ::unbound)
                     (with-meta v (assoc (meta vp) ::unbound true))
                     sv))
                 vp)
@@ -421,7 +421,7 @@
     (assoc this :s (assoc (:s this) x v)))
 
   proto/IBind
-  (bind [this g]
+  (bind [this g]    
     (g this))
   
   proto/IMPlus
@@ -552,7 +552,7 @@
       (if doms
         (let [[dom domv] (first doms)]
           (let [xdomv (get xdoms dom ::not-found)
-                ndomv (if (identical? xdomv ::not-found)
+                ndomv (if (keyword-identical? xdomv ::not-found)
                         domv
                         (-merge-doms domv xdomv))]
             (when ndomv
@@ -647,13 +647,13 @@
     (cond
      (lvar? v)
      (let [repoint (cond
-                    (-> u cljs.core/meta ::unbound) [u v]
-                    (-> v cljs.core/meta ::unbound) [v u]
+                    (-> u clojure.core/meta ::unbound) [u v]
+                    (-> v clojure.core/meta ::unbound) [v u]
                     :else nil)]
        (if repoint
          (let [[root other] repoint
                s (assoc s :cs (migrate (:cs s) other root))
-               s (if (-> other cljs.core/meta ::unbound)
+               s (if (-> other clojure.core/meta ::unbound)
                    (merge-with-root s other root)
                    s)]
            (when s
@@ -666,7 +666,7 @@
      (not= v ::not-found)
      (if (tree-term? v)
        (ext s u v)
-       (if (-> u cljs.core/meta ::unbound)
+       (if (-> u clojure.core/meta ::unbound)
          (ext-no-check s u (assoc (proto/root-val s u) :v v))
          (ext-no-check s u v)))
 
@@ -674,7 +674,7 @@
 
   proto/IReifyTerm
   (reify-term [v s]
-    (let [rf (-> s cljs.core/meta :reify-vars)]
+    (let [rf (-> s clojure.core/meta :reify-vars)]
       (if (fn? rf)
         (rf v s)
         (if rf
@@ -682,7 +682,8 @@
           (ext s v (:oname v))))))
 
   proto/IWalkTerm
-  (walk-term [v f] (f v))
+  (walk-term [v f]
+    (f v))
 
   proto/IOccursCheckTerm
   (occurs-check-term [v x s] (= (walk s v) x))
@@ -754,13 +755,13 @@
   proto/LConsPrint
   (toShortString [this]
     (cond
-     (instance? LCons d) (str a " " (toShortString d))
+     (instance? LCons d) (str a " " (proto/toShortString d))
      :else (str a " . " d)))
 
   Object
   (toString [this] (cond
                     (instance? LCons d)
-                    (str "(" a " " (toShortString d) ")")
+                    (str "(" a " " (proto/toShortString d) ")")
                     :else (str "(" a " . " d ")")))
 
   cljs.core/IEquiv
@@ -823,7 +824,7 @@
      :else nil))
 
   proto/IReifyTerm
-  (reify-term [v s]
+  (reify-term [v s]    
     (loop [v v s s]
       (if (lcons? v)
         (recur (lnext v) (-reify* s (lfirst v)))
@@ -874,7 +875,7 @@
   (cond
    (sequential? v)
    (if (and (counted? u) (counted? v)
-            (not (cljs.core/== (count u) (count v))))
+            (not (= (count u) (count v))))
      nil
      (loop [u (seq u) v (seq v) s s]
        (if-not (nil? u)
@@ -889,12 +890,12 @@
    :else nil))
 
 (defn unify-with-map* [u v s]
-  (when (cljs.core/== (count u) (count v))
+  (when (= (count u) (count v))
     (loop [ks (keys u) s s]
       (if (seq ks)
         (let [kf (first ks)
               vf (get v kf ::not-found)]
-          (when-not (identical? vf ::not-found)
+          (when-not (keyword-identical? vf ::not-found)
             (if-let [s (unify s (get u kf) vf)]
               (recur (next ks) s)
               nil)))
@@ -944,7 +945,7 @@
 
 (defn walk-record-term [v f]
   (with-meta
-    (loop [v v r (-uninitialized v)]
+    (loop [v v r (proto/-uninitialized v)]
       (if (seq v)
         (let [[vfk vfv] (first v)]
           (recur (next v) (assoc r (proto/walk-term (f vfk) f)
@@ -958,23 +959,22 @@
 
   default
   (walk-term [v f]
-    (cond
-     (seq? v)
-     (with-meta
-       (doall (map #(proto/walk-term (f %) f) v))
-       (meta v))
-     (map? v)
-     (if (record? v)
-       (walk-record-term v f)
-       (with-meta
-         (loop [v v r (transient {})]
-           (if (seq v)
-             (let [[vfk vfv] (first v)]
-               (recur (next v) (assoc! r (proto/walk-term (f vfk) f)
-                                       (proto/walk-term (f vfv) f))))
-             (persistent! r)))
-         (meta v)))
-     :else (f v)))
+    (cond (seq? v)
+          (with-meta
+            (doall (map #(proto/walk-term (f %) f) v))
+            (meta v))
+          (map? v)
+          (if (record? v)
+            (walk-record-term v f)
+            (with-meta
+              (loop [v v r (transient {})]
+                (if (seq v)
+                  (let [[vfk vfv] (first v)]
+                    (recur (next v) (assoc! r (proto/walk-term (f vfk) f)
+                                            (proto/walk-term (f vfv) f))))
+                  (persistent! r)))
+              (meta v)))
+          :else (f v)))
 
   cljs.core/PersistentVector
   (walk-term [v f]
@@ -1025,10 +1025,6 @@
        (let [a (g0 a)]
          (and a (g1 a))))))
 
-(extend-protocol proto/ITake
-  default
-  (take* [this] this))
-
 (deftype Choice [a f]
   cljs.core/ILookup
   (-lookup [this k]
@@ -1071,7 +1067,7 @@
   default
   (bind [this g]
     (cond (fn? this) (-inc (proto/bind (this) g))
-          :else (proto/bind this g))))
+          :else (throw (ex-info "No protocol method" {})))))
 
 (extend-protocol proto/IMPlus
   default
@@ -1084,7 +1080,7 @@
   (take* [this]
     (cond (fn? this)
           (lazy-seq (proto/take* (this)))
-          :else (proto/take* this))))
+          :else this)))
 
 ;; ===========================================================================
 ;; Syntax
@@ -1125,7 +1121,7 @@
   ([s g]
      (solutions s (lvar) g))
   ([s q g]
-     (take* ((all g (reifyg q)) s))))
+     (proto/take* ((all g (reifyg q)) s))))
 
 ;; ===========================================================================
 ;; conda (soft-cut), condu (committed-choice)
@@ -1149,8 +1145,8 @@
 
   default
   (ifa [b gs c]
-    (when (fn? b)
-      (-inc (ifa (b) gs c))))
+    (cond (fn? b) (-inc (ifa (b) gs c))
+          :else nil))
 
   Choice
   (ifa [b gs c]
@@ -1168,8 +1164,8 @@
 
   default
   (ifu [b gs c]
-    (when (fn? b)
-      (-inc (proto/ifu (b) gs c))))
+    (cond (fn? b) (-inc (proto/ifu (b) gs c))
+          :else nil))
 
   Choice
   (ifu [b gs c]
@@ -1821,7 +1817,7 @@
     (-step [this s]
       (reify
         cljs.core/IFn
-        (-invoke [_ s]          
+        (-invoke [_ s]
           (let [p (loop [sp (seq p) p p]                    
                     (if sp
                       (let [[x v] (first sp)
@@ -2191,5 +2187,7 @@
     (fresh [x y]
       (== q [x y])
       (!= y "Java")))
+
+  (run* [q] (!= q "Java"))
   )
 
