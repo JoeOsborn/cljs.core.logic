@@ -39,7 +39,7 @@
          interval multi-interval)
 
 (defn bounds [i]
-  (pair (-lb i) (-ub i)))
+  (l/pair (-lb i) (-ub i)))
 
 (defn interval-< [i j]
   (core/< (-ub i) (-lb j)))
@@ -650,7 +650,7 @@
           (-runnable? [_]
             (not (lvar? xv))))))
     proto/IConstraintOp
-    (-rator [_] `domc)
+    (-rator [_] `cljs.core.logic.fd/domc)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
     (-watched-stores [this] #{l/subst})))
@@ -680,7 +680,7 @@
                  (-runnable? [_]
                    (and du dv)))))
     proto/IConstraintOp
-    (-rator [_] `==)
+    (-rator [_] `cljs.core.logic.fd/==)
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
@@ -717,7 +717,7 @@
                    (-runnable? [_]
                      (and du dv (or su? sv?)))))))
     proto/IConstraintOp
-    (-rator [_] `!=)
+    (-rator [_] `cljs.core.logic.fd/!=)
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
@@ -750,7 +750,7 @@
                  (-runnable? [_]
                    (and du dv)))))
     proto/IConstraintOp
-    (-rator [_] `<=)
+    (-rator [_] `cljs.core.logic.fd/<=)
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
@@ -837,7 +837,7 @@
                     dw (or du dv)
                     :else false)))))
     proto/IConstraintOp
-    (-rator [_] `+)
+    (-rator [_] `cljs.core.logic.fd/+)
     (-rands [_] [u v w])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
@@ -921,7 +921,7 @@
                       dw (or du dv)
                       :else false)))))
       proto/IConstraintOp
-      (-rator [_] `*)
+      (-rator [_] `cljs.core.logic.fd/*)
       (-rands [_] [u v w])
       proto/IConstraintWatchedStores
       (-watched-stores [this]
@@ -973,7 +973,7 @@
           (-runnable? [_]
             (singleton-dom? x)))))
     proto/IConstraintOp
-    (-rator [_] `-distinct)
+    (-rator [_] `cljs.core.logic.fd/-distinct)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
     (-watched-stores [this] #{l/subst})))
@@ -1022,7 +1022,7 @@
           (-runnable? [_]
             (not (l/lvar? v*))))))
     proto/IConstraintOp
-    (-rator [_] `distinct)
+    (-rator [_] `cljs.core.logic.fd/distinct)
     (-rands [_] [v*])
     proto/IConstraintWatchedStores
     (-watched-stores [this] #{l/subst})))

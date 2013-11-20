@@ -6,7 +6,8 @@
              :refer [walk non-storable? reifiable? enforceable?
                      tree-constraint? take* unify-terms ext-no-check id bind
                      lfirst lnext ifa -cached? -add reify-tabled
-                     -reify-tabled reuse ready? subunify]]
+                     -reify-tabled reuse ready? subunify
+                     unify-with-record unify-with-pmap]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -559,7 +560,7 @@
           (let [xdomv (get xdoms dom ::not-found)
                 ndomv (if (keyword-identical? xdomv ::not-found)
                         domv
-                        (-merge-doms domv xdomv))]
+                        (proto/-merge-doms domv xdomv))]
             (when ndomv
               (recur (next doms)
                      (add-dom s x dom ndomv #{})))))
@@ -580,7 +581,7 @@
                (if xd
                  (let [[xk xv] (first xd)]
                    (if-let [[_ rv] (find rd xk)]
-                     (let [nd (-merge-doms xv rv)]
+                     (let [nd (proto/-merge-doms xv rv)]
                        (when nd
                          (recur (next xd)
                                 (dissoc rd xk) (assoc r xk nd))))
@@ -1856,7 +1857,7 @@
           '()
           `(~'!= ~@p*))))
     proto/IConstraintOp
-    (-rator [_] `!=)
+    (-rator [_] `cljs.core.logic/!=)
     (-rands [_] (seq (recover-vars p)))
     proto/IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
@@ -1967,7 +1968,7 @@
         (-runnable? [_]
           (not (lvar? (walk s x))))))
     proto/IConstraintOp
-    (-rator [_] `featurec)
+    (-rator [_] `cljs.core.logic/featurec)
     (-rands [_] [x])
     proto/IReifiableConstraint
     (-reifyc [_ v r a]
@@ -2027,7 +2028,7 @@
        proto/IConstraintOp
        (-rator [_] (if (seq? pform)
                      `(predc ~pform)
-                     `predc))
+                     `cljs.core.logic/predc))
        (-rands [_] [x])
        proto/IReifiableConstraint
        (-reifyc [c v r s]
@@ -2065,7 +2066,7 @@
            (-runnable? [_]
              (every? #(ground-term? % s) args))))
        proto/IConstraintOp
-       (-rator [_] `nafc)
+       (-rator [_] `cljs.core.logic/nafc)
        (-rands [_] (vec (concat [c] args)))
        proto/IReifiableConstraint
        (-reifyc [_ v r s]
@@ -2133,7 +2134,7 @@
                  (runnable x s)
                  (not (lvar? xv)))))))
        proto/IConstraintOp
-       (-rator [_] `fixc)
+       (-rator [_] `cljs.core.logic/fixc)
        (-rands [_] (if (vector? x) x [x]))
        proto/IReifiableConstraint
        (-reifyc [c v r s]

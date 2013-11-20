@@ -171,7 +171,7 @@
               (or (not (nom? a))
                   (not (lvar? x))))))))
     proto/IConstraintOp
-    (-rator [_] `hash)
+    (-rator [_] `cljs.core.logic.nominal/hash)
     (-rands [_] [a x])
     proto/IReifiableConstraint
     (-reifyc [_ v r s]
@@ -232,7 +232,7 @@
           (-runnable? [_]
             (or (not (lvar? t1)) (not (lvar? t2)) (= t1 t2))))))
     proto/IConstraintOp
-    (-rator [_] `suspc)
+    (-rator [_] `cljs.core.logic.nominal/suspc)
     (-rands [_] [v1 v2])
     proto/IReifiableConstraint
     (-reifyc [c v r a]
