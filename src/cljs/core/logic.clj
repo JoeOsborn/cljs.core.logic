@@ -454,7 +454,7 @@
   (disj (set (apply concat syms)) '_))
 
 (defmacro -fnm [fn-gen t as & cs]
-  (binding [*locals* (env-locals as (keys &env))]
+  (binding [*locals* (env-locals xs (-> &env :locals keys))]
     `(~fn-gen [~@as] ~(handle-clauses t as cs))))
 
 (defmacro fnm
@@ -522,13 +522,13 @@
 (defmacro matcha
   "Define a soft cut pattern match. See conda."
   [xs & cs]
-  (binding [*locals* (env-locals xs (keys &env))]
+  (binding [*locals* (env-locals xs (-> &env :locals keys))]
     (handle-clauses `conda xs cs)))
 
 (defmacro matchu
   "Define a committed choice goal. See condu."
   [xs & cs]
-  (binding [*locals* (env-locals xs (keys &env))]
+  (binding [*locals* (env-locals xs (-> &env :locals keys))]
     (handle-clauses `condu xs cs)))
 
 (def membero
