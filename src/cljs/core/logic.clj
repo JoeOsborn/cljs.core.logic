@@ -438,7 +438,7 @@
   (disj (set (apply concat syms)) '_))
 
 (defmacro -fnm [fn-gen t as & cs]
-  (binding [*locals* (env-locals xs (-> &env :locals keys))]
+  (binding [*locals* (env-locals as (-> &env :locals keys))]
     `(~fn-gen [~@as] ~(handle-clauses t as cs))))
 
 (defmacro fnm
