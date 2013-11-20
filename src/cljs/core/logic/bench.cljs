@@ -19,9 +19,11 @@
                    [cljs.core.logic.pldb :as pldb :refer [db-rel with-db]]))
 
 (comment
-  (run* [q]
-    (nom/fresh [b]
-      (== b q))))
+  (defn bit-xoro
+    [x y r]
+    )
+
+  )
 
 (db-rel man p)
 (db-rel woman p)

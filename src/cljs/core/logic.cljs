@@ -8,14 +8,16 @@
                      lfirst lnext ifa -cached? -add reify-tabled
                      -reify-tabled reuse ready? subunify
                      unify-with-record unify-with-pmap -member-count]]
-            [cljs.reader :as reader])
+            [cljs.reader :as reader]
+            [cljs.core :as core])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]])
+                            matchu tabled let-dom fnc defnc]]
+                   [cljs.core.logic.bench :refer [some-identical?]])
   (:import [cljs.core.logic.protocols
             IBindable ITreeTerm IVar ITreeConstraint INonStorable IBind
             IMPlus ITake]))
@@ -329,7 +331,9 @@
   
   IAssociative
   (-contains-key? [this k]
-    (contains? #{:s :vs :cs :cq :cqs :oc} k))  
+    (some-identical? k #{:s :vs :cs :cq :cqs :oc})
+    ;; (contains? #{:s :vs :cs :cq :cqs :oc} k)
+    )
   (-assoc [this k v]
     (case k
       :s   (Substitutions. v vs ts cs cq cqs oc _meta)
