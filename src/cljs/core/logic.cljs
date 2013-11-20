@@ -47,8 +47,8 @@
 (defn dissoc-dom [x k]
   (assoc x :doms (dissoc (:doms x) k)))
 
-(defn record? [x]
-  (satisfies? cljs.core/IRecord x))
+(defn ^boolean record? [x]
+  (satisfies? IRecord x))
 
 ;; Pair
 
@@ -203,10 +203,9 @@
 
 (defrecord SubstValue [v doms eset]
   Object
-  (toString [_]
-    (str v)))
+  (toString [_] (str v)))
 
-(defn subst-val? [x]
+(defn ^boolean subst-val? [x]
   (instance? SubstValue x))
 
 (defn subst-val
@@ -293,23 +292,23 @@
   Object
   (toString [_] (str s))
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this o]
     (or (identical? this o)
         (and (instance? Substitutions o)
              (= s (:s o)))))
 
-  cljs.core/ICounted
+  ICounted
   (-count [this] (count s))
 
-  cljs.core/IMeta
+  IMeta
   (-meta [this] _meta)
 
-  cljs.core/IWithMeta
+  IWithMeta
   (-with-meta [this new-meta]
     (Substitutions. s vs ts cs cq cqs oc new-meta))
 
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -323,27 +322,16 @@
       :oc  oc
       not-found))
 
-  ;; (entryAt [this k]
-  ;;   (case k
-  ;;     :s   [:s s]
-  ;;     :vs  [:vs vs]
-  ;;     :ts  [:ts ts]
-  ;;     :cs  [:cs cs]
-  ;;     :cq  [:cq cq]
-  ;;     :cqs [:cqs cqs]
-  ;;     :oc  [:oc cqs]
-  ;;     nil))
-
-  cljs.core/ICollection
+  ICollection
   (-conj [this [k v]]
     (if (lvar? k)
       (assoc this k v)
       (throw (ex-info (str "key must be a logic var") {}))))
 
-  cljs.core/IEmptyableCollection
+  IEmptyableCollection
   (-empty [this] empty-s)
   
-  cljs.core/IAssociative
+  IAssociative
   (-contains-key? [this k]
     (contains? #{:s :vs :cs :cq :cqs :oc} k))  
   (-assoc [this k v]
@@ -545,7 +533,7 @@
 (def empty-s (make-s))
 (def empty-f (fn []))
 
-(defn subst? [x]
+(defn ^boolean subst? [x]
   (instance? Substitutions x))
 
 (defn to-s [v]
@@ -734,13 +722,13 @@
                   (str name))]
        (LVar. id unique name oname (hash name) nil))))
 
-(defn lvar? [x]
+(defn ^boolean lvar? [x]
   (satisfies? proto/IVar x))
 
 (defn lvars [n]
   (repeatedly n lvar))
 
-(defn bindable? [x]
+(defn ^boolean bindable? [x]
   (or (lvar? x)
       (satisfies? proto/IBindable x)))
 
@@ -874,7 +862,7 @@
 (defn ^boolean lcons? [x]
   (instance? LCons x))
 
-(defn tree-term? [x]
+(defn ^boolean tree-term? [x]
   (or (coll? x)
       (satisfies? proto/ITreeTerm x)))
 
@@ -1347,10 +1335,10 @@
 (defn make-suspended-stream [cache ansv* f]
   (SuspendedStream. cache ansv* f))
 
-(defn suspended-stream? [x]
+(defn ^boolean suspended-stream? [x]
   (instance? SuspendedStream x))
 
-(defn waiting-stream? [x]
+(defn ^boolean waiting-stream? [x]
   (vector? x))
 
 (defn waiting-stream-check
@@ -1518,10 +1506,10 @@
   (fn [a]
     (assoc a :cs (proto/runc (:cs a) c false))))
 
-(defn ientailed? [c]
+(defn ^boolean ientailed? [c]
   (satisfies? proto/IEntailed c))
 
-(defn entailed? [c c' a]
+(defn ^boolean entailed? [c c' a]
   (let [id (id c)]
     (and (or ((-> a :cs :cm) id)
              (nil? id))
@@ -1791,14 +1779,6 @@
             nil)
           :else (if-not (= u v) nil cs))))
 
-#_ (defn prefix-subsumes? [p pp]
-     (let [s (-> p meta :s)
-           sp (reduce (fn [s [lhs rhs]]
-                        (unify s lhs rhs))
-                      s pp)]
-       (when sp
-         (identical? s sp))))
-
 (defn recover-vars-from-term [x]
   (let [r (atom #{})]
     (proto/walk-term
@@ -1948,7 +1928,7 @@
   [m]
   (map->PMap m))
 
-(defn partial-map? [x]
+(defn ^boolean partial-map? [x]
   (instance? PMap x))
 
 (extend-protocol proto/IFeature
@@ -1993,7 +1973,7 @@
 ;; ===========================================================================
 ;; defnc
 
-(defn ground-term? [x s]
+(defn ^boolean ground-term? [x s]
   (letfn [(-ground-term? [x s]
             (let [x (walk s x)]
               (if (lvar? x)

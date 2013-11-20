@@ -16,30 +16,30 @@
                    [cljs.core.logic.fd :as fd]
                    [cljs.core.logic.pldb :as pldb]))
 
-;; (comment
-;;   (run* [q]
-;;     (== q true))
+(comment
+  (run* [q]
+    (== q true))
 
-;;   (dotimes [_ 10]
-;;     (time
-;;      (dotimes [_ 1e6]
-;;        (doall
-;;         (run* [q]
-;;           (== q true)))))))
+  (dotimes [_ 10]
+    (time
+     (dotimes [_ 10000]
+       (doall
+        (run* [q]
+          (== q true)))))))
 
-;; (comment
-;;   (run 1 [q]
-;;     (fresh [x y]
-;;       (appendo x y q)))
+(comment
+  (run 1 [q]
+    (fresh [x y]
+      (appendo x y q)))
 
-;;   ;; 453ms
-;;   (dotimes [_ 5]
-;;     (time
-;;      (dotimes [_ 1]
-;;        (doall
-;;         (run 700 [q]
-;;           (fresh [x y]
-;;             (appendo x y q))))))))
+  ;; 453ms
+  (dotimes [_ 5]
+    (time
+     (dotimes [_ 1]
+       (doall
+        (run 700 [q]
+          (fresh [x y]
+            (appendo x y q))))))))
 
 ;; ;; =============================================================================
 ;; ;; nrev
