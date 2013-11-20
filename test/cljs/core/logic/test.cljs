@@ -2293,11 +2293,11 @@
             (fd/dom y (fd/interval 1 10))) empty-s)]
     (is (nil? (verify-all-bound s [x y])))))
 
-;; (deftest test-verify-all-bound-2
-;;   (let [x (l/lvar 'x)
-;;         y (l/lvar 'y)
-;;         s ((fd/dom x (fd/interval 1 10)) empty-s)]
-;;     (is (thrown? Exception (verify-all-bound s [x y])))))
+(deftest test-verify-all-bound-2
+  (let [x (l/lvar 'x)
+        y (l/lvar 'y)
+        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+    (is (thrown? js/Error (verify-all-bound s [x y])))))
 
 (deftest test-enforce-constraints-1
   (let [x (l/lvar 'x)
@@ -2335,7 +2335,8 @@
   (let [x (l/lvar 'x)
         s ((composeg
             (fd/dom x (fd/interval 2 10))
-            (fd/dom x (fd/multi-interval (fd/interval 1 4) (fd/interval 6 10))))
+            (fd/dom x (fd/multi-interval (fd/interval 1 4)
+                                         (fd/interval 6 10))))
            empty-s)]
     (is (= (fd/get-dom s x)
            (fd/multi-interval (fd/interval 2 4) (fd/interval 6 10))))))

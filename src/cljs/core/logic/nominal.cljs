@@ -1,7 +1,20 @@
 (ns cljs.core.logic.nominal
   (:refer-clojure :exclude [== hash -hash])
-  (:require [cljs.core.logic :as l :refer [ext lvar?]]
-            [cljs.core.logic.protocols :as proto :refer [walk]]
+  (:require [cljs.core.logic :as l
+             :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
+                     walk* conso s# u# != copy-term rembero membero member1o
+                     emptyo resto firsto appendo reifyg partial-map predc
+                     featurec everyg composeg solutions pair ext-run-csg
+                     run-constraints* addcg make-cs var-rands force-ans
+                     verify-all-bound enforce-constraints add-attr entangle
+                     !=c nafc treec -reify tree-term? distribute rem-attr
+                     get-attr distincto cgoal lvar? remcg constrain-tree ext
+                     subst-val? unify occurs-check -reify*]]
+            [cljs.core.logic.protocols :as proto
+             :refer [walk ifa -step -rator addc -entailed? -runnable? id
+                     constraints-for take* root-var root-val -prefix
+                     -with-prefix tree-constraint? with-id remc
+                     -constrain-tree ext-run-cs ext-no-check walk-term]]
             [cljs.core :as core])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
