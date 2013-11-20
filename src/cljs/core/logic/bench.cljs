@@ -28,9 +28,9 @@
           (== q true)))))))
 
 (comment
-  (run 1 [q]
-    (fresh [x y]
-      (appendo x y q)))
+  (time (doall (run 100 [q]
+                 (fresh [x y]
+                   (appendo x y q)))))
 
   ;; 453ms
   (dotimes [_ 5]

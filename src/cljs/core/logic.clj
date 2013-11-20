@@ -52,9 +52,11 @@
        (composeg* ~@gs))))
 
 (defmacro bind*
-  ([a g] `(cljs.core.logic.protocols/bind ~a ~g))
+  ([a g] `(cljs.core.logic.protocols/bind
+           ~(vary-meta a {:tag 'not-native}) ~g))
   ([a g & g-rest]
-     `(bind* (cljs.core.logic.protocols/bind ~a ~g) ~@g-rest)))
+     `(bind* (cljs.core.logic.protocols/bind
+              ~(vary-meta a {:tag 'not-native}) ~g) ~@g-rest)))
 
 (defmacro mplus*
   ([e] e)

@@ -21,7 +21,7 @@
 
 (defprotocol INonStorable)
 
-(defn non-storable? [x]
+(defn ^boolean non-storable? [x]
   (satisfies? INonStorable x))
 
 ;; Utility Protocols
@@ -137,12 +137,12 @@
   (-id [c]))
 
 (defn id [c]
-  (if (satisfies? cljs.core.logic.protocols.IConstraintId c)
+  (if (satisfies? IConstraintId c)
     (-id c)
     (-> c meta ::id)))
 
 (defn with-id [c id]
-  (if (satisfies? cljs.core.logic.protocols.IWithConstraintId c)
+  (if (satisfies? IWithConstraintId c)
     (-with-id c id)
     (vary-meta c assoc ::id id)))
 
@@ -156,13 +156,13 @@
 (defprotocol IReifiableConstraint
   (-reifyc [c v r a]))
 
-(defn reifiable? [x]
-  (satisfies? cljs.core.logic.protocols.IReifiableConstraint x))
+(defn ^boolean reifiable? [x]
+  (satisfies? IReifiableConstraint x))
 
 (defprotocol IEnforceableConstraint)
 
-(defn enforceable? [x]
-  (satisfies? cljs.core.logic.protocols.IEnforceableConstraint x))
+(defn ^boolean enforceable? [x]
+  (satisfies? IEnforceableConstraint x))
 
 ;; cgoal
 
@@ -187,8 +187,8 @@
 
 (defprotocol ITreeConstraint)
 
-(defn tree-constraint? [x]
-  (satisfies? cljs.core.logic.protocols.ITreeConstraint x))
+(defn ^boolean tree-constraint? [x]
+  (satisfies? ITreeConstraint x))
 
 (defprotocol IPrefix
   (-prefix [c]))

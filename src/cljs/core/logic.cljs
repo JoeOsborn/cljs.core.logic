@@ -24,13 +24,9 @@
 (def ^:dynamic *logic-dbs* [])
 
 (def fk (js/Error.))
-
 (def fd ::fd)
-
 (def ff ::ff)
-
 (def nom ::nom)
-
 (def subst ::subst)
 
 ;; Utilities
@@ -42,10 +38,10 @@
   (with-meta x (dissoc (meta x) k)))
 
 (defn assoc-dom [x k v]
-  (assoc x :doms (assoc (:doms x) k v)))
+  (assoc x :doms (assoc (.-doms x) k v)))
 
 (defn dissoc-dom [x k]
-  (assoc x :doms (dissoc (:doms x) k)))
+  (assoc x :doms (dissoc (.-doms x) k)))
 
 (defn ^boolean record? [x]
   (satisfies? IRecord x))
@@ -57,7 +53,7 @@
   (toString [_]
     (str "(" lhs " . " rhs ")"))
   
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -66,10 +62,10 @@
       :rhs rhs
       not-found))
 
-  cljs.core/ICounted
+  ICounted
   (-count [_] 2)
 
-  cljs.core/IIndexed
+  IIndexed
   (-nth [this i]
     (case i
       0 lhs
@@ -81,20 +77,20 @@
       1 rhs
       not-found))
 
-  cljs.core/IMapEntry
+  IMapEntry
   (-key [_] lhs)
   (-val [_] rhs)
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [_ o]
     (if (instance? Pair o)
-      (and (= lhs (:lhs o))
-           (= rhs (:rhs o)))
+      (and (= lhs (.-lhs o))
+           (= rhs (.-rhs o)))
       false))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
-    (-write writer (str "(" (:lhs x) " . " (:rhs x) ")"))))
+    (-write writer (str "(" (.-lhs x) " . " (.-rhs x) ")"))))
 
 (defn- pair [lhs rhs]
   (Pair. lhs rhs))
@@ -122,7 +118,7 @@
 ;; running - set of running constraint ids
 
 (deftype ConstraintStore [km cm cid running]
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -138,7 +134,7 @@
     (let [vars (var-rands a c)
           c (proto/with-id c cid)
           cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
-      (ConstraintStore. (:km cs) (:cm cs) (inc cid) running)))
+      (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
 
   (updatec [this a c]
     (let [oc (cm (id c))
@@ -178,16 +174,16 @@
           nkm    (assoc (dissoc km x) root (into rootcs xcs))]
       (ConstraintStore. nkm cm cid running)))
 
-  cljs.core/ICounted
+  ICounted
   (-count [this] (count cm)))
 
 (defn add-var [cs x c]
   (when-not (lvar? x)
     (throw (ex-info
             (str "constraint store assoc expected logic var key: " x) {})))
-  (let [cm (:cm cs)
-        km (:km cs)
-        cid (:cid cs)
+  (let [cm (.-cm cs)
+        km (.-km cs)
+        cid (.-cid cs)
         nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
         ncm (assoc cm cid c)]
     (ConstraintStore. nkm ncm cid (:running cs))))
@@ -224,7 +220,7 @@
     (proto/occurs-check-term v u s)))
 
 (defn ext [s u v]
-  (if (and (:oc s) (occurs-check s u (if (subst-val? v) (:v v) v)))
+  (if (and (.-oc s) ^boolean (occurs-check s u (if (subst-val? v) (.-v v) v)))
     nil
     (ext-no-check s u v)))
 
@@ -267,10 +263,10 @@
 (defn -reify
   ([s v]
      (let [v (walk* s v)]
-       (walk* (-reify* (with-meta empty-s (meta s)) v) v)))
+       (walk* ^not-native (-reify* (with-meta empty-s (meta s)) v) v)))
   ([s v r]
      (let [v (walk* s v)]
-       (walk* (-reify* r v) v))))
+       (walk* ^not-native (-reify* r v) v))))
 
 (defn build [s u]
   (proto/build-term u s))
@@ -296,7 +292,7 @@
   (-equiv [this o]
     (or (identical? this o)
         (and (instance? Substitutions o)
-             (= s (:s o)))))
+             (= s (.-s o)))))
 
   ICounted
   (-count [this] (count s))
@@ -416,7 +412,7 @@
         this)))
 
   (update-var [this x v]
-    (assoc this :s (assoc (:s this) x v)))
+    (assoc this :s (assoc (.-s this) x v)))
 
   proto/IBind
   (bind [this g]    
@@ -442,8 +438,8 @@
         v (proto/root-val s x)]
     (if (subst-val? v)
       (let [new-meta (dissoc (meta v) attr)]
-        (if (and (zero? (count new-meta)) (not= (:v v) ::unbound))
-          (proto/update-var s x (:v v))
+        (if (and (zero? (count new-meta)) (not= (.-v v) ::unbound))
+          (proto/update-var s x (.-v v))
           (proto/update-var s x (with-meta v new-meta))))
       s)))
 
@@ -461,7 +457,7 @@
            (f s y)
            s)))
      s
-     (:eset v))
+     (.-eset v))
     s))
 
 (defn add-dom
@@ -487,7 +483,7 @@
            v (if (lvar? v)
                (subst-val ::unbound)
                v)
-           doms (:doms v)
+           doms (.-doms v)
            s (proto/update-var s x (assoc-dom v dom (f (get doms dom))))]
        (sync-eset s v seenset
                   (fn [s y]
@@ -500,9 +496,9 @@
   ([s x dom seenset]
      (let [v (proto/root-val s x)
            s (if (subst-val? v)
-               (let [new-doms (dissoc (:doms v) dom)]
-                 (if (and (zero? (count new-doms)) (not= (:v v) ::unbound))
-                   (proto/update-var s x (:v v))
+               (let [new-doms (dissoc (.-doms v) dom)]
+                 (if (and (zero? (count new-doms)) (not= (.-v v) ::unbound))
+                   (proto/update-var s x (.-v v))
                    (proto/update-var s x (assoc v :doms new-doms))))
                s)]
        (sync-eset s v seenset
@@ -530,7 +526,7 @@
          (assoc :oc oc)
          (assoc :ts (atom {})))))
 
-(def empty-s (make-s))
+(def ^not-native empty-s (make-s))
 (def empty-f (fn []))
 
 (defn ^boolean subst? [x]
@@ -609,7 +605,7 @@
 
 (deftype LVar [id unique name oname hash meta]
   proto/IVar
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -619,17 +615,17 @@
       :id id
       not-found))
 
-  cljs.core/IMeta
+  IMeta
   (-meta [this] meta)
 
-  cljs.core/IWithMeta
+  IWithMeta
   (-with-meta [this new-meta]
     (LVar. id unique name oname hash new-meta))
 
   Object
   (toString [_] (str "<lvar:" name ">"))
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this o]
     (if (satisfies? IVar o)
       (if unique
@@ -637,11 +633,11 @@
         (identical? name (:name o)))
       false))
 
-  cljs.core/IHash
+  IHash
   (-hash [_] hash)
 
   proto/IUnifyTerms
-  (unify-terms [u v s]
+  (unify-terms [u v ^not-native s]
     (cond
      (lvar? v)
      (let [repoint (cond
@@ -671,31 +667,31 @@
      :else nil))
 
   proto/IReifyTerm
-  (reify-term [v s]
+  (reify-term [v ^not-native s]
     (let [rf (-> s clojure.core/meta :reify-vars)]
       (if (fn? rf)
         (rf v s)
         (if rf
           (ext s v (reify-lvar-name s))
-          (ext s v (:oname v))))))
+          (ext s v (.-oname v))))))
 
   proto/IWalkTerm
   (walk-term [v f]
     (f v))
 
   proto/IOccursCheckTerm
-  (occurs-check-term [v x s] (= (walk s v) x))
+  (occurs-check-term [v x ^not-native s] (= (walk s v) x))
 
   proto/IBuildTerm
-  (build-term [u s]
-    (let [m (:s s)
-          cs (:cs s)
+  (build-term [u ^not-native s]
+    (let [m (.-s s)
+          cs (.-cs s)
           lv (lvar 'ignore)]
       (if (contains? m u)
         s
         (make-s (assoc m u lv) cs))))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<lvar:" (:name x) ">"))))
 
@@ -739,10 +735,10 @@
 
 (deftype LCons [a d ^:unsynchronized-mutable cache meta]
   proto/ITreeTerm  
-  cljs.core/IMeta
+  IMeta
   (-meta [this] meta)
   
-  cljs.core/IWithMeta
+  IWithMeta
   (-with-meta [this new-meta]
     (LCons. a d cache new-meta))
 
@@ -762,7 +758,7 @@
                     (str "(" a " " (proto/toShortString d) ")")
                     :else (str "(" a " . " d ")")))
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this o]
     (or (identical? this o)
         (and (instance? LCons o)
@@ -781,9 +777,9 @@
                        (recur (lnext me) (lnext you))))
                 :else (= me you))))))
 
-  cljs.core/IHash
+  IHash
   (-hash [this]
-    (if (cljs.core/== cache -1)
+    (if (== cache -1)
       (do
         (set! cache (uai (umi (int 31) (hash d))
                          (hash a)))
@@ -791,7 +787,7 @@
       cache))
 
   proto/IUnifyTerms
-  (unify-terms [u v s]
+  (unify-terms [^not-native u ^not-native v ^not-native s]
     (cond
      (sequential? v)
      (loop [u u v (seq v) s s]
@@ -834,7 +830,7 @@
            (f (lnext v))))
 
   proto/IOccursCheckTerm
-  (occurs-check-term [v x s]
+  (occurs-check-term [v x ^not-native s]
     (loop [v v x x s s]
       (if (lcons? v)
         (or (occurs-check s x (lfirst v))
@@ -848,7 +844,7 @@
         (recur (lnext u) (build s (lfirst u)))
         (build s u))))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str x))))
 
@@ -869,13 +865,13 @@
 ;; ==========================================================================
 ;; Unification
 
-(defn unify-with-sequential* [u v s]
+(defn unify-with-sequential* [^not-native u ^not-native v ^not-native s]
   (cond
    (sequential? v)
    (if (and (counted? u) (counted? v)
             (not (= (count u) (count v))))
      nil
-     (loop [u (seq u) v (seq v) s s]
+     (loop [^not-native u (-seq u) ^not-native v (-seq v) s s]
        (if-not (nil? u)
          (if-not (nil? v)
            (if-let [s (unify s (first u) (first v))]
@@ -930,7 +926,7 @@
   (reify-term [v s] s)
 
   default
-  (reify-term [v s]
+  (reify-term [v ^not-native s]
     (cond (coll? v)
           (loop [v v s s]
             (if (seq v)
@@ -951,6 +947,17 @@
         r))
     (meta v)))
 
+(defn walk-term-map*
+  [^not-native v f]
+  (with-meta
+    (loop [^not-native v v ^not-native r (transient {})]
+      (if (seq v)
+        (let [[vfk vfv] (first v)]
+          (recur (next v) (assoc! r (proto/walk-term (f vfk) f)
+                                  (proto/walk-term (f vfv) f))))
+        (persistent! r)))
+    (meta v)))
+
 (extend-protocol proto/IWalkTerm
   nil
   (walk-term [v f] (f nil))
@@ -961,23 +968,20 @@
           (with-meta
             (doall (map #(proto/walk-term (f %) f) v))
             (meta v))
-          (map? v)
-          (if (record? v)
-            (walk-record-term v f)
-            (with-meta
-              (loop [v v r (transient {})]
-                (if (seq v)
-                  (let [[vfk vfv] (first v)]
-                    (recur (next v) (assoc! r (proto/walk-term (f vfk) f)
-                                            (proto/walk-term (f vfv) f))))
-                  (persistent! r)))
-              (meta v)))
+          (record? v)
+          (walk-record-term v f)
           :else (f v)))
 
-  cljs.core/PersistentVector
+  PersistentHashMap
+  (walk-term [v f] (walk-term-map* v f))
+
+  PersistentArrayMap
+  (walk-term [v f] (walk-term-map* v f))
+
+  PersistentVector
   (walk-term [v f]
     (with-meta
-      (loop [v v r (transient [])]
+      (loop [v v ^not-native r (transient [])]
         (if (seq v)
           (recur (next v) (conj! r (proto/walk-term (f (first v)) f)))
           (persistent! r)))
@@ -1024,7 +1028,7 @@
          (and a (g1 a))))))
 
 (deftype Choice [a f]
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -1112,8 +1116,6 @@
           ap)))))
 
 (declare reifyg)
-
-(def ^:dynamic *logic-dbs* [])
 
 (defn solutions
   ([s g]
@@ -1297,14 +1299,14 @@
   (toString [this]
     (str "<answer-cache:" (pr-str ansl) ">"))
 
-  cljs.core/IMeta
+  IMeta
   (-meta [_] _meta)
 
-  cljs.core/IWithMeta
+  IWithMeta
   (-with-meta [_ new-meta]
     (AnswerCache. ansl anss new-meta))
 
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -1320,7 +1322,7 @@
     (let [anss anss]
       (contains? anss x)))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str x))))
 
@@ -1428,7 +1430,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Waiting Stream
 
-(extend-type cljs.core/PersistentVector
+(extend-type PersistentVector
   proto/IBind
   (bind [this g]
     (waiting-stream-check
@@ -1636,7 +1638,7 @@
 
 (defn cgoal [c]
   (reify
-    cljs.core/IFn
+    IFn
     (-invoke [_ a]
       (let [c' (proto/-step c a)]
         (if (proto/-runnable? c')
@@ -1806,7 +1808,7 @@
     proto/IConstraintStep
     (-step [this s]
       (reify
-        cljs.core/IFn
+        IFn
         (-invoke [_ s]
           (let [p (loop [sp (seq p) p p]                    
                     (if sp
@@ -1943,7 +1945,7 @@
     proto/IConstraintStep
     (-step [this s]
       (reify
-        cljs.core/IFn
+        IFn
         (-invoke [_ s]
           ((composeg
             (== fs x)
@@ -2001,7 +2003,7 @@
        proto/IConstraintStep
        (-step [this s]
          (reify
-           cljs.core/IFn
+           IFn
            (-invoke [_ s]
              (let [x (walk s x)]
                (when (p x)
@@ -2042,7 +2044,7 @@
        proto/IConstraintStep
        (-step [this s]
          (reify
-           cljs.core/IFn
+           IFn
            (-invoke [_ s]
              (when-not (tramp ((apply c args) s))
                ((remcg this) s)))
@@ -2109,7 +2111,7 @@
        (-step [this s]
          (let [xv (walk s x)]
            (reify
-             cljs.core/IFn
+             IFn
              (-invoke [_ s]
                ((composeg (f xv s reifier) (remcg this)) s))
              proto/IRunnable
