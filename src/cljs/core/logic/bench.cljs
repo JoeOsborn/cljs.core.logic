@@ -1,9 +1,10 @@
 (ns cljs.core.logic.bench
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l :refer [== appendo !=]]
+            [cljs.core.logic :as l :refer [== appendo != s# u#]]
             [cljs.core.logic.fd :as fd]
             [cljs.core.logic.pldb :as pldb :refer [db-fact]]
+            [cljs.core.logic.nominal :as nom]
             [clojure.set :as set])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -13,8 +14,14 @@
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]
                    [cljs.core.logic.arithmetic :as a]
-                   [cljs.core.logic.fd :as fd]
+                   [cljs.core.logic.fd :as fd :refer [in]]
+                   [cljs.core.logic.nominal :as nom]
                    [cljs.core.logic.pldb :as pldb :refer [db-rel with-db]]))
+
+(comment
+  (run* [q]
+    (nom/fresh [b]
+      (== b q))))
 
 (db-rel man p)
 (db-rel woman p)
