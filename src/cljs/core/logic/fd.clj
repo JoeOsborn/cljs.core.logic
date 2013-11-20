@@ -59,8 +59,8 @@
         domsym (gensym "dom_")]
     `(let [~domsym ~dom]
        (fresh []
-         ~@(map (fn [x]
-                  `(dom ~x ~domsym))
+         ~@(map (fn [x#]
+                  `(dom ~x# ~domsym))
                 xs)))))
 
 (def binops->fd

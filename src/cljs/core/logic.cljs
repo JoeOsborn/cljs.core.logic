@@ -7,7 +7,7 @@
                      tree-constraint? take* unify-terms ext-no-check id bind
                      lfirst lnext ifa -cached? -add reify-tabled
                      -reify-tabled reuse ready? subunify
-                     unify-with-record unify-with-pmap]]
+                     unify-with-record unify-with-pmap -member-count]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -26,6 +26,10 @@
 (def fk (js/Error.))
 
 (def fd ::fd)
+
+(def ff ::ff)
+
+(def nom ::nom)
 
 (def subst ::subst)
 
@@ -2115,7 +2119,7 @@
 
 (defn constrain-tree [t fc]
   (fn [a]
-    (-constrain-tree t fc a)))
+    (proto/-constrain-tree t fc a)))
 
 (defn -fixc
   ([x f reifier] (-fixc x f nil reifier))

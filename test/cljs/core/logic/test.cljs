@@ -2,14 +2,17 @@
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto
              :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for]]
+                     constraints-for take* root-var root-val -prefix
+                     -with-prefix tree-constraint? -constrain-tree
+                     with-id remc]]
             [cljs.core.logic :as l
              :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
                      featurec everyg composeg solutions pair ext-run-csg
-                     run-constraints* addcg make-cs var-rands
-                     ]]
+                     run-constraints* addcg make-cs var-rands force-ans
+                     verify-all-bound enforce-constraints add-attr entangle
+                     !=c nafc treec -reify tree-term?]]
             [cljs.core.logic.fd :as fd :refer [interval]]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
@@ -21,7 +24,7 @@
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :refer [in extend-to-fd fd]]))
+                   [cljs.core.logic.fd :refer [in extend-to-fd eq]]))
 
 (deftest unify-nil-object-1
   (is (= (l/unify empty-s nil 1) nil)))
@@ -2141,7 +2144,7 @@
         w (l/lvar 'w)
         c (fd/+c u v w)
         cs (addc (make-cs) empty-s c)
-        sc (first (constraints-for cs empty-s u ::l/fd))]
+        sc (first (constraints-for cs empty-s u l/fd))]
     (is (= (id sc) 0))
     (is (= (count (:km cs)) 2))
     (is (= (count (:cm cs)) 1))))
@@ -2178,7 +2181,7 @@
         w (l/lvar 'w)
         c (fd/+c u v w)
         s ((addcg c) empty-s)
-        c (first (constraints-for (:cs s) s u ::l/fd))
+        c (first (constraints-for (:cs s) s u l/fd))
         s (-> s
               (proto/ext-run-cs u 1)
               (proto/ext-run-cs w 2))]
@@ -2204,7 +2207,7 @@
     (is (= 10 (fd/-ub mi)))))
 
 (deftest test-run-constraints*
-  (is (= (run-constraints* [] [] ::l/subst) s#)))
+  (is (= (run-constraints* [] [] l/subst) s#)))
 
 (deftest test-drop-one-1
   (is (= (:s (fd/-drop-one (fd/domain 1 2 3)))
@@ -2256,4 +2259,93 @@
                             ((fd/map-sum (fn [v] (ext-run-csg x v)))
                              (fd/to-vals (fd/interval 1 10)))))
            '(1 2 3 4 5 6 7 8 9 10)))))
+
+(deftest test-force-ans-1
+  (let [x (l/lvar 'x)
+        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+    (is (= (take 10
+                 (solutions s x
+                            (force-ans x)))
+           '(1 2 3 4 5 6 7 8 9 10)))))
+
+(deftest test-force-ans-2
+  (let [x (l/lvar 'x)
+        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+    (is (= (take 10
+                 (solutions s x
+                            (force-ans [x])))
+           '(1 2 3 4 5 6 7 8 9 10)))))
+
+(deftest test-force-ans-3
+  (let [x (l/lvar 'x)
+        s ((fd/dom x (fd/multi-interval (fd/interval 1 4) (fd/interval 6 10)))
+           empty-s)]
+    (is (= (take 10
+                 (solutions s x
+                            (force-ans x)))
+           '(1 2 3 4 6 7 8 9 10)))))
+
+(deftest test-verify-all-bound-1
+  (let [x (l/lvar 'x)
+        y (l/lvar 'y)
+        s ((composeg
+            (fd/dom x (fd/interval 1 10))
+            (fd/dom y (fd/interval 1 10))) empty-s)]
+    (is (nil? (verify-all-bound s [x y])))))
+
+;; (deftest test-verify-all-bound-2
+;;   (let [x (l/lvar 'x)
+;;         y (l/lvar 'y)
+;;         s ((fd/dom x (fd/interval 1 10)) empty-s)]
+;;     (is (thrown? Exception (verify-all-bound s [x y])))))
+
+(deftest test-enforce-constraints-1
+  (let [x (l/lvar 'x)
+        s ((fd/dom x (fd/interval 1 3)) empty-s)]
+    (is (= (solutions s x (enforce-constraints x))
+           '(1 2 3)))))
+
+(deftest test-reifyg-1
+  (let [x (l/lvar 'x)
+        y (l/lvar 'y)
+        s ((composeg
+            (fd/dom x (fd/interval 1 10))
+            (fd/dom y (fd/interval 1 5))) empty-s)
+        s ((fd/== x y) s)]
+    (is (= (take* ((reifyg x) s))
+           '(1 2 3 4 5)))))
+
+(deftest test-process-interval-smaller-1
+  (let [x (l/lvar 'x)
+        s ((composeg
+            (fd/dom x (fd/interval 1 10))
+            (fd/dom x (fd/interval 2 10))) empty-s)]
+    (is (= (fd/get-dom s x)
+           (fd/interval 2 10)))))
+
+(deftest test-boundary-interval-1
+  (is (fd/-difference (fd/interval 1 10) 1)
+      (fd/interval 2 10)))
+
+(deftest test-boundary-interval-1
+  (is (fd/-difference (fd/interval 1 10) 10)
+      (fd/interval 1 9)))
+
+(deftest test-process-imi-1
+  (let [x (l/lvar 'x)
+        s ((composeg
+            (fd/dom x (fd/interval 2 10))
+            (fd/dom x (fd/multi-interval (fd/interval 1 4) (fd/interval 6 10))))
+           empty-s)]
+    (is (= (fd/get-dom s x)
+           (fd/multi-interval (fd/interval 2 4) (fd/interval 6 10))))))
+
+(deftest test-root-var-1
+  (let [x (l/lvar 'x)
+        y (l/lvar 'y)
+        s (-> empty-s
+              (proto/ext-no-check x 1)
+              (proto/ext-no-check y x))]
+    (is (= (root-var s y) x))))
+
 

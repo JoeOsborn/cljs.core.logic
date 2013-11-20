@@ -1,6 +1,0 @@
-"Error evaluating:" (if-let [pst+ (clojure.core/resolve (quote clj-stacktrace.repl/pst+))] (pst+ *e) (clojure.stacktrace/print-stack-trace *e)) :as "var temp__4092__auto___216936 = cljs.core.resolve.call(null,new cljs.core.Symbol(\"clj-stacktrace.repl\",\"pst+\",\"clj-stacktrace.repl/pst+\",1078496156,null));if(cljs.core.truth_(temp__4092__auto___216936))\n{var pst_PLUS__216937 = temp__4092__auto___216936;pst_PLUS__216937.call(null,cljs.core.logic.test._STAR_e);\n} else\n{clojure.stacktrace.print_stack_trace.call(null,cljs.core.logic.test._STAR_e);\n}\n"
-#<TypeError: 'undefined' is not an object (evaluating 'cljs.core.resolve.call')>
-TypeError: 'undefined' is not an object (evaluating 'cljs.core.resolve.call')
-    at :1
-    at :6
-    at :10

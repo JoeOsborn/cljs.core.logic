@@ -188,7 +188,7 @@
 (defprotocol ITreeConstraint)
 
 (defn tree-constraint? [x]
-  (satisfies? clojure.core.logic.protocols.ITreeConstraint x))
+  (satisfies? cljs.core.logic.protocols.ITreeConstraint x))
 
 (defprotocol IPrefix
   (-prefix [c]))

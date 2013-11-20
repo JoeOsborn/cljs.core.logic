@@ -12,7 +12,7 @@
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :refer [in extend-to-fd fd]])
+                   [cljs.core.logic.fd :refer [in extend-to-fd eq]])
   (:import [cljs.core.logic.protocols IEnforceableConstraint]))
 
 (defprotocol IInterval
@@ -1207,3 +1207,4 @@
    [hints b1]
    (doall (sudokufd hints)) 10)
   (sudokufd b1))
+
