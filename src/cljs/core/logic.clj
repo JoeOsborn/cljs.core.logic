@@ -56,22 +56,6 @@
   ([a g & g-rest]
      `(bind* (cljs.core.logic.protocols/bind ~a ~g) ~@g-rest)))
 
-;; (defmacro composeg*
-;;   [g0 & gs]
-;;   `((fn composeg# [g0# & gs#]
-;;       (if-not (seq gs#)
-;;         g0#
-;;         (apply cljs.core.logic/composeg (cons g0# (apply composeg# gs#)))))
-;;     ~g0 ~@gs))
-
-;; (defmacro bind*
-;;   [a g & g-rest]
-;;   `((fn [a# g# & g-rest#]
-;;       (if-not (seq g-rest#)
-;;         `(cljs.core.logic.protocols/bind ~a# ~g#)
-;;         `(recur (cljs.core.logic.protocols/bind ~a# ~g#) ~@g-rest#)))
-;;     ~a ~g ~@g-rest))
-
 (defmacro mplus*
   ([e] e)
   ([e & e-rest]
