@@ -1,9 +1,9 @@
 (ns cljs.core.logic.bench
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l :refer [== appendo]]
+            [cljs.core.logic :as l :refer [== appendo !=]]
             [cljs.core.logic.fd :as fd]
-            [cljs.core.logic.pldb :as pldb]
+            [cljs.core.logic.pldb :as pldb :refer [db-fact]]
             [clojure.set :as set])
   (:require-macros [cljs.core.logic
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -14,7 +14,104 @@
                             matchu tabled let-dom fnc defnc]]
                    [cljs.core.logic.arithmetic :as a]
                    [cljs.core.logic.fd :as fd]
-                   [cljs.core.logic.pldb :as pldb]))
+                   [cljs.core.logic.pldb :as pldb :refer [db-rel with-db]]))
+
+(db-rel man p)
+(db-rel woman p)
+(db-rel likes p1 p2)
+(db-rel fun p)
+
+(let [facts
+      (pldb/db
+       [man 'Bob]
+       [man 'John]
+       [man 'Ricky]
+       [woman 'Mary]
+       [woman 'Martha]
+       [woman 'Lucy]
+       [likes 'Bob 'Mary]
+       [likes 'John 'Martha]
+       [likes 'Ricky 'Lucy]
+       [fun 'Lucy])]
+  (with-db facts
+    (doall
+     (run* [q]
+       (fresh [x y]
+         (fun y)
+         (likes x y)
+         (== q [x y]))))))
+
+(defne moveo [before action after]
+  ([[:middle :onbox :middle :hasnot]
+    :grasp
+    [:middle :onbox :middle :has]])
+  ([[pos :onfloor pos has]
+    :climb
+    [pos :onbox pos has]])
+  ([[pos1 :onfloor pos1 has]
+    :push
+    [pos2 :onfloor pos2 has]])
+  ([[pos1 :onfloor box has]
+    :walk
+    [pos2 :onfloor box has]]))
+
+(defne cangeto [state out]
+  ([[_ _ _ :has] true])
+  ([_ _] (fresh [action next]
+           (moveo state action next)
+           (cangeto next out))))
+(comment
+  (run 1 [q]
+    (cangeto [:atdoor :onfloor :atwindow :hasnot] q)))
+
+(defna findo [x l o]
+  ([_ [[y :- o] . _] _]
+     (project [x y] (== (= x y) true)))
+  ([_ [_ . c] _] (findo x c o)))
+
+(defn typedo [c x t]
+  (conda
+   [(lvaro x) (findo x c t)]
+   [(matche [c x t]
+            ([_ [[y] :>> a] [s :> t]]
+               (fresh [l]
+                 (conso [y :- s] c l)
+                 (typedo l a t)))
+            ([_ [:apply a b] _]
+               (fresh [s]
+                 (typedo c a [s :> t])
+                 (typedo c b s))))]))
+
+(comment
+  ;; ([_.0 :> _.1])
+  (run* [q]
+    (fresh [f g a b t]
+      (typedo [[f :- a] [g :- b]] [:apply f g] t)
+      (== q a)))
+  
+  ;; ([:int :> _.0])
+  (run* [q]
+    (fresh [f g a t]
+      (typedo [[f :- a] [g :- :int]] [:apply f g] t)
+      (== q a)))
+
+  ;; (:int)
+  (run* [q]
+    (fresh [f g a t]
+      (typedo [[f :- [:int :> :float]] [g :- a]]
+              [:apply f g] t)
+      (== q a)))
+
+  ;; ()
+  (run* [t]
+    (fresh [f a b]
+      (typedo [f :- a] [:apply f f] t)))
+
+  ;; ([_.0 :> [[_.0 :> _.1] :> _.1]])
+  (run* [t]
+    (fresh [x y]
+      (typedo [] [[x] :>> [[y] :>> [:apply y x]]] t))))
+
 
 (comment
   (run* [q]
