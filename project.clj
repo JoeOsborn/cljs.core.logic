@@ -4,7 +4,7 @@
   :license {:name ""
             :url ""}
   :dependencies [[org.clojure/clojure "1.6.0-alpha2"]
-                 [org.clojure/clojurescript "0.0-2030"]
+                 [org.clojure/clojurescript "0.0-2060"]
                  [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
                  [org.clojure/tools.namespace "0.2.4"]
                  [org.clojure/data.generators "0.1.2"]
@@ -19,9 +19,11 @@
             [lein-cljsbuild "1.0.0"]]
   :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds [{:source-paths ["src"]
-                        :compiler {:output-to "main.js"}
-                        :libs [""]}
+                        :compiler {:output-to "main.js"
+                                   :pretty-print true
+                                   :libs [""]}}
                        {:source-paths ["src"]
                         :compiler {:output-to "adv.js"
                                    :optimizations :advanced
+                                   :pretty-print true
                                    :libs [""]}}]})
