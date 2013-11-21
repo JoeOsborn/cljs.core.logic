@@ -12,8 +12,7 @@
    [clojure.test :as test]
    [clojure.tools.namespace.repl :refer (refresh refresh-all)]
    [cemerick.austin]
-   [cemerick.austin.repls :refer [exec]]
-   [cljs.core.logic]))
+   [cemerick.austin.repls :refer [exec]]))
 
 (def system
   "A Var containing an object representing the application under
