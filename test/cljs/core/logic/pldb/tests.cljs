@@ -19,21 +19,20 @@
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic
+                   [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :refer [in extend-to-fd eq]]
-                   [cljs.core.logic.pldb :as pldb]))
+                            matchu tabled let-dom fnc defnc in extend-to-fd
+                            eq db-rel with-db with-dbs]]))
 
 ;; from core.logic tests
-(pldb/db-rel man p)
-(pldb/db-rel woman p)
-(pldb/db-rel likes p1 p2)
-(pldb/db-rel fun p)
+(db-rel man p)
+(db-rel woman p)
+(db-rel likes p1 p2)
+(db-rel fun p)
 
 (def facts0
   (pldb/db
@@ -53,7 +52,7 @@
                 (pldb/db-fact fun 'Lucy)))
 
 (deftest test-facts0
-  ( pldb/with-db facts0
+  (with-db facts0
     (is (=
          (run* [q]
            (fresh [x y]
@@ -63,7 +62,7 @@
          '()))))
 
 (deftest test-facts1
-  (pldb/with-db facts1
+  (with-db facts1
     (is (=
          (run* [q]
            (fresh [x y]
@@ -77,7 +76,7 @@
       (pldb/db-retraction likes 'Bob 'Mary)))
 
 (deftest test-rel-retract
-  (pldb/with-db facts1-retracted
+  (with-db facts1-retracted
     (is (= (into #{}
                  (run* [q]
                    (fresh [x y]
@@ -85,12 +84,12 @@
                      (l/== q [x y]))))
            (into #{} '([John Martha] [Ricky Lucy]))))))
 
-(pldb/db-rel rel1 ^:index a)
+(db-rel rel1 ^:index a)
 (def indexed-db
   (pldb/db [rel1 [1 2]]))
 
 (deftest test-rel-logic-29
-  (pldb/with-db indexed-db
+  (with-db indexed-db
     (is (=
          (run* [q]
            (fresh [a]
@@ -98,7 +97,7 @@
              (l/== a 2)))
          '(1)))))
 
-(pldb/db-rel rel2 ^:index e ^:index a ^:index v)
+(db-rel rel2 ^:index e ^:index a ^:index v)
 (def facts2
   (pldb/db
    [rel2 :e1 :a1 :v1]
@@ -119,7 +118,7 @@
 
 (deftest rel2-dup-retractions
   (is (= #{[:e1 :a1 :v1] [:e1 :a2 :v2]}
-         (pldb/with-db facts2
+         (with-db facts2
            (into #{}
                  (run* [out]
                    (fresh [e a v]
@@ -127,7 +126,7 @@
                      (rel2 e a v)
                      (l/== [e a v] out)))))))
   (is (= #{}
-         (pldb/with-db facts2-retracted1
+         (with-db facts2-retracted1
            (into #{}
                  (run* [out]
                    (fresh [e a v]
@@ -135,7 +134,7 @@
                      (rel2 e a v)
                      (l/== [e a v] out)))))))
   (is (= #{[:e1 :a1 :v1]}
-         (pldb/with-db facts2-retracted2
+         (with-db facts2-retracted2
            (into #{}
                  (run* [out]
                    (fresh [e a v]
@@ -143,7 +142,7 @@
                      (rel2 e a v)
                      (l/== [e a v] out)))))))
   (is (= #{}
-         (pldb/with-db facts2-retracted-all
+         (with-db facts2-retracted-all
            (into #{}
                  (run* [out]
                    (fresh [e a v]
@@ -154,8 +153,8 @@
 
 ;; ----------------------------------------
 
-(pldb/db-rel protocol name port-number)
-(pldb/db-rel open-port ip port-number)
+(db-rel protocol name port-number)
+(db-rel open-port ip port-number)
 
 (def known-ports
   (pldb/db
@@ -200,35 +199,35 @@
 
 (deftest merge-same-relationship
   (is (= #{:10.0.1.19}
-         (pldb/with-db network1
+         (with-db network1
            (set (run* [ip]
                   (open-port ip 143))))))
 
   (is (= #{:192.168.128.140}
-         (pldb/with-db network2
+         (with-db network2
            (set (run* [ip]
                   (open-port ip 143))))))
 
   (is (= #{:192.168.128.140 :10.0.1.19}
-         (pldb/with-db network1
-           (pldb/with-db network2
+         (with-db network1
+           (with-db network2
              (set (run* [ip]
                     (open-port ip 143)))))))
 
   (is (= #{:192.168.128.140 :10.0.1.19}
-         (pldb/with-db network2
-           (pldb/with-db network1
+         (with-db network2
+           (with-db network1
              (set (run* [ip]
                     (open-port ip 143)))))))
 
   (is (= #{:192.168.128.140 :10.0.1.19}
-         (pldb/with-dbs [network1 network2]
+         (with-dbs [network1 network2]
            (set (run* [ip]
                   (open-port ip 143)))))))
 
 (deftest merge-across-relationship
   (is (= #{:10.0.1.136 :192.168.128.217}
-         (pldb/with-dbs [known-ports network1 network2]
+         (with-dbs [known-ports network1 network2]
            (set (run* [ip]
                   (fresh [http-port https-port]
                     (protocol :http http-port)
@@ -240,7 +239,7 @@
 
 ;; ----------------------------------------
 
-(pldb/db-rel rps move)
+(db-rel rps move)
 (def moves-db (pldb/db
                [rps :rock]
                [rps :paper]
@@ -248,10 +247,10 @@
 
 (deftest test-lazy
   (is (= (into #{}
-               (pldb/with-db moves-db
+               (with-db moves-db
                  (run* [q] (rps q))))
 
-         (pldb/with-db moves-db
+         (with-db moves-db
            (into #{}
                  (run* [q] (rps q))))
 

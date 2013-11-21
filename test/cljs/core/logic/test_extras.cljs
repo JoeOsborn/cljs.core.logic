@@ -18,14 +18,14 @@
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic
+                   [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :refer [in extend-to-fd eq]]))
+                            matchu tabled let-dom fnc defnc in extend-to-fd
+                            eq]]))
 
 (deftest test-ckanren-1
   (is (= (into #{}

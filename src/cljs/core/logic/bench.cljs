@@ -6,17 +6,15 @@
             [cljs.core.logic.pldb :as pldb :refer [db-fact]]
             [cljs.core.logic.nominal :as nom]
             [clojure.set :as set])
-  (:require-macros [cljs.core.logic
+  (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.arithmetic :as a]
-                   [cljs.core.logic.fd :as fd :refer [in]]
-                   [cljs.core.logic.nominal :as nom]
-                   [cljs.core.logic.pldb :as pldb :refer [db-rel with-db]]))
+                            matchu tabled let-dom fnc defnc in db-rel
+                            with-db]]
+                   [cljs.core.logic.nominal.macros :as nom]))
 
 (comment
   ;; (defn bit-xoro

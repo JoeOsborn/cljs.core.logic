@@ -5,14 +5,14 @@
             [cljs.core :as core]
             [clojure.set :as set]
             [clojure.string :as string])
-  (:require-macros [cljs.core.logic
+  (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :as fd :refer [in extend-to-fd eq]]))
+                            matchu tabled let-dom fnc defnc in extend-to-fd
+                            eq]]))
 
 (defprotocol IInterval
   (-lb [this])

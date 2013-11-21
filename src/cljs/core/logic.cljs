@@ -10,7 +10,7 @@
                      unify-with-record unify-with-pmap -member-count]]
             [cljs.reader :as reader]
             [cljs.core :as core])
-  (:require-macros [cljs.core.logic
+  (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s

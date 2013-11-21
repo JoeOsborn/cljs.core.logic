@@ -1,15 +1,14 @@
 (ns cljs.core.logic.pldb
   (:refer-clojure :exclude [indexed? ==])
   (:require [cljs.core.logic :as l :refer [==]])
-  (:require-macros [cljs.core.logic
+  (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.pldb
-                    :refer [with-db with-dbs db-rel]]))
+                            matchu tabled let-dom fnc defnc with-db with-dbs
+                            db-rel]]))
 
 ;; ----------------------------------------
 
