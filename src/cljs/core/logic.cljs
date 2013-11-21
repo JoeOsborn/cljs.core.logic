@@ -18,7 +18,7 @@
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]))
 
-(def ^:dynamic *locals* nil)
+
 (def ^:dynamic *logic-dbs* [])
 
 (def fk (js/Error.))

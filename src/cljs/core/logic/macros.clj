@@ -24,11 +24,11 @@
 
 (defmacro umi
   [& args]
-  `(cljs.core/unchecked-multiply-int ~@args))
+  `(unchecked-multiply-int ~@args))
 
 (defmacro uai
   [& args]
-  `(cljs.core/unchecked-add-int ~@args))
+  `(unchecked-add-int ~@args))
 
 (defmacro llist
   "Constructs a sequence from 2 or more arguments, with the last argument as 
@@ -39,7 +39,7 @@
 (defmacro composeg*
   ([g0] g0)
   ([g0 & gs]
-     `(composeg
+     `(cljs.core.logic/composeg
        ~g0
        (composeg* ~@gs))))
 
@@ -103,9 +103,10 @@
                 (fn []
                   ((fresh [~x]
                      ~@goals
-                     (reifyg ~x))
-                   (tabled-s (:occurs-check opts#)
-                             (merge {:reify-vars true} opts#)))))]
+                     (cljs.core.logic/reifyg ~x))
+                   (cljs.core.logic/tabled-s
+                    (:occurs-check opts#)
+                    (merge {:reify-vars true} opts#)))))]
        (if-let [n# (:n opts#)]
          (take n# xs#)
          xs#))))
@@ -380,7 +381,7 @@
                (ex vs t a))))))
 
 (defn- all-blank? [p]
-  (every? #(clojure.core/= % '_) p))
+  (every? #(identical? % '_) p))
 
 (defn- handle-clause [as]
   (when-not (vector? as)
@@ -435,10 +436,12 @@
   (binding [*locals* (env-locals as (keys &env))]
     `(~fn-gen [~@as] ~(handle-clauses t as cs))))
 
+(def keyword-identical? identical?)
+
 (defmacro fnm
   {:arglists '([t as tabled? & cs])}
   [t as & cs]
-  (if-let [cs (and (clojure.core/= (first cs) :tabled) (rest cs))]
+  (if-let [cs (and (keyword-identical? (first cs) :tabled) (rest cs))]
     `(-fnm tabled ~t ~as ~@cs)
     `(-fnm fn ~t ~as ~@cs)))
 
@@ -509,14 +512,6 @@
   (binding [*locals* (env-locals xs (-> &env :locals keys))]
     (handle-clauses `condu xs cs)))
 
-(def membero
-  '(defne membero
-     "A relation where l is a collection, such that l contains x."
-     [x l]
-     ([_ [x . tail]])
-     ([_ [head . tail]]
-        (membero x tail))))
-
 ;; -----------------------------------------------------------------------------
 ;; Syntax
 
@@ -530,7 +525,7 @@
       `(fn ~uuid [~@args]
          (let [argv# ~args]
            (fn [a#]
-             (let [key#    (-reify a# argv#)
+             (let [key#    (cljs.core.logic/-reify a# argv#)
                    tables# (:ts a#)
                    tables# (if-not (contains? @tables# ~uuid)
                              (swap! tables#
@@ -550,7 +545,7 @@
                        cache# (get table# key#)]
                    ((fresh []
                       ~@grest
-                      (master argv# cache#)) a#))
+                      (cljs.core.logic/master argv# cache#)) a#))
                  (let [cache# (get @table# key#)]
                    (cljs.core.logic.protocols/reuse
                     a# argv# cache# nil nil)))))))))
@@ -558,7 +553,7 @@
 (defmacro let-dom
   [a vars & body]
   (let [get-var-dom (fn [a [v b]]
-                      `(~b (get-dom-fd ~a ~v)))]
+                      `(~b (cljs.core.logic/get-dom-fd ~a ~v)))]
     `(let [~@(mapcat (partial get-var-dom a) (partition 2 vars))]
        ~@body)))
 
@@ -607,7 +602,7 @@
                      (list '~name (map #(cljs.core.logic/-reify r# %) ~args)))
                    cljs.core.logic.protocols/IConstraintWatchedStores
                    (~'-watched-stores [_#] #{:cljs.core.logic/subst})))]
-         (cgoal (~name ~@args))))))
+         (cljs.core.logic/cgoal (~name ~@args))))))
 
 (defmacro defnc [name args & body]
   `(def ~name (fnc ~args ~@body)))
@@ -634,21 +629,21 @@
      cljs.core.logic.fd/ISet
      (~'-member? [this# that#]
        (if (integer? that#)
-         (clojure.core/= this# that#)
+         (clojure.core/== this# that#)
          (-member? that# this#)))
      (~'-disjoint? [this# that#]
        (if (integer? that#)
-         (not= this# that#)
+         (not (clojure.core/== this# that#))
          (-disjoint? that# this#)))
      (~'-intersection [this# that#]
        (cond
-        (integer? that#) (when (clojure.core/= this# that#)
+        (integer? that#) (when (clojure.core/== this# that#)
                            this#)
         (interval? that#) (-intersection that# this#)
         :else (intersection* this# that#)))
      (~'-difference [this# that#]
        (cond
-        (integer? that#) (if (clojure.core/= this# that#)
+        (integer? that#) (if (clojure.core/== this# that#)
                            nil
                            this#)
         (interval? that#) (-difference that# this#)
@@ -667,7 +662,7 @@
     `(let [~domsym ~dom]
        (fresh []
          ~@(map (fn [x#]
-                  `(dom ~x# ~domsym))
+                  `(cljs.core.logic.fd/dom ~x# ~domsym))
                 xs)))))
 
 (def binops->fd
@@ -766,7 +761,7 @@
          (fn [& query#]
            (fn [subs#]
              (let [dbs#
-                   (-> subs# cljs.core/meta :db)
+                   (-> subs# clojure.core/meta :db)
                    
                    facts#
                    (if-let [index# (cljs.core.logic.pldb/index-for-query
@@ -789,7 +784,7 @@
   `(fn [a#]
      (let [wx# (cljs.core.logic.protocols/walk a# ~x)
            wy# (cljs.core.logic.protocols/walk a# ~y)]
-       (if (cljs.core/= wx# wy#)
+       (if (clojure.core/= wx# wy#)
          a# nil))))
 
 (defmacro > [x y]
@@ -797,7 +792,7 @@
   `(fn [a#]
      (let [wx# (cljs.core.logic.protocols/walk a# ~x)
            wy# (cljs.core.logic.protocols/walk a# ~y)]
-       (if (cljs.core/> wx# wy#)
+       (if (clojure.core/> wx# wy#)
          a# nil))))
 
 (defmacro >= [x y]
@@ -806,7 +801,7 @@
   `(fn [a#]
      (let [wx# (cljs.core.logic.protocols/walk a# ~x)
            wy# (cljs.core.logic.protocols/walk a# ~y)]
-       (if (cljs.core/>= wx# wy#)
+       (if (clojure.core/>= wx# wy#)
          a# nil))))
 
 (defmacro < [x y]
@@ -814,7 +809,7 @@
   `(fn [a#]
      (let [wx# (cljs.core.logic.protocols/walk a# ~x)
            wy# (cljs.core.logic.protocols/walk a# ~y)]
-       (if (cljs.core/< wx# wy#)
+       (if (clojure.core/< wx# wy#)
          a# nil))))
 
 (defmacro <= [x y]
@@ -823,8 +818,9 @@
   `(fn [a#]
      (let [wx# (cljs.core.logic.protocols/walk a# ~x)
            wy# (cljs.core.logic.protocols/walk a# ~y)]
-       (if (cljs.core/<= wx# wy#)
+       (if (clojure.core/<= wx# wy#)
          a# nil))))
+
 (defn ->lcons
   ([env [m :as c] i] (->lcons env c i false))
   ([env [m :as c] i quoted]
@@ -842,13 +838,13 @@
   (and (sequential? clause)
        (let [f (first clause)]
          (and (symbol? f)
-              (clojure.core/= (name f) "!dcg")))))
+              (identical? (name f) "!dcg")))))
 
 (defn fresh-expr? [clause]
   (and (seq? clause)
        (let [f (first clause)]
          (and (symbol? f)
-              (clojure.core/= (name f) "fresh")))))
+              (identical? (name f) "fresh")))))
 
 (defn mark-clauses
   ([cs] (mark-clauses cs (atom 0)))
@@ -873,8 +869,9 @@
    (vector? c) (cons (->lcons env c (-> c meta :index))
                      (-handle-clauses env r))
    (and (seq? c)
-        (clojure.core/= (first c) `quote)
-        (vector? (second c))) (cons (->lcons env (second c) (-> c meta :index) true)
+        (clojure.core/= (first c) 'quote)
+        (vector? (second c))) (cons (->lcons env (second c)
+                                             (-> c meta :index) true)
                                     (-handle-clauses env r))
         :else (let [i (-> c meta :index)
                     c (if (seq? c) c (list c))]
