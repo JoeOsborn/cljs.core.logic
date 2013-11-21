@@ -16,11 +16,11 @@ clojure.browser.repl.repl_print = (function repl_print(data){var temp__4092__aut
 * Process a single block of JavaScript received from the server
 */
 clojure.browser.repl.evaluate_javascript = (function evaluate_javascript(conn,block){var result = (function (){try{return cljs.core.with_meta(cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"status","status",4416389988),new cljs.core.Keyword(null,"success","success",3441701749),new cljs.core.Keyword(null,"value","value",1125876963),[cljs.core.str(eval(block))].join('')], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),30,new cljs.core.Keyword(null,"end-column","end-column",3799845882),74], true));
-}catch (e6988){if((e6988 instanceof Error))
-{var e = e6988;return cljs.core.with_meta(cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"status","status",4416389988),new cljs.core.Keyword(null,"exception","exception",2495529921),new cljs.core.Keyword(null,"value","value",1125876963),cljs.core.pr_str.call(null,e),new cljs.core.Keyword(null,"stacktrace","stacktrace",3069736751),(cljs.core.truth_(e.hasOwnProperty("stack"))?e.stack:"No stacktrace available.")], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),35,new cljs.core.Keyword(null,"end-column","end-column",3799845882),65], true));
+}catch (e21708){if((e21708 instanceof Error))
+{var e = e21708;return cljs.core.with_meta(cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"status","status",4416389988),new cljs.core.Keyword(null,"exception","exception",2495529921),new cljs.core.Keyword(null,"value","value",1125876963),cljs.core.pr_str.call(null,e),new cljs.core.Keyword(null,"stacktrace","stacktrace",3069736751),(cljs.core.truth_(e.hasOwnProperty("stack"))?e.stack:"No stacktrace available.")], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),35,new cljs.core.Keyword(null,"end-column","end-column",3799845882),65], true));
 } else
 {if(new cljs.core.Keyword(null,"else","else",1017020587))
-{throw e6988;
+{throw e21708;
 } else
 {return null;
 }

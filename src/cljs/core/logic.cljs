@@ -16,11 +16,7 @@
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.bench :refer [some-identical?]])
-  (:import [cljs.core.logic.protocols
-            IBindable ITreeTerm IVar ITreeConstraint INonStorable IBind
-            IMPlus ITake]))
+                            matchu tabled let-dom fnc defnc]]))
 
 (def ^:dynamic *locals* nil)
 (def ^:dynamic *logic-dbs* [])
@@ -331,9 +327,7 @@
   
   IAssociative
   (-contains-key? [this k]
-    (some-identical? k #{:s :vs :cs :cq :cqs :oc})
-    ;; (contains? #{:s :vs :cs :cq :cqs :oc} k)
-    )
+    (contains? #{:s :vs :cs :cq :cqs :oc} k))
   (-assoc [this k v]
     (case k
       :s   (Substitutions. v vs ts cs cq cqs oc _meta)
@@ -631,7 +625,7 @@
 
   IEquiv
   (-equiv [this o]
-    (if (satisfies? IVar o)
+    (if (satisfies? proto/IVar o)
       (if unique
         (identical? id (:id o))
         (identical? name (:name o)))
@@ -783,7 +777,7 @@
 
   IHash
   (-hash [this]
-    (if (== cache -1)
+    (if (cljs.core/== cache -1)
       (do
         (set! cache (uai (umi (int 31) (hash d))
                          (hash a)))

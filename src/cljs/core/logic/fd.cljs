@@ -12,8 +12,7 @@
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]
-                   [cljs.core.logic.fd :refer [in extend-to-fd eq]])
-  (:import [cljs.core.logic.protocols IEnforceableConstraint]))
+                   [cljs.core.logic.fd :as fd :refer [in extend-to-fd eq]]))
 
 (defprotocol IInterval
   (-lb [this])
@@ -543,14 +542,14 @@
 (defn get-dom
   [a x]
   (if (lvar? x)
-    (l/get-dom a x l/fd)
+    (l/get-dom a x :cljs.core.logic/fd)
     x))
 
 (defn ext-dom-fd
   [a x dom domp]
-  (let [a (l/add-dom a x l/fd dom)]
+  (let [a (l/add-dom a x :cljs.core.logic/fd dom)]
     (if (not= domp dom)
-      ((l/run-constraints* [x] (:cs a) l/fd) a)
+      ((l/run-constraints* [x] (:cs a) :cljs.core.logic/fd) a)
       a)))
 
 (defn singleton-dom? [x]
@@ -561,7 +560,7 @@
   (if (singleton-dom? dom)
     (let [xv (walk a x)]
       (if (lvar? xv)
-        (proto/ext-run-cs (l/rem-dom a x l/fd) x dom)
+        (proto/ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
         a))
     (ext-dom-fd a x dom domp)))
 
@@ -635,13 +634,13 @@
     proto/IConstraintStep
     (-step [this s]
       (let [xv (walk s x)
-            xd (-> (proto/root-val s x) :doms l/fd)]
+            xd (-> (proto/root-val s x) :doms :cljs.core.logic/fd)]
         (reify
           cljs.core/IFn
           (-invoke [_ s]
             (if xd
               (when (-member? xd xv)
-                (l/rem-dom s x l/fd))
+                (l/rem-dom s x :cljs.core.logic/fd))
               s))
           proto/IEntailed
           (-entailed? [_]
@@ -653,7 +652,7 @@
     (-rator [_] `cljs.core.logic.fd/domc)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{l/subst})))
+    (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn domc [x]
   (l/cgoal (-domc x)))
@@ -684,7 +683,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{l/subst l/fd})))
+      #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
 (defn ==
   "A finite domain constraint. u and v must be equal. u and v must
@@ -721,7 +720,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{l/subst l/fd})))
+      #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
 (defn !=
   "A finite domain constraint. u and v must not be equal. u and v
@@ -754,7 +753,7 @@
     (-rands [_] [u v])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{l/subst l/fd})))
+      #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
 (defn <=
   "A finite domain constraint. u must be less than or equal to v.
@@ -841,7 +840,7 @@
     (-rands [_] [u v w])
     proto/IConstraintWatchedStores
     (-watched-stores [this]
-      #{l/subst l/fd})))
+      #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
 (defn +
   "A finite domain constraint for addition and subtraction.
@@ -925,7 +924,7 @@
       (-rands [_] [u v w])
       proto/IConstraintWatchedStores
       (-watched-stores [this]
-        #{l/subst l/fd}))))
+        #{:cljs.core.logic/subst :cljs.core.logic/fd}))))
 
 (defn *
   "A finite domain constraint for multiplication and
@@ -976,7 +975,7 @@
     (-rator [_] `cljs.core.logic.fd/-distinct)
     (-rands [_] [x])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{l/subst})))
+    (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn -distinct [x y* n*]
   (l/cgoal (-distinctc x y* n*)))
@@ -1025,7 +1024,7 @@
     (-rator [_] `cljs.core.logic.fd/distinct)
     (-rands [_] [v*])
     proto/IConstraintWatchedStores
-    (-watched-stores [this] #{l/subst})))
+    (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn distinct
   "A finite domain constraint that will guarantee that
@@ -1105,106 +1104,4 @@
   (let [vars (atom [])
         exprs (eq* (expand form) vars)]
     (->fd @vars exprs)))
-
-(comment
-  (run* [q]
-    (fresh [x y]
-      (l/== q [x y])))
-
-  (run* [q]
-    (fresh [x y]
-      (l/== [:pizza "Java"] [x y])
-      (l/== q [x y])))
-
-  (run* [q]
-    (fresh [x y]
-      (l/== q [x y])
-      (l/!= y "Java")))
-
-  (run* [q]
-    (fresh [x y]
-      (l/== q [x y])))
-
-  (run* [q]
-    (fresh [x y]
-      (l/== [:pizza "Java"] [x y])
-      (l/== q [x y])
-      (l/!= y "Java")))
-
-  (run* [q]
-    (fresh [x y]
-      (l/== [:pizza "Scala"] [x y])
-      (l/== q [x y])
-      (l/!= y "Java")))
-
-  (run* [q]
-    (fresh [n]
-      (l/== q n)))
-
-  (run* [q]
-    (fresh [n]
-      (l/!= 0 n)
-      (l/== q n)))
-
-  (run* [q]
-    (fresh [n]
-      (in n (domain 0 1))
-      (== q n)))
-
-  (run* [q]
-    (let [coin (domain 0 1)]
-      (fresh [heads tails]
-        (in heads 0 coin)
-        (in tails 1 coin)
-        (l/== q [heads tails]))))
-
-  )
-
-(defn get-square [rows x y]
-  (for [x (range x (core/+ x 3))
-        y (range y (core/+ y 3))]
-    (get-in rows [x y])))
-
-(defn init [vars hints]
-  (if (seq vars)
-    (let [hint (first hints)]
-      (all
-       (if-not (zero? hint)
-         (l/== (first vars) hint)
-         l/succeed)
-       (init (next vars) (next hints))))
-    l/succeed))
-
-(defn sudokufd [hints]
-  (let [vars (repeatedly 81 l/lvar)
-        rows (->> vars (partition 9) (map vec) (into []))
-        cols (apply map vector rows)
-        sqs  (for [x (range 0 9 3)
-                   y (range 0 9 3)]
-               (get-square rows x y))]
-    (run 1 [q]
-      (init vars hints)
-      (l/== q vars)
-      (l/everyg #(in % (domain 1 2 3 4 5 6 7 8 9)) vars)
-      (l/everyg distinct rows)
-      (l/everyg distinct cols)
-      (l/everyg distinct sqs)
-      )))
-
-(comment
-  (def b1 [0 0 3  0 2 0  6 0 0
-           9 0 0  3 0 5  0 0 1
-           0 0 1  8 0 6  4 0 0
-
-           0 0 8  1 0 2  9 0 0
-           7 0 0  0 0 0  0 0 8
-           0 0 6  7 0 8  2 0 0
-
-           0 0 2  6 0 9  5 0 0
-           8 0 0  2 0 3  0 0 9
-           0 0 5  0 1 0  3 0 0])
-  (simple-benchmark
-   [hints b1]
-   (doall (sudokufd hints)) 10)
-  (sudokufd b1))
 

@@ -14,7 +14,7 @@ goog.require('goog.json');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.xpc.CfgFields');
 clojure.browser.net._STAR_timeout_STAR_ = 10000;
-clojure.browser.net.event_types = cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),24,new cljs.core.Keyword(null,"end-column","end-column",3799845882),10], true)),cljs.core.map.call(null,(function (p__8140){var vec__8141 = p__8140;var k = cljs.core.nth.call(null,vec__8141,0,null);var v = cljs.core.nth.call(null,vec__8141,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),28,new cljs.core.Keyword(null,"end-column","end-column",3799845882),15], true));
+clojure.browser.net.event_types = cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),24,new cljs.core.Keyword(null,"end-column","end-column",3799845882),10], true)),cljs.core.map.call(null,(function (p__10911){var vec__10912 = p__10911;var k = cljs.core.nth.call(null,vec__10912,0,null);var v = cljs.core.nth.call(null,vec__10912,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),28,new cljs.core.Keyword(null,"end-column","end-column",3799845882),15], true));
 }),cljs.core.merge.call(null,cljs.core.js__GT_clj.call(null,goog.net.EventType))));
 clojure.browser.net.IConnection = {};
 clojure.browser.net.connect = (function() {
@@ -265,7 +265,7 @@ clojure.browser.net.close = (function close(this$){if((function (){var and__4737
 }
 });
 goog.net.XhrIo.prototype.clojure$browser$event$EventType$ = true;
-goog.net.XhrIo.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),65,new cljs.core.Keyword(null,"end-column","end-column",3799845882),12], true)),cljs.core.map.call(null,(function (p__8142){var vec__8143 = p__8142;var k = cljs.core.nth.call(null,vec__8143,0,null);var v = cljs.core.nth.call(null,vec__8143,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),69,new cljs.core.Keyword(null,"end-column","end-column",3799845882),17], true));
+goog.net.XhrIo.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),65,new cljs.core.Keyword(null,"end-column","end-column",3799845882),12], true)),cljs.core.map.call(null,(function (p__10913){var vec__10914 = p__10913;var k = cljs.core.nth.call(null,vec__10914,0,null);var v = cljs.core.nth.call(null,vec__10914,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),69,new cljs.core.Keyword(null,"end-column","end-column",3799845882),17], true));
 }),cljs.core.merge.call(null,cljs.core.js__GT_clj.call(null,goog.net.EventType))));
 });
 goog.net.XhrIo.prototype.clojure$browser$net$IConnection$ = true;
@@ -280,7 +280,7 @@ goog.net.XhrIo.prototype.clojure$browser$net$IConnection$transmit$arity$5 = (fun
 goog.net.XhrIo.prototype.clojure$browser$net$IConnection$transmit$arity$6 = (function (this$,uri,method,content,headers,timeout){var this$__$1 = this;this$__$1.setTimeoutInterval(timeout);
 return this$__$1.send(uri,method,content,headers);
 });
-clojure.browser.net.xpc_config_fields = cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),76,new cljs.core.Keyword(null,"end-column","end-column",3799845882),10], true)),cljs.core.map.call(null,(function (p__8144){var vec__8145 = p__8144;var k = cljs.core.nth.call(null,vec__8145,0,null);var v = cljs.core.nth.call(null,vec__8145,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),80,new cljs.core.Keyword(null,"end-column","end-column",3799845882),15], true));
+clojure.browser.net.xpc_config_fields = cljs.core.into.call(null,cljs.core.with_meta(cljs.core.PersistentArrayMap.EMPTY,cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),76,new cljs.core.Keyword(null,"end-column","end-column",3799845882),10], true)),cljs.core.map.call(null,(function (p__10915){var vec__10916 = p__10915;var k = cljs.core.nth.call(null,vec__10916,0,null);var v = cljs.core.nth.call(null,vec__10916,1,null);return cljs.core.with_meta(cljs.core.PersistentVector.fromArray([cljs.core.keyword.call(null,k.toLowerCase()),v], true),cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null,"end-line","end-line",2693041432),80,new cljs.core.Keyword(null,"end-column","end-column",3799845882),15], true));
 }),cljs.core.js__GT_clj.call(null,goog.net.xpc.CfgFields)));
 /**
 * Returns an XhrIo connection
@@ -382,9 +382,9 @@ var xpc_connection__0 = (function (){var temp__4094__auto__ = (new goog.Uri(wind
 {return null;
 }
 });
-var xpc_connection__1 = (function (config){return (new goog.net.xpc.CrossPageChannel(cljs.core.reduce.call(null,(function (sum,p__8149){var vec__8150 = p__8149;var k = cljs.core.nth.call(null,vec__8150,0,null);var v = cljs.core.nth.call(null,vec__8150,1,null);var temp__4092__auto__ = cljs.core.get.call(null,clojure.browser.net.xpc_config_fields,k);if(cljs.core.truth_(temp__4092__auto__))
-{var field = temp__4092__auto__;var G__8151 = sum;(G__8151[field] = v);
-return G__8151;
+var xpc_connection__1 = (function (config){return (new goog.net.xpc.CrossPageChannel(cljs.core.reduce.call(null,(function (sum,p__10920){var vec__10921 = p__10920;var k = cljs.core.nth.call(null,vec__10921,0,null);var v = cljs.core.nth.call(null,vec__10921,1,null);var temp__4092__auto__ = cljs.core.get.call(null,clojure.browser.net.xpc_config_fields,k);if(cljs.core.truth_(temp__4092__auto__))
+{var field = temp__4092__auto__;var G__10922 = sum;(G__10922[field] = v);
+return G__10922;
 } else
 {return sum;
 }

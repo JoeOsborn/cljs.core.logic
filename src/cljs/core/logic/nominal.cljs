@@ -22,8 +22,7 @@
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]])
-  (:import [cljs.core.logic LVar LCons]))
+                            matchu tabled let-dom fnc defnc]]))
 
 ;; ===========================================================================
 ;; Nominal unification with fresh, hash and tie.
@@ -78,8 +77,8 @@
 
   l/LCons
   (swap-noms [t swap s]
-    (let [[tfirst s] (swap-noms (lfirst t) swap s)
-          [tnext s] (swap-noms (lnext t) swap s)]
+    (let [[tfirst s] (swap-noms (proto/lfirst t) swap s)
+          [tnext s] (swap-noms (proto/lnext t) swap s)]
       [(with-meta (lcons tfirst tnext) (meta t))
        s]))
 
