@@ -75,7 +75,7 @@
 
 (defn- lvar-bind [sym]
   ((juxt identity
-         (fn [s] `(lvar '~s))) sym))
+         (fn [s] `(cljs.core.logic/lvar '~s))) sym))
 
 (defn- lvar-binds [syms]
   (mapcat lvar-bind syms))
@@ -640,14 +640,14 @@
        (cond
         (integer? that#) (when (clojure.core/== this# that#)
                            this#)
-        (interval? that#) (-intersection that# this#)
+        (cljs.core.logic.fd/interval? that#) (-intersection that# this#)
         :else (intersection* this# that#)))
      (~'-difference [this# that#]
        (cond
         (integer? that#) (if (clojure.core/== this# that#)
                            nil
                            this#)
-        (interval? that#) (-difference that# this#)
+        (cljs.core.logic.fd/interval? that#) (-difference that# this#)
         :else (difference* this# that#)))
 
      cljs.core.logic.fd/IIntervals
