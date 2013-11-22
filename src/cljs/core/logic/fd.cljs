@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [== < > <= >= + - * quot distinct ISet])
   (:require [cljs.core.logic.protocols :as proto :refer [walk]]
             [cljs.core.logic :as l :refer [lvar?]]
-            [cljs.core :as core]
             [clojure.set :as set]
             [clojure.string :as string])
   (:require-macros [cljs.core.logic.macros
@@ -41,16 +40,16 @@
   (l/pair (-lb i) (-ub i)))
 
 (defn interval-< [i j]
-  (core/< (-ub i) (-lb j)))
+  (cljs.core/< (-ub i) (-lb j)))
 
 (defn interval-<= [i j]
-  (core/<= (-ub i) (-lb j)))
+  (cljs.core/<= (-ub i) (-lb j)))
 
 (defn interval-> [i j]
-  (core/> (-lb i) (-ub j)))
+  (cljs.core/> (-lb i) (-ub j)))
 
 (defn interval->= [i j]
-  (core/>= (-lb i) (-ub j)))
+  (cljs.core/>= (-lb i) (-ub j)))
 
 ;; FiniteDomain
 ;; -----
@@ -63,7 +62,7 @@
 ;; max - the maximum value, an optimization
 
 (deftype FiniteDomain [s min max]
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this that]
     (if (finite-domain? that)
       (if (= (proto/-member-count this) (proto/-member-count that))
@@ -71,7 +70,7 @@
         false)
       false))
 
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -94,14 +93,14 @@
           c (count s)]
       (cond
        (= c 1) (first s)
-       (core/> c 1) (FiniteDomain. s (first s) max)
+       (cljs.core/> c 1) (FiniteDomain. s (first s) max)
        :else nil)))
 
   (-drop-before [_ n]
-    (apply domain (drop-while #(core/< % n) s)))
+    (apply domain (drop-while #(cljs.core/< % n) s)))
 
   (-keep-before [this n]
-    (apply domain (take-while #(core/< % n) s)))
+    (apply domain (take-while #(cljs.core/< % n) s)))
 
   ISet
   (-member? [this n]
@@ -113,8 +112,8 @@
      (if (s that) false true)
      (instance? FiniteDomain that)
      (cond
-      (core/< max (:min that)) true
-      (core/> min (:max that)) true
+      (cljs.core/< max (:min that)) true
+      (cljs.core/> min (:max that)) true
       :else (empty? (set/intersection s (:s that))))
      :else (disjoint?* this that)))
 
@@ -143,7 +142,7 @@
   (-merge-doms [this that]
     (-intersection this that))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<domain:" (seq (:s x)) ">"))))
 
@@ -179,7 +178,7 @@
 ;; ub - upper bound
 
 (deftype IntervalFD [lb ub]
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [_ o]
     (if (instance? IntervalFD o)
       (and (= lb (-lb o))
@@ -191,7 +190,7 @@
     (pr-str this))
 
   proto/IMemberCount
-  (-member-count [this] (inc (core/- ub lb)))
+  (-member-count [this] (inc (cljs.core/- ub lb)))
 
   IInterval
   (-lb [_] lb)
@@ -200,25 +199,25 @@
   ISortedDomain
   (-drop-one [_]
     (let [nlb (inc lb)]
-      (when (core/<= nlb ub)
+      (when (cljs.core/<= nlb ub)
         (interval nlb ub))))
 
   (-drop-before [this n]
     (cond
      (= n ub) n
-     (core/< n lb) this
-     (core/> n ub) nil
+     (cljs.core/< n lb) this
+     (cljs.core/> n ub) nil
      :else (interval n ub)))
 
   (-keep-before [this n]
     (cond
-     (core/<= n lb) nil
-     (core/> n ub) this
+     (cljs.core/<= n lb) nil
+     (cljs.core/> n ub) this
      :else (interval lb (dec n))))
 
   ISet
   (-member? [this n]
-    (and (core/>= n lb) (core/<= n ub)))
+    (and (cljs.core/>= n lb) (cljs.core/<= n ub)))
 
   (-disjoint? [this that]
     (cond
@@ -230,8 +229,8 @@
            j that
            [imin imax] (bounds i)
            [jmin jmax] (bounds j)]
-       (or (core/> imin jmax)
-           (core/< imax jmin)))
+       (or (cljs.core/> imin jmax)
+           (cljs.core/< imax jmin)))
 
      :else (disjoint?* this that)))
 
@@ -247,16 +246,16 @@
            imin (-lb i) imax (-ub i)
            jmin (-lb j) jmax (-ub j)]
        (cond
-        (core/< imax jmin) nil
-        (core/< jmax imin) nil
-        (and (core/<= imin jmin)
-             (core/>= imax jmax)) j
-             (and (core/<= jmin imin)
-                  (core/>= jmax imax)) i
-                  (and (core/<= imin jmin)
-                       (core/<= imax jmax)) (interval jmin imax)
-                       (and (core/<= jmin imin)
-                            (core/<= jmax imax)) (interval imin jmax)
+        (cljs.core/< imax jmin) nil
+        (cljs.core/< jmax imin) nil
+        (and (cljs.core/<= imin jmin)
+             (cljs.core/>= imax jmax)) j
+             (and (cljs.core/<= jmin imin)
+                  (cljs.core/>= jmax imax)) i
+                  (and (cljs.core/<= imin jmin)
+                       (cljs.core/<= imax jmax)) (interval jmin imax)
+                       (and (cljs.core/<= jmin imin)
+                            (cljs.core/<= jmax imax)) (interval imin jmax)
                             :else (throw (ex-info (str "Interval intersection not defined " i " " j) {}))))
 
      :else (intersection* this that)))
@@ -277,17 +276,17 @@
            imin (-lb i) imax (-ub i)
            jmin (-lb j) jmax (-ub j)]
        (cond
-        (core/> jmin imax) i
-        (and (core/<= jmin imin)
-             (core/>= jmax imax)) nil
-             (and (core/< imin jmin)
-                  (core/> imax jmax))
+        (cljs.core/> jmin imax) i
+        (and (cljs.core/<= jmin imin)
+             (cljs.core/>= jmax imax)) nil
+             (and (cljs.core/< imin jmin)
+                  (cljs.core/> imax jmax))
              (multi-interval (interval imin (dec jmin))
                              (interval (inc jmax) imax))
-                  (and (core/< imin jmin)
-                       (core/<= jmin imax)) (interval imin (dec jmin))
-                       (and (core/> imax jmax)
-                            (core/<= jmin imin)) (interval (inc jmax) imax)
+                  (and (cljs.core/< imin jmin)
+                       (cljs.core/<= jmin imax)) (interval imin (dec jmin))
+                       (and (cljs.core/> imax jmax)
+                            (cljs.core/<= jmin imin)) (interval (inc jmax) imax)
                             :else (throw (ex-info (str "Interval difference not defined " i " " j) {}))))
 
      :else (difference* this that)))
@@ -300,7 +299,7 @@
   (-merge-doms [this that]
     (-intersection this that))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<interval:" (-lb x) ".." (-ub x) ">"))))
 
@@ -313,7 +312,7 @@
    is large."
   ([ub] (IntervalFD. 0 ub))
   ([lb ub]
-     (if (zero? (core/- ub lb))
+     (if (zero? (cljs.core/- ub lb))
        ub
        (IntervalFD. lb ub))))
 
@@ -329,26 +328,26 @@
          (let [[imin imax] (bounds i)
                [jmin jmax] (bounds j)]
            (cond
-            (core/<= imin jmin)
+            (cljs.core/<= imin jmin)
             (cond
-             (core/< imax jmax)
+             (cljs.core/< imax jmax)
              (recur (next is)
                     (cons (interval (inc imax) jmax) (next js))
                     (conj r (interval jmin imax)))
-             (core/> imax jmax)
+             (cljs.core/> imax jmax)
              (recur (cons (interval (inc jmax) imax) (next is))
                     (next js)
                     (conj r j))
              :else
              (recur (next is) (next js)
                     (conj r (interval jmin jmax))))
-            (core/> imin jmin)
+            (cljs.core/> imin jmin)
             (cond
-             (core/> imax jmax)
+             (cljs.core/> imax jmax)
              (recur (cons (interval (inc jmax) imax) (next is))
                     (next js)
                     (conj r (interval imin jmax)))
-             (core/< imax jmax)
+             (cljs.core/< imax jmax)
              (recur is (cons (interval (inc imax) jmax) (next js))
                     (conj r i))
              :else
@@ -369,26 +368,26 @@
            (let [[imin imax] (bounds i)
                  [jmin jmax] (bounds j)]
              (cond
-              (core/< imin jmin)
+              (cljs.core/< imin jmin)
               (cond
-               (core/< jmax imax)
+               (cljs.core/< jmax imax)
                (recur (cons (interval (inc jmax) imax) (next is))
                       (next js)
                       (conj r (interval imin (dec jmin))))
-               (core/> jmax imax)
+               (cljs.core/> jmax imax)
                (recur (next is)
                       (cons (interval (inc imax) jmax) (next js))
                       (conj r (interval imin (dec jmin))))
                :else
                (recur (next is) (next js)
                       (conj r (interval imin (dec jmin)))))
-              (core/>= imin jmin)
+              (cljs.core/>= imin jmin)
               (cond
-               (core/< imax jmax)
+               (cljs.core/< imax jmax)
                (recur (next is)
                       (cons (interval (inc imax) jmax) (next js))
                       r)
-               (core/> imax jmax)
+               (cljs.core/> imax jmax)
                (recur (cons (interval (inc jmax) imax) (next is))
                       (next js)
                       r)
@@ -426,7 +425,7 @@
 ;; is  - the intervals
 
 (deftype MultiIntervalFD [min max is]
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
@@ -436,7 +435,7 @@
       :max max
       not-found))
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this j]
     (if (instance? MultiIntervalFD j)
       (let [i this
@@ -508,7 +507,7 @@
   (-merge-doms [this that]
     (-intersection this that))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<intervals:" (apply pr-str (:is x)) ">"))))
 
@@ -519,7 +518,7 @@
               (let [j (peek r)
                     jmax (-ub j)
                     imin (-lb i)]
-                (if (core/<= (dec imin) jmax)
+                (if (cljs.core/<= (dec imin) jmax)
                   (conj (pop r) (interval (-lb j) (-ub i)))
                   (conj r i)))))
           [] is))
@@ -636,7 +635,7 @@
       (let [xv (walk s x)
             xd (-> (proto/root-val s x) :doms :cljs.core.logic/fd)]
         (reify
-          cljs.core/IFn
+          IFn
           (-invoke [_ s]
             (if xd
               (when (-member? xd xv)
@@ -700,7 +699,7 @@
                (let [su? (singleton-dom? du)
                      sv? (singleton-dom? dv)]
                  (reify
-                   cljs.core/IFn
+                   IFn
                    (-invoke [_ s]
                      (cond
                       (and su? sv? (= du dv)) nil
@@ -735,7 +734,7 @@
     (-step [this s]
       (let-dom s [u du v dv]
                (reify
-                 cljs.core/IFn
+                 IFn
                  (-invoke [_ s]
                    (let [umin (-lb du)
                          vmax (-ub dv)]
@@ -788,26 +787,26 @@
     (-step [this s]
       (let-dom s [u du v dv w dw]
                (reify
-                 cljs.core/IFn
+                 IFn
                  (-invoke [_ s]
                    (let [[wmin wmax]
                          (if dw
                            (bounds dw)
-                           [(core/+ (-lb du) (-lb dv))
-                            (core/+ (-ub du) (-ub dv))])
+                           [(cljs.core/+ (-lb du) (-lb dv))
+                            (cljs.core/+ (-ub du) (-ub dv))])
                          [umin umax]
                          (if du
                            (bounds du)
-                           [(core/- (-lb dw) (-ub dv))
-                            (core/- (-ub dw) (-lb dv))])
+                           [(cljs.core/- (-lb dw) (-ub dv))
+                            (cljs.core/- (-ub dw) (-lb dv))])
                          [vmin vmax]
                          (if dv
                            (bounds dv)
-                           [(core/- (-lb dw) (-ub du))
-                            (core/- (-ub dw) (-lb du))])
-                         wi (interval (core/+ umin vmin) (core/+ umax vmax))
-                         ui (interval (core/- wmin vmax) (core/- wmax vmin))
-                         vi (interval (core/- wmin umax) (core/- wmax umin))]
+                           [(cljs.core/- (-lb dw) (-ub du))
+                            (cljs.core/- (-ub dw) (-lb du))])
+                         wi (interval (cljs.core/+ umin vmin) (cljs.core/+ umax vmax))
+                         ui (interval (cljs.core/- wmin vmax) (cljs.core/- wmax vmin))
+                         vi (interval (cljs.core/- wmin umax) (cljs.core/- wmax umin))]
                      (when-let [wi (if (and wi dw) (-intersection wi dw) wi)]
                        (when-let [ui (if (and ui du)
                                        (-intersection ui du)
@@ -816,7 +815,7 @@
                                          (-intersection vi dv)
                                          vi)]
                            (when (or (not (every? singleton-dom? [wi ui vi]))
-                                     (core/= (core/+ ui vi) wi))
+                                     (cljs.core/= (cljs.core/+ ui vi) wi))
                              ((composeg*
                                (process-dom w wi dw)
                                (process-dom u ui du)
@@ -827,7 +826,7 @@
                    (and (singleton-dom? du)
                         (singleton-dom? dv)
                         (singleton-dom? dw)
-                        (= (core/+ du dv) dw)))
+                        (= (cljs.core/+ du dv) dw)))
                  proto/IRunnable
                  (-runnable? [_]
                    (cond
@@ -856,7 +855,7 @@
   (letfn [(safe-div [n c a t]
             (if (zero? n)
               c
-              (let [q (core/quot a n)]
+              (let [q (cljs.core/quot a n)]
                 (case t
                   :lower (if (pos? (rem a n))
                            (inc q)
@@ -868,13 +867,13 @@
       (-step [this s]
         (let-dom s [u du v dv w dw]
                  (reify
-                   cljs.core/IFn
-                   (invoke [_ s]
+                   IFn
+                   (-invoke [_ s]
                      (let [[wmin wmax]
                            (if dw
                              (bounds dw)
-                             [(core/* (-lb du) (-lb dv))
-                              (core/* (-ub du) (-ub dv))])
+                             [(cljs.core/* (-lb du) (-lb dv))
+                              (cljs.core/* (-ub du) (-ub dv))])
                            [umin umax]
                            (if du
                              (bounds du)
@@ -885,7 +884,7 @@
                              (bounds dv)
                              [(safe-div (-ub du) (-lb dw) (-lb dw) :lower)
                               (safe-div (-lb du) (-lb dw) (-ub dw) :upper)])
-                           wi (interval (core/* umin vmin) (core/* umax vmax))
+                           wi (interval (cljs.core/* umin vmin) (cljs.core/* umax vmax))
                            ui (interval (safe-div vmax umin wmin :lower)
                                         (safe-div vmin umax wmax :upper))
                            vi (interval (safe-div umax vmin wmin :lower)
@@ -901,7 +900,7 @@
                                            vi)]
                              (when (or (not (every? singleton-dom?
                                                     [wi ui vi]))
-                                       (core/= (core/* ui vi) wi))
+                                       (cljs.core/= (cljs.core/* ui vi) wi))
                                ((composeg*
                                  (process-dom w wi dw)
                                  (process-dom u ui du)
@@ -911,7 +910,7 @@
                      (and (singleton-dom? du)
                           (singleton-dom? dv)
                           (singleton-dom? dw)
-                          (= (core/* du dv) dw)))
+                          (= (cljs.core/* du dv) dw)))
                    proto/IRunnable
                    (-runnable? [_]
                      (cond
@@ -951,8 +950,8 @@
     (-step [this s]
       (let [x (walk s x)]
         (reify
-          cljs.core/IFn
-          (invoke [_ s]
+          IFn
+          (-invoke [_ s]
             (when-not (n* x)
               (loop [y* (seq y*) s s]
                 (if y*
@@ -1004,7 +1003,7 @@
     (-step [this s]
       (let [v* (walk s v*)]
         (reify
-          cljs.core/IFn
+          IFn
           (-invoke [_ s]
             (let [{x* true n* false} (group-by lvar? v*)
                   n* (sort core/< n*)]
@@ -1065,7 +1064,7 @@
 (defn expand [form]
   (if (seq? form)
     (let [[op & args] form]
-      (if (and (binops op) (core/> (count args) 2))
+      (if (and (binops op) (cljs.core/> (count args) 2))
         (list op (expand (first args))
               (expand (cons op (rest args))))
         (cons op (map expand args))))

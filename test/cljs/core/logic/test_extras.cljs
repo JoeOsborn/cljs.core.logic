@@ -1,6 +1,7 @@
 (ns cljs.core.logic.test_extras
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto
+  (:require [cemerick.cljs.test :as t]
+            [cljs.core.logic.protocols :as proto
              :refer [walk ifa -step -rator addc -entailed? -runnable? id
                      constraints-for take* root-var root-val -prefix
                      -with-prefix tree-constraint? with-id remc
@@ -14,9 +15,8 @@
                      verify-all-bound enforce-constraints add-attr entangle
                      !=c nafc treec -reify tree-term? nom distribute rem-attr
                      get-attr distincto]]
-            [cljs.core.logic.fd :as fd :refer [interval dom]]
-            [cljs.core.logic.unifier :as u]
-            [cemerick.cljs.test :as t])
+            [cljs.core.logic.fd :as fd]
+            [cljs.core.logic.unifier :as u])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -566,7 +566,7 @@
         sqs  (->squares rows)]
     (run-nc 1 [q]
             (== q vars)
-            (distribute q l/ff)
+            (distribute q :cljs.core.logic/ff)
             (everyg #(in % (fd/domain 1 2 3 4 5 6 7 8 9)) vars)
             (init vars hints)
             (everyg fd/distinct rows)
@@ -768,16 +768,16 @@
         y (l/lvar 'y)
         s (-> empty-s
               (entangle x y)
-              (l/add-dom x l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s y l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom x :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s y :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-2
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         s (-> empty-s
               (entangle x y)
-              (l/add-dom y l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom y :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-3
   (let [x (l/lvar 'x)
@@ -786,8 +786,8 @@
         s (-> empty-s
               (entangle x y)
               (entangle y z)
-              (l/add-dom x l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s z l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom x :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-1
   (let [x (l/lvar 'x)
@@ -796,9 +796,9 @@
         s (-> empty-s
               (entangle y x)
               (entangle z x)
-              (l/add-dom x l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s y l/fd) (fd/domain 1 2 3)))
-    (is (= (l/get-dom s z l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom x :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s y :cljs.core.logic/fd) (fd/domain 1 2 3)))
+    (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-2
   (let [x (l/lvar 'x)
@@ -807,9 +807,9 @@
         s (-> empty-s
               (entangle y x)
               (entangle z x)
-              (l/add-dom y l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))
-    (is (= (l/get-dom s z l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom y :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))
+    (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-3
   (let [x (l/lvar 'x)
@@ -818,9 +818,9 @@
         s (-> empty-s
               (entangle y x)
               (entangle z x)
-              (l/add-dom z l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))
-    (is (= (l/get-dom s y l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))
+    (is (= (l/get-dom s y :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-4
   (let [x (l/lvar 'x)
@@ -829,8 +829,8 @@
         s (-> empty-s
               (entangle x y)
               (entangle y z)
-              (l/add-dom z l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-root-var-1
   (let [x (l/lvar 'x)
@@ -839,8 +839,8 @@
         s (-> empty-s
               (l/unify x y)
               (entangle x z)
-              (l/add-dom z l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-root-var-2
   (let [x (l/lvar 'x)
@@ -849,8 +849,8 @@
         s (-> empty-s
               (l/unify y x)
               (entangle x z)
-              (l/add-dom z l/fd (fd/domain 1 2 3)))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))))
+              (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-update-dom-1
   (let [x (l/lvar 'x)
@@ -893,7 +893,7 @@
         y (l/lvar 'y)
         s (-> empty-s (entangle x y))
         s (((in x (fd/domain 1 2 3)) s))]
-    (is (= (l/get-dom s x l/fd) (fd/domain 1 2 3)))))
+    (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-attrs-1 []
   (let [x (l/lvar 'x)
@@ -938,7 +938,7 @@
 (deftest test-ext-run-cs-1 []
   (let [x (l/lvar 'x)
         s (proto/ext-no-check empty-s x (l/subst-val l/unbound))
-        s (add-attr s x l/fd (fd/domain 1 2 3))
+        s (add-attr s x :cljs.core.logic/fd (fd/domain 1 2 3))
         s (ext-run-cs s x 1)]
     (is (= (root-val s x) 1))
     (is (= (walk s x) 1))))

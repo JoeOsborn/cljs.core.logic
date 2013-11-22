@@ -82,7 +82,7 @@
       [(with-meta (lcons tfirst tnext) (meta t))
        s]))
 
-  cljs.core/PersistentVector
+  PersistentVector
   (swap-noms [t swap s]
     (let [[ts s] (swap-noms (seq t) swap s)]
       [(vec ts) s])))
@@ -99,23 +99,23 @@
   (toString [_]
     (str "<nom:" (:name lvar) ">"))
 
-  cljs.core/IHash
+  IHash
   (cljs.core/-hash [_] (cljs.core/hash lvar))
 
-  cljs.core/IEquiv
+  IEquiv
   (-equiv [this o]
     (and (instance? Nom o)
          (= lvar (:lvar o))))
   
-  cljs.core/IMeta
+  IMeta
   (-meta [this] (meta lvar))
 
-  cljs.core/IWithMeta
+  IWithMeta
   (-with-meta [this new-meta]
     (nom (with-meta lvar new-meta)))
   
 
-  cljs.core/ILookup
+  ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [_ k not-found]
@@ -135,7 +135,7 @@
   (swap-noms [t swap s]
     [(nom-swap t swap) s])
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<nom:" (:name x) ">"))))
 
@@ -143,7 +143,7 @@
   (Nom. lvar))
 
 (defn nom? [x]
-  (instance? cljs.core.logic.nominal.Nom x))
+  (instance? Nom x))
 
 ;; ===========================================================================
 ;; hash: ensure a nom is free in a term
@@ -160,7 +160,7 @@
       (let [a (walk s a)
             x (walk s x)]
         (reify
-          cljs.core/IFn
+          IFn
           (-invoke [_ s]
             ((composeg*
               (remcg this)
@@ -228,7 +228,7 @@
       (let [t1 (walk a v1)
             t2 (walk a v2)]
         (reify
-          cljs.core/IFn
+          IFn
           (-invoke [_ a]
             ((composeg*
               (remcg this)
@@ -314,7 +314,7 @@
     (let [[tbody s] (swap-noms (:body t) swap s)]
       [(with-meta (tie (nom-swap (:binding-nom t) swap) tbody) (meta t)) s]))
 
-  cljs.core/IPrintWithWriter
+  IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer "[")
     (pr-writer (:binding-nom x) writer opts)
@@ -325,4 +325,4 @@
   (Tie. binding-nom body))
 
 (defn tie? [x]
-  (instance? cljs.core.logic.nominal.Tie x))
+  (instance? Tie x))

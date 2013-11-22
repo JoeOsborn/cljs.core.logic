@@ -22,10 +22,6 @@
 (def ^:dynamic *logic-dbs* [])
 
 (def fk (js/Error.))
-(def fd ::fd)
-(def ff ::ff)
-(def nom ::nom)
-(def subst ::subst)
 
 ;; Utilities
 
@@ -1666,7 +1662,6 @@
 (defn sort-by-strategy [v x a]
   (case (-> x meta ::strategy)
     ::ff (seq (sort (sort-by-member-count a) v))
-    ;; TODO: throw on non-existant strategies
     v))
 
 ;; TODO: handle all Clojure tree types

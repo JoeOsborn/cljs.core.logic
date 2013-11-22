@@ -5,8 +5,6 @@
             [cljs.analyzer :as ana]
             [clojure.set :as set]
             [clojure.string :as string]
-            [riddley.walk :refer [macroexpand-all walk-exprs]]
-            [clojure.tools.reader :as reader]
             [clojure.math.combinatorics :as math]
             [clojure.core.async :as a
              :refer [go go-loop <! take! put! >! chan]]

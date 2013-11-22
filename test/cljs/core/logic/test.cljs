@@ -12,7 +12,7 @@
                      featurec everyg composeg solutions pair ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term?]]
+                     !=c nafc treec -reify tree-term? permuteo]]
             [cljs.core.logic.fd :as fd :refer [interval]]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
@@ -1060,6 +1060,8 @@
          '(_0))))
 ;; -----------------------------------------------------------------------------
 ;; tabled
+
+(declare patho patho-2 patho-112)
 
 (defne arco [x y]
   ([:a :b])
@@ -2144,7 +2146,7 @@
         w (l/lvar 'w)
         c (fd/+c u v w)
         cs (addc (make-cs) empty-s c)
-        sc (first (constraints-for cs empty-s u l/fd))]
+        sc (first (constraints-for cs empty-s u :cljs.core.logic/fd))]
     (is (= (id sc) 0))
     (is (= (count (:km cs)) 2))
     (is (= (count (:cm cs)) 1))))
@@ -2181,7 +2183,7 @@
         w (l/lvar 'w)
         c (fd/+c u v w)
         s ((addcg c) empty-s)
-        c (first (constraints-for (:cs s) s u l/fd))
+        c (first (constraints-for (:cs s) s u :cljs.core.logic/fd))
         s (-> s
               (proto/ext-run-cs u 1)
               (proto/ext-run-cs w 2))]

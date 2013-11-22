@@ -13,8 +13,7 @@
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc in db-rel
-                            with-db]]
-                   [cljs.core.logic.nominal.macros :as nom]))
+                            with-db]]))
 
 (comment
   ;; (defn bit-xoro
