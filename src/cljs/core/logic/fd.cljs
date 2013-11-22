@@ -449,8 +449,7 @@
 
   proto/IMemberCount
   (-member-count [this]
-    ;; NOTE: ugly hack around http://dev.clojure.org/jira/browse/CLJ-1202 - David
-    (reduce core/+ 0 (map #(proto/-member-count %) is)))
+    (reduce clojure.core/+ 0 (map #(proto/-member-count %) is)))
 
   IInterval
   (-lb [_] min)
@@ -1006,8 +1005,8 @@
           IFn
           (-invoke [_ s]
             (let [{x* true n* false} (group-by lvar? v*)
-                  n* (sort core/< n*)]
-              (when (list-sorted? core/< n*)
+                  n* (sort clojure.core/< n*)]
+              (when (list-sorted? clojure.core/< n*)
                 (let [x* (into #{} x*)
                       n* (into (sorted-set) n*)]
                   (loop [xs (seq x*) s s]

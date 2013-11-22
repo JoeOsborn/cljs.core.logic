@@ -13,7 +13,7 @@
                      featurec everyg composeg solutions pair ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? nom distribute rem-attr
+                     !=c nafc treec -reify tree-term? distribute rem-attr
                      get-attr distincto]]
             [cljs.core.logic.fd :as fd]
             [cljs.core.logic.unifier :as u])
@@ -857,16 +857,16 @@
         y (l/lvar 'y)
         s (-> empty-s
               (entangle x y)
-              (l/update-dom x l/nom (fnil (fn [d] (conj d :foo)) #{})))]
-    (is (= (l/get-dom s y l/nom) #{:foo}))))
+              (l/update-dom x :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
+    (is (= (l/get-dom s y :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-2
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         s (-> empty-s
               (entangle x y)
-              (l/update-dom y l/nom (fnil (fn [d] (conj d :foo)) #{})))]
-    (is (= (l/get-dom s x l/nom) #{:foo}))))
+              (l/update-dom y :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
+    (is (= (l/get-dom s x :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-3
   (let [x (l/lvar 'x)
@@ -875,8 +875,8 @@
         s (-> empty-s
               (entangle x y)
               (entangle y z)
-              (l/update-dom x l/nom (fnil (fn [d] (conj d :foo)) #{})))]
-    (is (= (l/get-dom s z l/nom) #{:foo}))))
+              (l/update-dom x :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
+    (is (= (l/get-dom s z :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-4
   (let [x (l/lvar 'x)
@@ -885,8 +885,8 @@
         s (-> empty-s
               (entangle x y)
               (entangle y z)
-              (l/update-dom z l/nom (fnil (fn [d] (conj d :foo)) #{})))]
-    (is (= (l/get-dom s x l/nom) #{:foo}))))
+              (l/update-dom z :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
+    (is (= (l/get-dom s x :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-fd-in-1
   (let [x (l/lvar 'x)
@@ -945,12 +945,12 @@
 
 (deftest test-update-dom-1 []
   (let [x (l/lvar 'x)
-        s (l/add-dom empty-s x nom '[(swap a b)])
-        s (l/update-dom s x nom (fn [d] (conj d '(swap x y))))]
-    (is (= (l/get-dom s x nom) '[(swap a b) (swap x y)]))))
+        s (l/add-dom empty-s x ::nom '[(swap a b)])
+        s (l/update-dom s x ::nom (fn [d] (conj d '(swap x y))))]
+    (is (= (l/get-dom s x ::nom) '[(swap a b) (swap x y)]))))
 
 (deftest test-update-dom-2 []
   (let [x (l/lvar 'x)
-        s (l/update-dom empty-s x nom
+        s (l/update-dom empty-s x ::nom
                         (fnil (fn [d] (conj d '(swap x y))) []))]
-    (is (= (l/get-dom s x nom) '[(swap x y)]))))
+    (is (= (l/get-dom s x ::nom) '[(swap x y)]))))

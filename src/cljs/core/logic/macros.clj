@@ -183,7 +183,7 @@
 
 (defn- project-binding [s]
   (fn [var]
-    `(~var (walk* ~s ~var))))
+    `(~var (cljs.core.logic/walk* ~s ~var))))
 
 (defn- project-bindings [vars s]
   (reduce concat (map (project-binding s) vars)))
@@ -311,7 +311,7 @@
   ([p vars] (p->term p vars false))
   ([p vars quoted]
      (cond
-      (clojure.core/= p '_) `(lvar)
+      (clojure.core/= p '_) `(cljs.core.logic/lvar)
       (lcons-p? p) (p->llist p vars quoted)
       (coll? p)
       (cond
@@ -537,12 +537,14 @@
                              @tables#)
                    table#  (get tables# ~uuid)]
                (if-not (contains? @table# key#)
-                 (let [table# (swap! table#
-                                     (fn [table#]
-                                       (if (contains? table# key#)
-                                         table#
-                                         (assoc table# key#
-                                                (atom (answer-cache))))))
+                 (let [table#
+                       (swap! table#
+                              (fn [table#]
+                                (if (contains? table# key#)
+                                  table#
+                                  (assoc table# key#
+                                         (atom
+                                          (cljs.core.logic/answer-cache))))))
                        cache# (get table# key#)]
                    ((fresh []
                       ~@grest
@@ -631,24 +633,26 @@
      (~'-member? [this# that#]
        (if (integer? that#)
          (clojure.core/== this# that#)
-         (-member? that# this#)))
+         (cljs.core.logic.fd/-member? that# this#)))
      (~'-disjoint? [this# that#]
        (if (integer? that#)
          (not (clojure.core/== this# that#))
-         (-disjoint? that# this#)))
+         (cljs.core.logic.fd/-disjoint? that# this#)))
      (~'-intersection [this# that#]
        (cond
         (integer? that#) (when (clojure.core/== this# that#)
                            this#)
-        (cljs.core.logic.fd/interval? that#) (-intersection that# this#)
-        :else (intersection* this# that#)))
+        (cljs.core.logic.fd/interval? that#)
+        (cljs.core.logic.fd/-intersection that# this#)
+        :else (cljs.core.logic.fd/intersection* this# that#)))
      (~'-difference [this# that#]
        (cond
         (integer? that#) (if (clojure.core/== this# that#)
                            nil
                            this#)
-        (cljs.core.logic.fd/interval? that#) (-difference that# this#)
-        :else (difference* this# that#)))
+        (cljs.core.logic.fd/interval? that#)
+        (cljs.core.logic.fd/-difference that# this#)
+        :else (cljs.core.logic.fd/difference* this# that#)))
 
      cljs.core.logic.fd/IIntervals
      (~'-intervals [this#]

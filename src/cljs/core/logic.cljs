@@ -8,8 +8,7 @@
                      lfirst lnext ifa -cached? -add reify-tabled
                      -reify-tabled reuse ready? subunify
                      unify-with-record unify-with-pmap -member-count]]
-            [cljs.reader :as reader]
-            [cljs.core :as core])
+            [cljs.reader :as reader])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
