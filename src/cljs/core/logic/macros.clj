@@ -14,8 +14,6 @@
 
 (def ^:dynamic *locals* nil)
 
-(def ^:dynamic *logic-dbs* [])
-
 (def ^:dynamic *logic-compiler-env* (env/default-compiler-env))
 
 (def ^:dynamic *logic-env*
@@ -114,12 +112,14 @@
 (defmacro run
   "Executes goals until a maximum of n results are found."
   [n bindings & goals]
-  `(-run {:occurs-check true :n ~n :db *logic-dbs*} ~bindings ~@goals))
+  `(-run {:occurs-check true :n ~n :db cljs.core.logic/*logic-dbs*}
+         ~bindings ~@goals))
 
 (defmacro run*
   "Executes goals until results are exhausted."
   [bindings & goals]
-  `(-run {:occurs-check true :n false :db *logic-dbs*} ~bindings ~@goals))
+  `(-run {:occurs-check true :n false :db cljs.core.logic/*logic-dbs*}
+         ~bindings ~@goals))
 
 (defmacro run-db
   "Executes goals until a maximum of n results are found. Uses a specified logic database."
@@ -135,7 +135,8 @@
   "Executes goals until a maximum of n results are found. Does not
    occurs-check."
   [n bindings & goals]
-  `(-run {:occurs-check false :n ~n :db *logic-dbs*} ~bindings ~@goals))
+  `(-run {:occurs-check false :n ~n :db cljs.core.logic/*logic-dbs*}
+         ~bindings ~@goals))
 
 (defmacro run-nc*
   "Executes goals until results are exhausted. Does not occurs-check."
