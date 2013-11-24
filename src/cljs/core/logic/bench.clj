@@ -1,4 +1,5 @@
 (ns cljs.core.logic.bench
+  (:refer-clojure :exclude [identity symbol ==])
   (:require [cljs.compiler :as comp]
             [cljs.core :as core]
             [cljs.env :as env]
@@ -12,7 +13,15 @@
             [clojure.core.reducers :as r]
             [clojure.data.generators :as gen]
             [clojure.pprint :refer [pprint]]
-            [clojure.repl :refer [doc]]))
+            [clojure.repl :refer [doc]]
+            [riddley.walk :refer [macroexpand-all walk-exprs]]))
+
+(defn emit-js
+  [form]
+  (let [env (ana/empty-env)
+        ast (ana/analyze env form)
+        js (comp/emit-str ast)]
+    js))
 
 ;; (defmacro simple-let
 ;;   [bindings & body]

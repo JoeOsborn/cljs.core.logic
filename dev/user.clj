@@ -10,7 +10,9 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [clojure.test :as test]
-   [clojure.tools.namespace.repl :refer (refresh refresh-all)]))
+   [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+   [cemerick.austin]
+   [cemerick.austin.repls :refer [exec]]))
 
 (def system
   "A Var containing an object representing the application under
@@ -27,8 +29,7 @@
 (defn start
   "Starts the system running, updates the Var #'system."
   []
-  ;; TODO
-  )
+  (exec))
 
 (defn stop
   "Stops the system if it is currently running, updates the Var
@@ -48,4 +49,4 @@
   "Stops the system, reloads modified source files, and restarts it."
   []
   (stop)
-  (refresh :after 'user/go))
+  (refresh-all :after 'user/go))

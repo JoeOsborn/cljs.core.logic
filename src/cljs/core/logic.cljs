@@ -179,7 +179,7 @@
         cid (.-cid cs)
         nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
         ncm (assoc cm cid c)]
-    (ConstraintStore. nkm ncm cid (:running cs))))
+    (ConstraintStore. nkm ncm cid (.-running cs))))
 
 (defn make-cs []
   (ConstraintStore. {} {} 0 #{}))
@@ -351,7 +351,7 @@
                 vp (val me)]
             (if (not (bindable? vp))
               (if (subst-val? vp)
-                (let [sv (:v vp)]
+                (let [sv (.-v vp)]
                   (if (keyword-identical? sv ::unbound)
                     (with-meta v (assoc (meta vp) ::unbound true))
                     sv))
@@ -500,7 +500,7 @@
 (defn get-dom [s x dom]
   (let [v (proto/root-val s x)]
     (cond
-     (subst-val? v) (let [v' (:v v)]
+     (subst-val? v) (let [v' (.-v v)]
                       (if (not= v' ::unbound)
                         v'
                         (-> v :doms dom)))
@@ -534,7 +534,7 @@
     (vary-meta a assoc k v)))
 
 (defn merge-doms [s x doms]
-  (let [xdoms (:doms (proto/root-val s x))]
+  (let [xdoms (.-doms (proto/root-val s x))]
     (loop [doms (seq doms) s s]
       (if doms
         (let [[dom domv] (first doms)]
@@ -557,8 +557,8 @@
 (defn merge-with-root [s x root]
   (let [xv    (proto/root-val s x)
         rootv (proto/root-val s root)
-        eset  (set/union (:eset rootv) (:eset xv))
-        doms (loop [xd (seq (:doms xv)) rd (:doms rootv) r {}]
+        eset  (set/union (.-eset rootv) (.-eset xv))
+        doms (loop [xd (seq (.-doms xv)) rd (.-doms rootv) r {}]
                (if xd
                  (let [[xk xv] (first xd)]
                    (if-let [[_ rv] (find rd xk)]
@@ -569,7 +569,7 @@
                      (recur (next xd) rd (assoc r xk xv))))
                  (merge r rd)))
         nv (when doms
-             (subst-val (:v rootv) doms eset
+             (subst-val (.-v rootv) doms eset
                         (merge (meta xv) (meta rootv))))]
     (when nv
       (-> s
@@ -590,8 +590,8 @@
         xv (to-subst-val (proto/root-val s x))
         yv (to-subst-val (proto/root-val s y))]
     (-> s
-        (proto/update-var x (assoc xv :eset (conj (or (:eset xv) #{}) y)))
-        (proto/update-var y (assoc yv :eset (conj (or (:eset yv) #{}) x))))))
+        (proto/update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
+        (proto/update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
 
 ;; ===========================================================================
 ;; Logic Variables
@@ -622,8 +622,8 @@
   (-equiv [this o]
     (if (satisfies? proto/IVar o)
       (if unique
-        (identical? id (:id o))
-        (identical? name (:name o)))
+        (identical? id (.-id o))
+        (identical? name (.-name o)))
       false))
 
   IHash
@@ -639,7 +639,7 @@
                     :else nil)]
        (if repoint
          (let [[root other] repoint
-               s (assoc s :cs (proto/migrate (:cs s) other root))
+               s (assoc s :cs (proto/migrate (.-cs s) other root))
                s (if (-> other clojure.core/meta ::unbound)
                    (merge-with-root s other root)
                    s)]
@@ -686,7 +686,7 @@
 
   IPrintWithWriter
   (-pr-writer [x writer opts]
-    (-write writer (str "<lvar:" (:name x) ">"))))
+    (-write writer (str "<lvar:" (.-name x) ">"))))
 
 (defn next-id
   []
@@ -1100,12 +1100,12 @@
   "A goal that attempts to unify terms u and v."
   [u v]
   (fn [a]
-    (let [has-cs? (pos? (count (:cs a)))]
+    (let [has-cs? (pos? (count (.-cs a)))]
       (let [ap (unify (if has-cs? (assoc a :vs []) a) u v)
             vs (if has-cs? (:vs ap))
             changed? (pos? (count vs))]
         (if changed?
-          ((run-constraints* vs (:cs ap) ::subst) (assoc ap :vs nil))
+          ((run-constraints* vs (.-cs ap) ::subst) (assoc ap :vs nil))
           ap)))))
 
 (declare reifyg)
@@ -1162,7 +1162,7 @@
 
   Choice
   (ifu [b gs c]
-    (reduce bind (:a b) gs)))
+    (reduce bind (.-a b) gs)))
 
 (defn onceo [g] (condu (g)))
 
@@ -1320,12 +1320,12 @@
     (-write writer (str x))))
 
 (defn answer-cache []
-  (AnswerCache. () #{} nil))
+  (AnswerCache. '() #{} nil))
 
 (defrecord SuspendedStream [cache ansv* f]
   proto/ISuspendedStream
   (ready? [this]
-    (not (identical? (:ansl @cache) ansv*))))
+    (not (identical? (.-ansl @cache) ansv*))))
 
 (defn make-suspended-stream [cache ansv* f]
   (SuspendedStream. cache ansv* f))
@@ -1353,7 +1353,7 @@
      (success-cont
       (fn []
         (let [ss (first w)
-              f  (:f ss)
+              f  (.-f ss)
               w  (into a (next w))]
           (if (empty? w)
             (f)
@@ -1376,7 +1376,7 @@
   (-reify-tabled [this v]
     (let [v (walk this v)]
       (cond
-       (lvar? v) (ext-no-check this v (lvar (count (:s this))))
+       (lvar? v) (ext-no-check this v (lvar (count (.-s this))))
        (coll? v) (-reify-tabled
                   (-reify-tabled this (first v))
                   (next v))
@@ -1393,14 +1393,14 @@
   ;; call start and end are nil - so internally they will be
   ;; initialized to the contents of the cache & 0 respectively
   (reuse [this argv cache start end]
-    (let [start (or start (:ansl @cache))
+    (let [start (or start (.-ansl @cache))
           end   (or end 0)]
       (letfn [(reuse-loop [ansv*]
                 (if (= (count ansv*) end)
                   ;; we've run out of answers terms to reuse in the cache
                   [(make-suspended-stream cache start
                                           (fn [] (reuse this argv cache
-                                                        (:ansl @cache)
+                                                        (.-ansl @cache)
                                                         (count start))))]
                   ;; we have answer terms to reuse in the cache
                   (let [ans (first ansv*)]
@@ -1434,8 +1434,8 @@
      (fn []
        (into []
              (map (fn [ss]
-                    (make-suspended-stream (:cache ss) (:ansv* ss)
-                                           (fn [] (proto/bind ((:f ss)) g))))
+                    (make-suspended-stream (.-cache ss) (.-ansv* ss)
+                                           (fn [] (proto/bind ((.-f ss)) g))))
                   this)))))
 
   proto/IMPlus
@@ -1483,23 +1483,23 @@
     (let [a (reduce (fn [a x]
                       (ext-no-check a x (subst-val ::unbound)))
                     a (unbound-rands a c))]
-      (assoc a :cs (proto/addc (:cs a) a c)))))
+      (assoc a :cs (proto/addc (.-cs a) a c)))))
 
 (defn updatecg [c]
   (fn [a]
-    (assoc a :cs (proto/updatec (:cs a) a c))))
+    (assoc a :cs (proto/updatec (.-cs a) a c))))
 
 (defn remcg [c]
   (fn [a]
-    (assoc a :cs (proto/remc (:cs a) a c))))
+    (assoc a :cs (proto/remc (.-cs a) a c))))
 
 (defn runcg [c]
   (fn [a]
-    (assoc a :cs (proto/runc (:cs a) c true))))
+    (assoc a :cs (proto/runc (.-cs a) c true))))
 
 (defn stopcg [c]
   (fn [a]
-    (assoc a :cs (proto/runc (:cs a) c false))))
+    (assoc a :cs (proto/runc (.-cs a) c false))))
 
 (defn ^boolean ientailed? [c]
   (satisfies? proto/IEntailed c))
@@ -1535,19 +1535,19 @@
   [a]
   (loop [a a]
     (when a
-      (let [cq (:cq a)]
+      (let [cq (.-cq a)]
         (if (zero? (count cq))
           (assoc a :cq nil)
           (let [c (first cq)]
             (recur
              ((run-constraint c)
               (-> a
-                  (assoc :cq (subvec (:cq a) 1))
-                  (assoc :cqs (disj (:cqs a) (id c))))))))))))
+                  (assoc :cq (subvec (.-cq a) 1))
+                  (assoc :cqs (disj (.-cqs a) (id c))))))))))))
 
 (defn run-constraints [xcs]
   (fn [a]
-    (let [cq (:cq a)
+    (let [cq (.-cq a)
           a  (reduce (fn [a c]
                        (proto/queue a c))
                      (assoc a :cq (or cq [])) xcs)]
@@ -1583,9 +1583,9 @@
     (verify-all-bound* a (seq constrained))))
 
 (defn enforceable-constrained [a]
-  (let [cs (:cs a)
-        km (:km cs)
-        cm (:cm cs)
+  (let [cs (.-cs a)
+        km (.-km cs)
+        cm (.-cm cs)
         vs (keys km)]
     (filter (fn [v]
               (some (fn [cid]
@@ -1607,8 +1607,8 @@
        ((onceo (force-ans constrained)) a)))))
 
 (defn reify-constraints [v r a]
-  (let [cs  (:cs  a)
-        rcs (->> (vals (:cm cs))
+  (let [cs  (.-cs  a)
+        rcs (->> (vals (.-cm cs))
                  (filter reifiable?)
                  (map #(proto/-reifyc % v r a))
                  (filter #(not (nil? %)))

@@ -6,13 +6,13 @@
                      -with-prefix tree-constraint? -constrain-tree
                      with-id remc]]
             [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
+             :refer [empty-s lcons lvar to-s reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
-                     emptyo resto firsto appendo reifyg partial-map predc
+                     emptyo resto firsto appendo reifyg partial-map predc 
                      featurec everyg composeg solutions pair ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? permuteo]]
+                     !=c nafc treec -reify tree-term? permuteo ==]]
             [cljs.core.logic.fd :as fd :refer [interval]]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
@@ -1685,7 +1685,7 @@
              (fresh [wedges flats pumps sandals
                      ff hh sp tt pumps+1]
                (in wedges flats pumps sandals
-                      ff hh sp tt pumps+1 (fd/interval 1 4))
+                   ff hh sp tt pumps+1 (fd/interval 1 4))
                (fd/distinct [wedges flats pumps sandals])
                (fd/distinct [ff hh sp tt])
                (fd/== flats hh)

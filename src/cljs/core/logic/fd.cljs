@@ -40,16 +40,16 @@
   (l/pair (-lb i) (-ub i)))
 
 (defn interval-< [i j]
-  (cljs.core/< (-ub i) (-lb j)))
+  (clojure.core/< (-ub i) (-lb j)))
 
 (defn interval-<= [i j]
-  (cljs.core/<= (-ub i) (-lb j)))
+  (clojure.core/<= (-ub i) (-lb j)))
 
 (defn interval-> [i j]
-  (cljs.core/> (-lb i) (-ub j)))
+  (clojure.core/> (-lb i) (-ub j)))
 
 (defn interval->= [i j]
-  (cljs.core/>= (-lb i) (-ub j)))
+  (clojure.core/>= (-lb i) (-ub j)))
 
 ;; FiniteDomain
 ;; -----
@@ -93,14 +93,14 @@
           c (count s)]
       (cond
        (= c 1) (first s)
-       (cljs.core/> c 1) (FiniteDomain. s (first s) max)
+       (clojure.core/> c 1) (FiniteDomain. s (first s) max)
        :else nil)))
 
   (-drop-before [_ n]
-    (apply domain (drop-while #(cljs.core/< % n) s)))
+    (apply domain (drop-while #(clojure.core/< % n) s)))
 
   (-keep-before [this n]
-    (apply domain (take-while #(cljs.core/< % n) s)))
+    (apply domain (take-while #(clojure.core/< % n) s)))
 
   ISet
   (-member? [this n]
@@ -112,8 +112,8 @@
      (if (s that) false true)
      (instance? FiniteDomain that)
      (cond
-      (cljs.core/< max (:min that)) true
-      (cljs.core/> min (:max that)) true
+      (clojure.core/< max (:min that)) true
+      (clojure.core/> min (:max that)) true
       :else (empty? (set/intersection s (:s that))))
      :else (disjoint?* this that)))
 
@@ -190,7 +190,7 @@
     (pr-str this))
 
   proto/IMemberCount
-  (-member-count [this] (inc (cljs.core/- ub lb)))
+  (-member-count [this] (inc (clojure.core/- ub lb)))
 
   IInterval
   (-lb [_] lb)
@@ -199,25 +199,25 @@
   ISortedDomain
   (-drop-one [_]
     (let [nlb (inc lb)]
-      (when (cljs.core/<= nlb ub)
+      (when (clojure.core/<= nlb ub)
         (interval nlb ub))))
 
   (-drop-before [this n]
     (cond
      (= n ub) n
-     (cljs.core/< n lb) this
-     (cljs.core/> n ub) nil
+     (clojure.core/< n lb) this
+     (clojure.core/> n ub) nil
      :else (interval n ub)))
 
   (-keep-before [this n]
     (cond
-     (cljs.core/<= n lb) nil
-     (cljs.core/> n ub) this
+     (clojure.core/<= n lb) nil
+     (clojure.core/> n ub) this
      :else (interval lb (dec n))))
 
   ISet
   (-member? [this n]
-    (and (cljs.core/>= n lb) (cljs.core/<= n ub)))
+    (and (clojure.core/>= n lb) (clojure.core/<= n ub)))
 
   (-disjoint? [this that]
     (cond
@@ -229,8 +229,8 @@
            j that
            [imin imax] (bounds i)
            [jmin jmax] (bounds j)]
-       (or (cljs.core/> imin jmax)
-           (cljs.core/< imax jmin)))
+       (or (clojure.core/> imin jmax)
+           (clojure.core/< imax jmin)))
 
      :else (disjoint?* this that)))
 
@@ -246,16 +246,16 @@
            imin (-lb i) imax (-ub i)
            jmin (-lb j) jmax (-ub j)]
        (cond
-        (cljs.core/< imax jmin) nil
-        (cljs.core/< jmax imin) nil
-        (and (cljs.core/<= imin jmin)
-             (cljs.core/>= imax jmax)) j
-             (and (cljs.core/<= jmin imin)
-                  (cljs.core/>= jmax imax)) i
-                  (and (cljs.core/<= imin jmin)
-                       (cljs.core/<= imax jmax)) (interval jmin imax)
-                       (and (cljs.core/<= jmin imin)
-                            (cljs.core/<= jmax imax)) (interval imin jmax)
+        (clojure.core/< imax jmin) nil
+        (clojure.core/< jmax imin) nil
+        (and (clojure.core/<= imin jmin)
+             (clojure.core/>= imax jmax)) j
+             (and (clojure.core/<= jmin imin)
+                  (clojure.core/>= jmax imax)) i
+                  (and (clojure.core/<= imin jmin)
+                       (clojure.core/<= imax jmax)) (interval jmin imax)
+                       (and (clojure.core/<= jmin imin)
+                            (clojure.core/<= jmax imax)) (interval imin jmax)
                             :else (throw (ex-info (str "Interval intersection not defined " i " " j) {}))))
 
      :else (intersection* this that)))
@@ -276,17 +276,17 @@
            imin (-lb i) imax (-ub i)
            jmin (-lb j) jmax (-ub j)]
        (cond
-        (cljs.core/> jmin imax) i
-        (and (cljs.core/<= jmin imin)
-             (cljs.core/>= jmax imax)) nil
-             (and (cljs.core/< imin jmin)
-                  (cljs.core/> imax jmax))
+        (clojure.core/> jmin imax) i
+        (and (clojure.core/<= jmin imin)
+             (clojure.core/>= jmax imax)) nil
+             (and (clojure.core/< imin jmin)
+                  (clojure.core/> imax jmax))
              (multi-interval (interval imin (dec jmin))
                              (interval (inc jmax) imax))
-                  (and (cljs.core/< imin jmin)
-                       (cljs.core/<= jmin imax)) (interval imin (dec jmin))
-                       (and (cljs.core/> imax jmax)
-                            (cljs.core/<= jmin imin)) (interval (inc jmax) imax)
+                  (and (clojure.core/< imin jmin)
+                       (clojure.core/<= jmin imax)) (interval imin (dec jmin))
+                       (and (clojure.core/> imax jmax)
+                            (clojure.core/<= jmin imin)) (interval (inc jmax) imax)
                             :else (throw (ex-info (str "Interval difference not defined " i " " j) {}))))
 
      :else (difference* this that)))
@@ -312,7 +312,7 @@
    is large."
   ([ub] (IntervalFD. 0 ub))
   ([lb ub]
-     (if (zero? (cljs.core/- ub lb))
+     (if (zero? (clojure.core/- ub lb))
        ub
        (IntervalFD. lb ub))))
 
@@ -328,26 +328,26 @@
          (let [[imin imax] (bounds i)
                [jmin jmax] (bounds j)]
            (cond
-            (cljs.core/<= imin jmin)
+            (clojure.core/<= imin jmin)
             (cond
-             (cljs.core/< imax jmax)
+             (clojure.core/< imax jmax)
              (recur (next is)
                     (cons (interval (inc imax) jmax) (next js))
                     (conj r (interval jmin imax)))
-             (cljs.core/> imax jmax)
+             (clojure.core/> imax jmax)
              (recur (cons (interval (inc jmax) imax) (next is))
                     (next js)
                     (conj r j))
              :else
              (recur (next is) (next js)
                     (conj r (interval jmin jmax))))
-            (cljs.core/> imin jmin)
+            (clojure.core/> imin jmin)
             (cond
-             (cljs.core/> imax jmax)
+             (clojure.core/> imax jmax)
              (recur (cons (interval (inc jmax) imax) (next is))
                     (next js)
                     (conj r (interval imin jmax)))
-             (cljs.core/< imax jmax)
+             (clojure.core/< imax jmax)
              (recur is (cons (interval (inc imax) jmax) (next js))
                     (conj r i))
              :else
@@ -368,26 +368,26 @@
            (let [[imin imax] (bounds i)
                  [jmin jmax] (bounds j)]
              (cond
-              (cljs.core/< imin jmin)
+              (clojure.core/< imin jmin)
               (cond
-               (cljs.core/< jmax imax)
+               (clojure.core/< jmax imax)
                (recur (cons (interval (inc jmax) imax) (next is))
                       (next js)
                       (conj r (interval imin (dec jmin))))
-               (cljs.core/> jmax imax)
+               (clojure.core/> jmax imax)
                (recur (next is)
                       (cons (interval (inc imax) jmax) (next js))
                       (conj r (interval imin (dec jmin))))
                :else
                (recur (next is) (next js)
                       (conj r (interval imin (dec jmin)))))
-              (cljs.core/>= imin jmin)
+              (clojure.core/>= imin jmin)
               (cond
-               (cljs.core/< imax jmax)
+               (clojure.core/< imax jmax)
                (recur (next is)
                       (cons (interval (inc imax) jmax) (next js))
                       r)
-               (cljs.core/> imax jmax)
+               (clojure.core/> imax jmax)
                (recur (cons (interval (inc jmax) imax) (next is))
                       (next js)
                       r)
@@ -517,7 +517,7 @@
               (let [j (peek r)
                     jmax (-ub j)
                     imin (-lb i)]
-                (if (cljs.core/<= (dec imin) jmax)
+                (if (clojure.core/<= (dec imin) jmax)
                   (conj (pop r) (interval (-lb j) (-ub i)))
                   (conj r i)))))
           [] is))
@@ -662,7 +662,7 @@
     (-step [this s]
       (let-dom s [u du v dv]
                (reify
-                 cljs.core/IFn
+                 clojure.core/IFn
                  (-invoke [_ s]
                    (let [i (-intersection du dv)]
                      ((l/composeg
@@ -791,21 +791,21 @@
                    (let [[wmin wmax]
                          (if dw
                            (bounds dw)
-                           [(cljs.core/+ (-lb du) (-lb dv))
-                            (cljs.core/+ (-ub du) (-ub dv))])
+                           [(clojure.core/+ (-lb du) (-lb dv))
+                            (clojure.core/+ (-ub du) (-ub dv))])
                          [umin umax]
                          (if du
                            (bounds du)
-                           [(cljs.core/- (-lb dw) (-ub dv))
-                            (cljs.core/- (-ub dw) (-lb dv))])
+                           [(clojure.core/- (-lb dw) (-ub dv))
+                            (clojure.core/- (-ub dw) (-lb dv))])
                          [vmin vmax]
                          (if dv
                            (bounds dv)
-                           [(cljs.core/- (-lb dw) (-ub du))
-                            (cljs.core/- (-ub dw) (-lb du))])
-                         wi (interval (cljs.core/+ umin vmin) (cljs.core/+ umax vmax))
-                         ui (interval (cljs.core/- wmin vmax) (cljs.core/- wmax vmin))
-                         vi (interval (cljs.core/- wmin umax) (cljs.core/- wmax umin))]
+                           [(clojure.core/- (-lb dw) (-ub du))
+                            (clojure.core/- (-ub dw) (-lb du))])
+                         wi (interval (clojure.core/+ umin vmin) (clojure.core/+ umax vmax))
+                         ui (interval (clojure.core/- wmin vmax) (clojure.core/- wmax vmin))
+                         vi (interval (clojure.core/- wmin umax) (clojure.core/- wmax umin))]
                      (when-let [wi (if (and wi dw) (-intersection wi dw) wi)]
                        (when-let [ui (if (and ui du)
                                        (-intersection ui du)
@@ -814,7 +814,7 @@
                                          (-intersection vi dv)
                                          vi)]
                            (when (or (not (every? singleton-dom? [wi ui vi]))
-                                     (cljs.core/= (cljs.core/+ ui vi) wi))
+                                     (clojure.core/= (clojure.core/+ ui vi) wi))
                              ((composeg*
                                (process-dom w wi dw)
                                (process-dom u ui du)
@@ -825,7 +825,7 @@
                    (and (singleton-dom? du)
                         (singleton-dom? dv)
                         (singleton-dom? dw)
-                        (= (cljs.core/+ du dv) dw)))
+                        (= (clojure.core/+ du dv) dw)))
                  proto/IRunnable
                  (-runnable? [_]
                    (cond
@@ -854,7 +854,7 @@
   (letfn [(safe-div [n c a t]
             (if (zero? n)
               c
-              (let [q (cljs.core/quot a n)]
+              (let [q (clojure.core/quot a n)]
                 (case t
                   :lower (if (pos? (rem a n))
                            (inc q)
@@ -871,8 +871,8 @@
                      (let [[wmin wmax]
                            (if dw
                              (bounds dw)
-                             [(cljs.core/* (-lb du) (-lb dv))
-                              (cljs.core/* (-ub du) (-ub dv))])
+                             [(clojure.core/* (-lb du) (-lb dv))
+                              (clojure.core/* (-ub du) (-ub dv))])
                            [umin umax]
                            (if du
                              (bounds du)
@@ -883,7 +883,7 @@
                              (bounds dv)
                              [(safe-div (-ub du) (-lb dw) (-lb dw) :lower)
                               (safe-div (-lb du) (-lb dw) (-ub dw) :upper)])
-                           wi (interval (cljs.core/* umin vmin) (cljs.core/* umax vmax))
+                           wi (interval (clojure.core/* umin vmin) (clojure.core/* umax vmax))
                            ui (interval (safe-div vmax umin wmin :lower)
                                         (safe-div vmin umax wmax :upper))
                            vi (interval (safe-div umax vmin wmin :lower)
@@ -899,7 +899,7 @@
                                            vi)]
                              (when (or (not (every? singleton-dom?
                                                     [wi ui vi]))
-                                       (cljs.core/= (cljs.core/* ui vi) wi))
+                                       (clojure.core/= (clojure.core/* ui vi) wi))
                                ((composeg*
                                  (process-dom w wi dw)
                                  (process-dom u ui du)
@@ -909,7 +909,7 @@
                      (and (singleton-dom? du)
                           (singleton-dom? dv)
                           (singleton-dom? dw)
-                          (= (cljs.core/* du dv) dw)))
+                          (= (clojure.core/* du dv) dw)))
                    proto/IRunnable
                    (-runnable? [_]
                      (cond
@@ -1063,7 +1063,7 @@
 (defn expand [form]
   (if (seq? form)
     (let [[op & args] form]
-      (if (and (binops op) (cljs.core/> (count args) 2))
+      (if (and (binops op) (clojure.core/> (count args) 2))
         (list op (expand (first args))
               (expand (cons op (rest args))))
         (cons op (map expand args))))

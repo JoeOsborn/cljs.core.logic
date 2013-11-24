@@ -1,11 +1,14 @@
 (ns cljs.core.logic.bench
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l :refer [== appendo != s# u#]]
+            [cljs.core.logic :as l :refer [appendo != s# u# lcons pair]]
             [cljs.core.logic.fd :as fd]
             [cljs.core.logic.pldb :as pldb :refer [db-fact]]
             [cljs.core.logic.nominal :as nom]
-            [clojure.set :as set])
+            [clojure.core.reducers :as r]
+            [clojure.set :as set]
+            [cljs.reader :as reader]
+            [goog.functions :as gfns])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
@@ -13,114 +16,73 @@
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc in db-rel
-                            with-db]]))
+                            with-db]]
+                   [cljs.core.logic.bench :as bench :refer [==]]))
 
-(comment
-  ;; (defn bit-xoro
-  ;;   [x y r]
-  ;;   (conde ((== 0 x) (== 0 y) (== 0 r))
-  ;;          ((== 1 x) (== 0 y) (== 1 r))
-  ;;          ((== 0 x) (== 1 y) (== 1 r))
-  ;;          ((== 1 x) (== 1 y) (== 0 r))
-  ;;          (else u#)))
-  )
+(defn bit-nando
+  [x y r]
+  (conde [(== 0 x) (== 0 y) (== 1 r)]
+         [(== 0 x) (== 1 y) (== 1 r)]
+         [(== 1 x) (== 0 y) (== 1 r)]
+         [(== 1 x) (== 1 y) (== 0 r)]))
 
-;; (db-rel man p)
-;; (db-rel woman p)
-;; (db-rel likes p1 p2)
-;; (db-rel fun p)
+(defn bit-xoro
+  [x y r]
+  (fresh [s t u]
+    (bit-nando x y s)
+    (bit-nando x s t)
+    (bit-nando s y u)
+    (bit-nando t u r)))
 
-;; (let [facts
-;;       (pldb/db
-;;        [man 'Bob]
-;;        [man 'John]
-;;        [man 'Ricky]
-;;        [woman 'Mary]
-;;        [woman 'Martha]
-;;        [woman 'Lucy]
-;;        [likes 'Bob 'Mary]
-;;        [likes 'John 'Martha]
-;;        [likes 'Ricky 'Lucy]
-;;        [fun 'Lucy])]
-;;   (with-db facts
-;;     (doall
-;;      (run* [q]
-;;        (fresh [x y]
-;;          (fun y)
-;;          (likes x y)
-;;          (== q [x y]))))))
+(defn bit-noto
+  [x r]
+  (bit-nando x x r))
 
-;; (defne moveo [before action after]
-;;   ([[:middle :onbox :middle :hasnot]
-;;     :grasp
-;;     [:middle :onbox :middle :has]])
-;;   ([[pos :onfloor pos has]
-;;     :climb
-;;     [pos :onbox pos has]])
-;;   ([[pos1 :onfloor pos1 has]
-;;     :push
-;;     [pos2 :onfloor pos2 has]])
-;;   ([[pos1 :onfloor box has]
-;;     :walk
-;;     [pos2 :onfloor box has]]))
+(defn bit-ando
+  [x y r]
+  (fresh [s]
+    (bit-nando x y s)
+    (bit-noto s r)))
 
-;; (defne cangeto [state out]
-;;   ([[_ _ _ :has] true])
-;;   ([_ _] (fresh [action next]
-;;            (moveo state action next)
-;;            (cangeto next out))))
-;; (comment
-;;   (run 1 [q]
-;;     (cangeto [:atdoor :onfloor :atwindow :hasnot] q)))
+(defn half-addero
+  [x y r c]
+  (all
+   (bit-xoro x y r)
+   (bit-ando x y c)))
 
-;; (defna findo [x l o]
-;;   ([_ [[y :- o] . _] _]
-;;      (project [x y] (== (= x y) true)))
-;;   ([_ [_ . c] _] (findo x c o)))
+(defn full-addero
+  [b x y r c]
+  (fresh [w xy wz]
+    (half-addero x y w xy)
+    (half-addero w b r wz)
+    (bit-xoro xy wz c)))
 
-;; (defn typedo [c x t]
-;;   (conda
-;;    [(lvaro x) (findo x c t)]
-;;    [(matche [c x t]
-;;             ([_ [[y] :>> a] [s :> t]]
-;;                (fresh [l]
-;;                  (conso [y :- s] c l)
-;;                  (typedo l a t)))
-;;             ([_ [:apply a b] _]
-;;                (fresh [s]
-;;                  (typedo c a [s :> t])
-;;                  (typedo c b s))))]))
+(defn build-num
+  [n]
+  (loop [n n num []]
+    (cond (odd? n)
+          (recur (quot (dec n) 2) (conj num 1))
+          (and (not (zero? n)) (even? n))
+          (recur (quot n 2) (conj num 0))
+          (zero? n) num)))
 
-;; (comment
-;;   ;; ([_.0 :> _.1])
-;;   (run* [q]
-;;     (fresh [f g a b t]
-;;       (typedo [[f :- a] [g :- b]] [:apply f g] t)
-;;       (== q a)))
-  
-;;   ;; ([:int :> _.0])
-;;   (run* [q]
-;;     (fresh [f g a t]
-;;       (typedo [[f :- a] [g :- :int]] [:apply f g] t)
-;;       (== q a)))
+(defn poso
+  [n]
+  (fresh [a d]
+    (== (lcons a d) n)))
 
-;;   ;; (:int)
-;;   (run* [q]
-;;     (fresh [f g a t]
-;;       (typedo [[f :- [:int :> :float]] [g :- a]]
-;;               [:apply f g] t)
-;;       (== q a)))
+(def not-found (js-obj))
 
-;;   ;; ()
-;;   (run* [t]
-;;     (fresh [f a b]
-;;       (typedo [f :- a] [:apply f f] t)))
-
-;;   ;; ([_.0 :> [[_.0 :> _.1] :> _.1]])
-;;   (run* [t]
-;;     (fresh [x y]
-;;       (typedo [] [[x] :>> [[y] :>> [:apply y x]]] t))))
-
+(defn assq
+  [k ^not-native xs]
+  (loop [^not-native xs (-seq xs)]
+    (if (nil? xs)
+      not-found
+      (let [x (-first xs)
+            lhs (.-lhs x)]
+        (if (identical? k lhs)
+          (.-rhs x)
+          (recur (-next xs)))))))
 
 (comment
   (run* [q]

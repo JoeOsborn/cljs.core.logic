@@ -7,7 +7,7 @@
                      -with-prefix tree-constraint? with-id remc
                      -constrain-tree ext-run-cs]]
             [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
+             :refer [== empty-s lcons lvar to-s reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
                      featurec everyg composeg solutions pair ext-run-csg

@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto
              :refer [queue walk-term take* -unwrap walk]]
-            [cljs.core.logic :as l :refer [lcons == reifyg fix-constraints
-                                           empty-s -reify]])
+            [cljs.core.logic :as l :refer [lcons reifyg fix-constraints
+                                           empty-s -reify ==]])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
@@ -103,7 +103,8 @@
    (take*
     (fn []
       ((fresh [q]
-         (== u w) (== q u)
+         (== u w)
+         (== q u)
          (fn [a] (fix-constraints a))
          (reifyg q))
        init-s)))))
