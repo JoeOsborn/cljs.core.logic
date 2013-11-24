@@ -20,6 +20,45 @@
   (env/with-compiler-env *logic-compiler-env*
     (assoc (ana/empty-env) :ns 'cljs.core.logic)))
 
+(defn quoted?
+  [form]
+  (and (seq? form) (identical? (str (first form)) "quote")))
+
+(defn quoted-literal?
+  [form]
+  (and (quoted? form)
+       ((some-fn keyword? string? number? symbol?) (second form))))
+
+(defn next-id
+  []
+  (-> (str (gensym))
+      (clojure.string/replace #"G__" "")
+      read-string))
+
+(defmacro lvar
+  ([] (let [id# (next-id)
+            id-str# (str id#)]
+        `(cljs.core.logic/LVar. ~id# true ~id-str# nil ~(hash id-str#) nil)))
+  ([name]
+     (let [id# (next-id)
+           name# (if (quoted-literal? name)
+                   (str (second name) "__" id#)
+                   (str name "__" id#))]
+       `(cljs.core.logic/LVar. ~id# true ~name# ~name ~(hash name#) nil)))
+  ([name unique]
+     (let [id# (if unique
+                 (next-id)
+                 name)
+            name# (if unique
+                    (if (quoted-literal? name)
+                      (str (second name) "__" id#)
+                      (str name "__" id#))
+                    (if (quoted-literal? name)
+                      (str (second name))
+                      (str name)))]
+       
+       `(cljs.core.logic/LVar. ~id# ~unique ~name# ~name ~(hash name#) nil))))
+
 (defmacro umi
   [& args]
   `(unchecked-multiply-int ~@args))
@@ -75,7 +114,7 @@
 
 (defn- lvar-bind [sym]
   ((juxt identity
-         (fn [s] `(cljs.core.logic/lvar '~s))) sym))
+         (fn [s] `(lvar '~s))) sym))
 
 (defn- lvar-binds [syms]
   (mapcat lvar-bind syms))
@@ -311,7 +350,7 @@
   ([p vars] (p->term p vars false))
   ([p vars quoted]
      (cond
-      (clojure.core/= p '_) `(cljs.core.logic/lvar)
+      (clojure.core/= p '_) `(lvar)
       (lcons-p? p) (p->llist p vars quoted)
       (coll? p)
       (cond

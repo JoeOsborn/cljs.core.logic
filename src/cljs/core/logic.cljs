@@ -10,7 +10,7 @@
                      unify-with-record unify-with-pmap -member-count]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
@@ -59,13 +59,13 @@
   (-count [_] 2)
 
   IIndexed
-  (-nth [this i]
-    (case i
+  (-nth [this i]    
+    (condp clojure.core/== i
       0 lhs
       1 rhs
       (throw (ex-info "Index out of bounds" {:index i :coll this}))))
   (-nth [_ i not-found]
-    (case i
+    (condp clojure.core/== i
       0 lhs
       1 rhs
       not-found))
@@ -77,8 +77,8 @@
   IEquiv
   (-equiv [_ o]
     (if (instance? Pair o)
-      (and (= lhs (.-lhs o))
-           (= rhs (.-rhs o)))
+      (and (identical? lhs (.-lhs o))
+           (identical? rhs (.-rhs o)))
       false))
 
   IPrintWithWriter
@@ -206,7 +206,7 @@
 ;; ==========================================================================
 ;; Substitutions
 
-(declare empty-s choice lvar lvar? pair lcons run-constraints*)
+(declare empty-s choice lvar? pair lcons run-constraints*)
 
 (defn occurs-check [s u v]
   (let [v (walk s v)]
@@ -688,34 +688,11 @@
   (-pr-writer [x writer opts]
     (-write writer (str "<lvar:" (.-name x) ">"))))
 
-(defn next-id
-  []
-  (-> (str (gensym))
-      (clojure.string/replace #"G__" "")
-      reader/read-string))
-
-(defn lvar
-  ([]
-     (let [id (next-id)
-           name (str id)]
-       (LVar. id true name nil (hash name) nil)))
-  ([name]
-     (lvar name true))
-  ([name unique]
-     (let [oname name
-           id   (if unique
-                  (next-id)
-                  name)
-           name (if unique
-                  (str name "__" id)
-                  (str name))]
-       (LVar. id unique name oname (hash name) nil))))
-
 (defn ^boolean lvar? [x]
   (satisfies? proto/IVar x))
 
 (defn lvars [n]
-  (repeatedly n lvar))
+  (repeatedly n #(lvar)))
 
 (defn ^boolean bindable? [x]
   (or (lvar? x)

@@ -5,7 +5,7 @@
             [cljs.core.logic :as l :refer [lcons reifyg fix-constraints
                                            empty-s -reify ==]])
   (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
@@ -21,7 +21,7 @@
 (defn- proc-lvar [lvar-expr store]
   (let [v (if-let [u (@store lvar-expr)]
             u
-            (l/lvar lvar-expr false))]
+            (lvar lvar-expr false))]
     (swap! store assoc lvar-expr v)
     v))
 
@@ -80,13 +80,13 @@
 (defn queue-constraint [s c vs]
   (cond
    (vector? vs)
-   (queue s (-unwrap (apply c (map #(l/lvar % false) vs))))
+   (queue s (-unwrap (apply c (map #(lvar % false) vs))))
 
    (set? vs)
-   (reduce (fn [s v] (queue s (-unwrap (c (l/lvar v false))))) s vs)
+   (reduce (fn [s v] (queue s (-unwrap (c (lvar v false))))) s vs)
 
    (symbol? vs)
-   (queue s (-unwrap (apply c (map #(l/lvar % false) (list vs)))))
+   (queue s (-unwrap (apply c (map #(lvar % false) (list vs)))))
 
    :else
    (throw
@@ -135,7 +135,7 @@
                         (l/unify (with-meta s {:reify-vars false}) u w))]
                  (when s
                    (->> (:lvars opts)
-                        (map (fn [sym] [sym (l/lvar sym false)]))
+                        (map (fn [sym] [sym (lvar sym false)]))
                         (filter (fn [[sym var]] (not= (walk s var) var)))
                         (map (fn [[sym var]] [sym (-reify s var)]))
                         (into {})))))]
@@ -150,7 +150,7 @@
      (let [opts (if (contains? opts :as)
                   (assoc opts :as
                          (->> (:as opts)
-                              (map (fn [[k v]] [(l/lvar k false) (prep v)]))
+                              (map (fn [[k v]] [(lvar k false) (prep v)]))
                               (into {})))
                   opts)]
        (unify* opts (map prep ts)))))
@@ -162,7 +162,7 @@
      (let [opts (if (contains? opts :as)
                   (assoc opts :as
                          (->> (:as opts)
-                              (map (fn [[k v]] [(l/lvar k false) (prep v)]))
+                              (map (fn [[k v]] [(lvar k false) (prep v)]))
                               (into {})))
                   opts)
            ts' (map prep ts)

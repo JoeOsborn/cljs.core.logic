@@ -6,7 +6,7 @@
                      -with-prefix tree-constraint? -constrain-tree
                      with-id remc]]
             [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s reify-lvar-name fail succeed
+             :refer [empty-s lcons to-s reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc 
                      featurec everyg composeg solutions pair ext-run-csg
@@ -18,7 +18,7 @@
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
@@ -1766,7 +1766,7 @@
          (pair 1 2))))
 
 (deftest test-dom-1 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x 1) empty-s)]
     (is (= (:s s) {x 1}))))
 
@@ -2076,31 +2076,31 @@
          '())))
 
 (deftest test-process-dom-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/process-dom x 1 1) empty-s)]
     (is (= (walk s x) 1))))
 
 (deftest test-process-dom-2
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/process-dom x (fd/interval 1 10) (fd/interval 1 10)) empty-s)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))))
 
 (deftest test-dom-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/interval 1 10)) empty-s)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))))
 
 (deftest test-in-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         f ((in x y (fd/interval 1 10)) empty-s)
         s (f)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))
     (is (= (fd/get-dom s y) (fd/interval 1 10)))))
 
 (deftest test-make-fdc-prim-1
-  (let [u (l/lvar 'u)
-        w (l/lvar 'w)
+  (let [u (lvar 'u)
+        w (lvar 'w)
         c (fd/==c u w)
         c' (-step c empty-s)]
     (is (= (var-rands empty-s c)
@@ -2111,9 +2111,9 @@
     (is (not (-entailed? c')))))
 
 (deftest test-make-fdc-prim-2
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c (fd/+c u v w)
         c' (-step c empty-s)]
     (is (= (l/var-rands empty-s c)
@@ -2129,9 +2129,9 @@
     (is (true? (proto/-entailed? c')))))
 
 (deftest test-make-fdc-1
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c (fd/+c u v w)
         c' (-step c empty-s)]
     (is (= (l/var-rands empty-s c)
@@ -2141,9 +2141,9 @@
     (is (not (proto/-entailed? c')))))
 
 (deftest test-addc-1
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c (fd/+c u v w)
         cs (addc (make-cs) empty-s c)
         sc (first (constraints-for cs empty-s u :cljs.core.logic/fd))]
@@ -2152,11 +2152,11 @@
     (is (= (count (:cm cs)) 1))))
 
 (deftest test-addc-2
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c0 (fd/+c u v w)
-        x (l/lvar 'x)
+        x (lvar 'x)
         c1 (fd/+c w v x)
         cs  (-> (make-cs)
                 (addc empty-s c0)
@@ -2169,18 +2169,18 @@
     (is (= (count (:cm cs)) 2))))
 
 (deftest test-addcg
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c (fd/+c u v w)
         s ((addcg c) empty-s)]
     (is (= (count (:km (:cs s))) 2))
     (is (= (count (:cm (:cs s))) 1))))
 
 (deftest test-purge-c
-  (let [u (l/lvar 'u)
+  (let [u (lvar 'u)
         v 1
-        w (l/lvar 'w)
+        w (lvar 'w)
         c (fd/+c u v w)
         s ((addcg c) empty-s)
         c (first (constraints-for (:cs s) s u :cljs.core.logic/fd))
@@ -2191,8 +2191,8 @@
     (is (zero? (count (:cm (:cs s)))))))
 
 (deftest test-=fd-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((composeg
             (fd/dom x (fd/interval 1 6))
             (fd/dom y (fd/interval 5 10))) empty-s)
@@ -2254,7 +2254,7 @@
          '(1 2 3 4 5 7 9 10 11 12))))
 
 (deftest test-map-sum-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/interval 1 10)) empty-s)]
     (is (= (take 10
                  (solutions s x
@@ -2263,7 +2263,7 @@
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/interval 1 10)) empty-s)]
     (is (= (take 10
                  (solutions s x
@@ -2271,7 +2271,7 @@
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-2
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/interval 1 10)) empty-s)]
     (is (= (take 10
                  (solutions s x
@@ -2279,7 +2279,7 @@
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-3
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/multi-interval (fd/interval 1 4) (fd/interval 6 10)))
            empty-s)]
     (is (= (take 10
@@ -2288,28 +2288,28 @@
            '(1 2 3 4 6 7 8 9 10)))))
 
 (deftest test-verify-all-bound-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((composeg
             (fd/dom x (fd/interval 1 10))
             (fd/dom y (fd/interval 1 10))) empty-s)]
     (is (nil? (verify-all-bound s [x y])))))
 
 (deftest test-verify-all-bound-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((fd/dom x (fd/interval 1 10)) empty-s)]
     (is (thrown? js/Error (verify-all-bound s [x y])))))
 
 (deftest test-enforce-constraints-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((fd/dom x (fd/interval 1 3)) empty-s)]
     (is (= (solutions s x (enforce-constraints x))
            '(1 2 3)))))
 
 (deftest test-reifyg-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((composeg
             (fd/dom x (fd/interval 1 10))
             (fd/dom y (fd/interval 1 5))) empty-s)
@@ -2318,7 +2318,7 @@
            '(1 2 3 4 5)))))
 
 (deftest test-process-interval-smaller-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((composeg
             (fd/dom x (fd/interval 1 10))
             (fd/dom x (fd/interval 2 10))) empty-s)]
@@ -2334,7 +2334,7 @@
       (fd/interval 1 9)))
 
 (deftest test-process-imi-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s ((composeg
             (fd/dom x (fd/interval 2 10))
             (fd/dom x (fd/multi-interval (fd/interval 1 4)
@@ -2344,8 +2344,8 @@
            (fd/multi-interval (fd/interval 2 4) (fd/interval 6 10))))))
 
 (deftest test-root-var-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (proto/ext-no-check x 1)
               (proto/ext-no-check y x))]
