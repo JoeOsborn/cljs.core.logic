@@ -1,7 +1,7 @@
 (ns cljs.core.logic.bench
   (:refer-clojure :exclude [==])
   (:require [cljs.core.logic.protocols :as proto]
-            [cljs.core.logic :as l :refer [appendo != s# u# lcons pair]]
+            [cljs.core.logic :as l :refer [== appendo != s# u# lcons pair]]
             [cljs.core.logic.fd :as fd]
             [cljs.core.logic.pldb :as pldb :refer [db-fact]]
             [cljs.core.logic.nominal :as nom]
@@ -10,14 +10,13 @@
             [cljs.reader :as reader]
             [goog.functions :as gfns])
   (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc in db-rel
-                            with-db]]
-                   [cljs.core.logic.bench :as bench :refer [==]]))
+                            with-db]]))
 
 (defn bit-nando
   [x y r]
@@ -96,7 +95,7 @@
           (== q true)))))))
 
 (comment
-  (time (doall (run 100 [q]
+  (time (doall (run 10 [q]
                  (fresh [x y]
                    (appendo x y q)))))
 

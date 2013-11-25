@@ -1,5 +1,5 @@
 (ns cljs.core.logic.macros
-  (:refer-clojure :exclude [== = < > <= >=])
+  (:refer-clojure :exclude [== = < > <= >= partial])
   (:require [cljs.compiler :as comp]
             [cljs.core :as core]
             [cljs.env :as env]
@@ -43,8 +43,11 @@
      (let [id# (next-id)
            name# (if (quoted-literal? name)
                    (str (second name) "__" id#)
-                   (str name "__" id#))]
-       `(cljs.core.logic/LVar. ~id# true ~name# ~name ~(hash name#) nil)))
+                   `(str ~name "__" ~id#))
+           hash# (if (quoted-literal? name)
+                   (hash name#)
+                   `(hash ~name#))]
+       `(cljs.core.logic/LVar. ~id# true ~name# ~name ~hash# nil)))
   ([name unique]
      (let [id# (if unique
                  (next-id)
@@ -52,12 +55,14 @@
             name# (if unique
                     (if (quoted-literal? name)
                       (str (second name) "__" id#)
-                      (str name "__" id#))
+                      `(str ~name "__" ~id#))
                     (if (quoted-literal? name)
                       (str (second name))
-                      (str name)))]
-       
-       `(cljs.core.logic/LVar. ~id# ~unique ~name# ~name ~(hash name#) nil))))
+                      `(str ~name)))
+           hash# (if (quoted-literal? name)
+                   (hash name#)
+                   `(hash ~name#))]       
+       `(cljs.core.logic/LVar. ~id# ~unique ~name# ~name ~hash# nil))))
 
 (defmacro umi
   [& args]
@@ -133,8 +138,12 @@
     (let [[rbindings as-key [as]] (partition-by #{:as} bindings)]
       (if (seq as-key)
         `(-run ~opts [~as]
-               (fresh [~@rbindings] (cljs.core.logic/== ~as [~@rbindings]) ~@goals))
-        `(-run ~opts [q#] (fresh ~bindings (cljs.core.logic/== q# ~bindings) ~@goals))))
+               (fresh [~@rbindings]
+                 (cljs.core.logic/== ~as [~@rbindings])
+                 ~@goals))
+        `(-run ~opts [q#] (fresh ~bindings
+                            (cljs.core.logic/== q# ~bindings)
+                            ~@goals))))
     `(let [opts# ~opts
            xs# (cljs.core.logic.protocols/take*
                 (fn []
@@ -211,7 +220,7 @@
   (let [a (gensym "a")]
     `(fn [~a]
        (println ~title)
-       ~@(map (partial trace-lvar a) lvars)
+       ~@(map (clojure.core/partial trace-lvar a) lvars)
        ~a)))
 
 ;; ===========================================================================
@@ -297,7 +306,7 @@
   variable. Non-relational."
   [v]
   `(fn [a#]
-     (if (lvar? (cljs.core.logic.protocols/walk a# ~v))
+     (if (cljs.core.logic/lvar? (cljs.core.logic.protocols/walk a# ~v))
        a# nil)))
 
 (defmacro nonlvaro
@@ -305,7 +314,7 @@
   logic variable. Non-relational."
   [v]
   `(fn [a#]
-     (if (not (lvar? (cljs.core.logic.protocols/walk a# ~v)))
+     (if (not (cljs.core.logic/lvar? (cljs.core.logic.protocols/walk a# ~v)))
        a# nil)))
 
 ;; ==========================================================================
@@ -481,7 +490,7 @@
 (defmacro fnm
   {:arglists '([t as tabled? & cs])}
   [t as & cs]
-  (if-let [cs (and (keyword-identical? (first cs) :tabled) (rest cs))]
+  (if-let [cs (and (identical? (first cs) :tabled) (rest cs))]
     `(-fnm tabled ~t ~as ~@cs)
     `(-fnm fn ~t ~as ~@cs)))
 
@@ -596,7 +605,7 @@
   [a vars & body]
   (let [get-var-dom (fn [a [v b]]
                       `(~b (cljs.core.logic/get-dom-fd ~a ~v)))]
-    `(let [~@(mapcat (partial get-var-dom a) (partition 2 vars))]
+    `(let [~@(mapcat (fn [[v b]] (get-var-dom a [v b])) (partition 2 vars))]
        ~@body)))
 
 ;; consider ^:partial type hint for arguments
@@ -938,7 +947,7 @@
         osym (gensym "o")]
     `(defn ~name [~fsym ~osym]
        (conde
-        ~@(map list (map (partial handle-cclause fsym osym) cclauses))))))
+        ~@(map list (map (clojure.core/partial handle-cclause fsym osym) cclauses))))))
 
 (defmacro def-->e [name args & pcss]
   (let [fsym (gensym "l1_")
@@ -976,3 +985,88 @@
     `(defn ~name [~@args ~(first lsyms) ~(last lsyms)]
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
+
+(defmacro mzero [] false)
+
+(defmacro unit [a] `~a)
+
+(defmacro choice
+  [a f]
+  `(cljs.core.logic/Pair. ~a ~f))
+
+(defmacro -inc* [e] `(fn [] ~e))
+
+(defmacro partial
+  [& body]
+  `(fn [] ~@body))
+
+(defmacro -lvar
+  [name]
+  `(cljs.core.logic/Lvar. ~name))
+
+(defmacro case-inf
+  [expr & clauses]
+  (let [[[f'#] [a'#] [a# f#]] (map first (rest (partition-all 2 clauses)))
+        [e0# e1# e2# e3#] (map second (partition-all 2 clauses))]
+    `(let [a-inf# ~expr]
+       (cond (not a-inf#) ~e0#
+             (fn? a-inf#) (let [~f'# a-inf#] ~e1#)
+             (and (cljs.core.logic/pair? a-inf#)
+                  (fn? (.-rhs a-inf#)))
+             (let [~a# (.-lhs a-inf#) ~f# (.-rhs a-inf#)]
+               ~e3#)
+             :else (let [~a'# a-inf#] ~e2#)))))
+
+(defmacro ==
+  [u v]
+  (let [a (gensym "a")]
+    `(fn [~a]
+       (if-let [x# (cljs.core.logic/fast-unify ~u ~v ~a)]
+         ((fn [a#] (unit a#)) x#)
+         (mzero)))))
+
+(declare fresh* -mplus* -bind*)
+
+(defmacro -conde
+  [& clauses]
+  (let [a (gensym "a")]
+    `(fn [~a]
+       (partial (-mplus* ~@(map (fn [goal# & goals#]
+                                  `(-bind* (~goal# ~a) ~@goals#))
+                                clauses))))))
+
+(defmacro -run-n
+  [n lvars & goals]
+  `(cljs.core.logic/-take
+      ~n
+      (fn []
+        ((fresh* ~lvars
+          ~@goals
+          (fn [a#]
+            (cons (cljs.core.logic/-reify1 ~(first lvars) a#) (lazy-seq))))
+         cljs.core.logic/-empty-s))))
+
+(defmacro -run*
+  [lvars & goals]
+  `(-run-n false ~lvars
+     ~@goals))
+
+(declare -bind*)
+
+(defmacro fresh*
+  [lvars & goals]
+  (let [a (gensym "a")]
+    `(fn [~a]
+       (partial (let ~(vec (mapcat (fn [x#] `[~x# (-lvar '~x#)]) lvars))
+                  (-bind* (~(first goals) ~a) ~@(rest goals)))))))
+
+(defmacro -bind*
+  ([e] `~e)
+  ([e & goals] `(-bind* (cljs.core.logic/-bind ~e ~(first goals))
+                        ~@(rest goals))))
+
+(defmacro -mplus*
+  ([e] `~e)
+  ([e & es] `(cljs.core.logic/-mplus ~e (fn [] (-mplus* ~@es)))))
+
+

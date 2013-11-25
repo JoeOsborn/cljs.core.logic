@@ -9,14 +9,13 @@
                      -reify-tabled reuse ready? subunify
                      unify-with-record unify-with-pmap -member-count]]
             [cljs.reader :as reader])
-  (:require-macros [cljs.core.logic.macros
+  (:require-macros [cljs.core.logic.macros :as m
                     :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc]]))
-
 
 (def ^:dynamic *logic-dbs* [])
 
@@ -41,16 +40,27 @@
 
 ;; Pair
 
+(defprotocol IPair)
+
 (deftype Pair [lhs rhs]
+  IPair
+  
   Object
   (toString [_]
     (str "(" lhs " . " rhs ")"))
+
+  ISeqable
+  (-seq [pair] pair)
+
+  ISeq
+  (-first [_] lhs)
+  (-rest [_] (list rhs))
   
   ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :lhs lhs
       :rhs rhs
       not-found))
@@ -88,6 +98,8 @@
 (defn- pair [lhs rhs]
   (Pair. lhs rhs))
 
+(defn ^boolean pair? [x] (satisfies? IPair x))
+
 ;; Constraint Store
 
 (declare lvar? bindable? add-var)
@@ -115,7 +127,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :km km
       :cm cm
       :cid cid
@@ -301,7 +313,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :s   s
       :vs  vs
       :ts  ts
@@ -324,7 +336,7 @@
   (-contains-key? [this k]
     (contains? #{:s :vs :cs :cq :cqs :oc} k))
   (-assoc [this k v]
-    (case k
+    (condp keyword-identical? k
       :s   (Substitutions. v vs ts cs cq cqs oc _meta)
       :vs  (Substitutions. s  v ts cs cq cqs oc _meta)
       :ts  (Substitutions. s vs  v cs cq cqs oc _meta)
@@ -598,11 +610,12 @@
 
 (deftype LVar [id unique name oname hash meta]
   proto/IVar
+  
   ILookup
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :name name
       :oname oname
       :id id
@@ -1002,7 +1015,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :a a
       not-found))
   
@@ -1280,7 +1293,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :ansl ansl
       :anss anss
       not-found))
@@ -1636,7 +1649,7 @@
              (< (-member-count dx) (-member-count dy)))))
 
 (defn sort-by-strategy [v x a]
-  (case (-> x meta ::strategy)
+  (condp keyword-identical? (-> x meta ::strategy)
     ::ff (seq (sort (sort-by-member-count a) v))
     v))
 
@@ -2125,6 +2138,171 @@
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))
 
+(defprotocol IWalkable
+  (-walk [_]))
+
+(defprotocol ILvar)
+
+(deftype Lvar [name]
+  ILvar
+  IPrintWithWriter
+  (-pr-writer [this writer opts]
+    (-write writer (str "<lvar:" (clojure.core/name name) ">")))
+  Object
+  (toString [this]
+    (str "<lvar:" (clojure.core/name name) ">")))
+
+(defn ^boolean -lvar? [x] (satisfies? ILvar x))
+
+(declare -empty-s)
+
+(defprotocol ISubst)
+
+(deftype Subst [pairs]
+  ISubst
+  ISequential
+  ICollection
+  (-conj [coll o]
+    (Subst. (conj pairs o)))
+  IEmptyableCollection
+  (-empty [coll] -empty-s)
+  ISeq
+  (-first [coll] (first pairs))
+  (-rest [coll] (rest pairs))
+  ISeqable
+  (-seq [o] (seq pairs))
+  INext
+  (-next [coll] (next pairs))
+  IVector
+  (-assoc-n [coll n val]
+    (Subst. (-assoc-n pairs n val)))
+  IPrintWithWriter
+  (-pr-writer [coll writer opts]
+    (-pr-writer pairs writer opts))
+  ICounted
+  (-count [coll] (count pairs))
+  IIndexed
+  (-nth [coll n] (-nth pairs n))
+  (-nth [coll n not-found] (-nth pairs n not-found))
+  Object
+  (toString [coll] (str pairs)))
+
+(def -empty-s (Subst. []))
+
+(defn step
+  [v s]
+  (loop [v v xs (seq s)]
+    (if (and (-lvar? v) (seq xs))
+      (cond (identical? v (.-rhs (first xs))) v
+            (identical? v (.-lhs (first xs))) (recur (.-rhs (first s)) xs)
+            :else (recur v (next xs)))
+      v)))
+
+(defn -walk
+  [v s]
+  (loop [xs (seq s)]
+    (if (and (-lvar? v) (seq xs))
+      (cond (identical? (.-name v) xs) v
+            (identical? v (.-rhs (first xs))) v
+            (identical? v (.-lhs (first xs))) (step (.-rhs (first xs)) s)
+            :else (recur (next xs)))
+      v)))
+
+(defn ^boolean occurs?
+  [x v s]
+  (when (and (-lvar? v) (not (identical? v x)))
+    (let [v (-walk v s)]
+      (when (pair? v)
+        (or (occurs? x (.-lhs v) s) (occurs? x (.-rhs v) s))))))
+
+(defn ext-s-no-check
+  [x v s]
+  (conj s (pair x v)))
+
+(defn ext-s
+  [x v s]
+  (if (occurs? x v s)
+    false
+    (ext-s-no-check x v s)))
+
+(defn fast-unify
+  [u v s]
+  (let [u (-walk u s)
+        v (-walk v s)]
+    (cond (identical? u v) s
+          (-lvar? u) (ext-s-no-check u v s)
+          (-lvar? v) (ext-s-no-check v u s)
+          (and (pair? u) (pair? v))
+          (let [s (fast-unify (.-lhs u) (.-lhs v) s)]
+            (and s (fast-unify (.-rhs u) (.-rhs u) s)))
+          (= u v) s
+          :else false)))
+
+(defn -unify
+  [u v s]
+  (let [u (-walk u s)
+        v (-walk v s)]
+    (cond (identical? u v) s
+          (and (-lvar? u) (-lvar? v)) (ext-s-no-check u v s)
+          (-lvar? u) (ext-s u v s)
+          (-lvar? v) (ext-s v u s)
+          (and (pair? u) (pair? v))
+          (let [s (-unify (.-lhs u) (.-lhs v) s)]
+            (and s (-unify (.-rhs u) (.-rhs u) s)))
+          (= u v) s
+          :else false)))
+
+
+(defn -walk*
+  [v s]
+  (let [v (-walk v s)]
+    (cond (-lvar? v) v
+          (pair? v) (pair (-walk* (.-lhs v) s) (-walk* (.-rhs v) s))
+          :else v)))
+
+(defn reify-name
+  [n]
+  (symbol (str "_" n)))
+
+(defn reify-s
+  [v s]
+  (let [v (-walk v s)]
+    (cond (-lvar? v) (ext-s v (reify-name (count s)) s)
+          (pair? v) (recur (.-rhs v) (reify-s (.-lhs v) s))
+          :else s)))
+
+(defn -reify1
+  [v s]
+  (let [v (-walk* v s)]
+    (-walk* v (reify-s v -empty-s))))
+
+(defn -take
+  [n g]
+  (if (and n (zero? n))
+    '()
+    (m/case-inf (g)
+      [] '()
+      [f] (-take n f)
+      [a] a
+      [a f] (cons (first a) (-take (and n (dec n)) f)))))
+
+(defn -mplus
+    [a-inf g]
+    (m/case-inf a-inf
+      [] (g)
+      [f] (m/partial (-mplus (g) f))
+      [a] (m/choice a g)
+      [a f] (m/choice a (fn [] (-mplus (g) f)))))
+
+(defn -bind
+  [a-inf g]
+  (m/case-inf a-inf
+    [] (m/mzero)
+    [f] (m/partial (-bind (f) g))
+    [a] (g a)
+    [a f] (-mplus (g a) (fn [] (-bind (f) g)))))
+
+
 (comment
   (run* [answer]
     (== answer 5))
@@ -2167,5 +2345,11 @@
     (fresh [n]
       (!= 0 n)
       (== q n)))
-  )
 
+  (run* [q]
+    (fresh [n]
+      (!= 0 n)
+      (m/== q n)))
+
+  (m/-run* [q] (m/== q 1))
+  )

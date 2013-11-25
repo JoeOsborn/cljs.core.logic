@@ -30,16 +30,16 @@
   (is (= (l/unify empty-s nil 1) nil)))
 
 (deftest unify-nil-lvar-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x nil)]
     (is (= (l/unify empty-s nil x) os))))
 
 (deftest unify-nil-lseq-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (l/unify empty-s nil (lcons 1 x)) nil))))
 
 (deftest unify-nil-map-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (l/unify empty-s nil {}) nil))))
 
 (deftest unify-object-nil-1
@@ -73,12 +73,12 @@
   (is (= (l/unify empty-s "foo" "bar") nil)))
 
 (deftest unify-object-lvar-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x 1)]
     (is (= (l/unify empty-s 1 x) os))))
 
 (deftest unify-object-lcons-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (l/unify empty-s 1 (lcons 1 'x)) nil))))
 
 (deftest unify-object-seq-1
@@ -91,50 +91,50 @@
   (is (= (l/unify empty-s 1 {}) nil)))
 
 (deftest unify-lvar-object-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x 1)]
     (is (= (l/unify empty-s x 1) os))))
 
 (deftest unify-lvar-lvar-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         os (proto/ext-no-check empty-s x y)]
     (is (= (l/unify empty-s x y) os))))
 
 (deftest unify-lvar-lcons-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         l (lcons 1 y)
         os (proto/ext-no-check empty-s x l)]
     (is (= (l/unify empty-s x l) os))))
 
 (deftest unify-lvar-seq-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x [])]
     (is (= (l/unify empty-s x []) os))))
 
 (deftest unify-lvar-seq-2
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x [1 2 3])]
     (is (= (l/unify empty-s x [1 2 3]) os))))
 
 (deftest unify-lvar-seq-3
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x '())]
     (is (= (l/unify empty-s x '()) os))))
 
 (deftest unify-lvar-seq-4
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x '(1 2 3))]
     (is (= (l/unify empty-s x '(1 2 3)) os))))
 
 (deftest unify-lvar-map-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x {})]
     (is (= (l/unify empty-s x {}) os))))
 
 (deftest unify-lvar-map-2
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x {1 2 3 4})]
     (is (= (l/unify empty-s x {1 2 3 4}) os))))
 
@@ -142,28 +142,28 @@
 ;; lcons
 
 (deftest unify-lcons-object-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (l/unify empty-s (lcons 1 x) 1) nil))))
 
 (deftest unify-lcons-lvar-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         l (lcons 1 y)
         os (proto/ext-no-check empty-s x l)]
     (is (= (l/unify empty-s l x) os))))
 
 (deftest unify-lcons-lcons-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc1 (lcons 1 x)
         lc2 (lcons 1 y)
         os (proto/ext-no-check empty-s x y)]
     (is (= (l/unify empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         lc1 (lcons 1 (lcons 2 x))
         lc2 (lcons 1 (lcons z y))
         os (-> empty-s
@@ -172,45 +172,45 @@
     (is (= (l/unify empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-3
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc1 (lcons 1 (lcons 2 x))
         lc2 (lcons 1 (lcons 2 (lcons 3 y)))
         os (proto/ext-no-check empty-s x (lcons 3 y))]
     (is (= (l/unify empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-4
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc1 (lcons 1 (lcons 2 x))
         lc2 (lcons 1 (lcons 3 (lcons 4 y)))]
     (is (= (l/unify empty-s lc1 lc2) nil))))
 
 (deftest unify-lcons-lcons-5
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc2 (lcons 1 (lcons 2 x))
         lc1 (lcons 1 (lcons 3 (lcons 4 y)))]
     (is (= (l/unify empty-s lc1 lc2) nil))))
 
 (deftest unify-lcons-lcons-6
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc1 (lcons 1 (lcons 2 x))
         lc2 (lcons 1 (lcons 2 y))
         os (proto/ext-no-check empty-s x y)]
     (is (= (l/unify empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-seq-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         lc1 (lcons 1 (lcons 2 x))
         l1 '(1 2 3 4)
         os (proto/ext-no-check empty-s x '(3 4))]
     (is (= (l/unify empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         lc1 (lcons 1 (lcons y (lcons 3 x)))
         l1 '(1 2 3 4)
         os (-> empty-s
@@ -219,26 +219,26 @@
     (is (= (l/unify empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-3
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         lc1 (lcons 1 (lcons 2 (lcons 3 x)))
         l1 '(1 2 3)
         os (proto/ext-no-check empty-s x '())]
     (is (= (l/unify empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-4
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         lc1 (lcons 1 (lcons 3 x))
         l1 '(1 2 3 4)]
     (is (= (l/unify empty-s lc1 l1) nil))))
 
 (deftest unify-lcons-seq-5
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         lc1 (lcons 1 (lcons 2 x))
         l1 '(1 3 4 5)]
     (is (= (l/unify empty-s lc1 l1) nil))))
 
 (deftest unify-lcons-map-1
-  (is (= (l/unify empty-s (lcons 1 (l/lvar 'x)) {}) nil)))
+  (is (= (l/unify empty-s (lcons 1 (lvar 'x)) {}) nil)))
 
 
 ;; -----------------------------------------------------------------------------
@@ -251,12 +251,12 @@
   (is (= (l/unify empty-s [] 1) nil)))
 
 (deftest unify-seq-lvar-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x [])]
     (is (= (l/unify empty-s [] x) os))))
 
 (deftest unify-seq-lcons-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         lc1 (lcons 1 (lcons 2 x))
         l1 '(1 2 3 4)
         os (proto/ext-no-check empty-s x '(3 4))]
@@ -272,7 +272,7 @@
   (is (= (l/unify empty-s '(1 2 3) '(1 2 3)) empty-s)))
 
 (deftest unify-seq-seq-4
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x 2)]
     (is (= (l/unify empty-s `(1 ~x 3) `(1 2 3)) os))))
 
@@ -301,18 +301,18 @@
   (is (= (l/unify empty-s [[1 2]] [[2 1]]) nil)))
 
 (deftest unify-seq-seq-13
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x 1)]
     (is (= (l/unify empty-s [[x 2]] [[1 2]]) os))))
 
 (deftest unify-seq-seq-14
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x [1 2])]
     (is (= (l/unify empty-s [x] [[1 2]]) os))))
 
 (deftest unify-seq-seq-15
-  (let [x (l/lvar 'x) y (l/lvar 'y)
-        u (l/lvar 'u) v (l/lvar 'v)
+  (let [x (lvar 'x) y (lvar 'y)
+        u (lvar 'u) v (lvar 'v)
         os (-> empty-s
                (proto/ext-no-check x 'b)
                (proto/ext-no-check y 'a))]
@@ -331,12 +331,12 @@
   (is (= (l/unify empty-s {} 1) nil)))
 
 (deftest unify-map-lvar-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         os (proto/ext-no-check empty-s x {})]
     (is (= (l/unify empty-s {} x) os))))
 
 (deftest unify-map-lcons-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (l/unify empty-s {} (lcons 1 x)) nil))))
 
 (deftest unify-map-seq-1
@@ -352,14 +352,14 @@
   (is (= (l/unify empty-s {1 2} {1 2 3 4}) nil)))
 
 (deftest unify-map-map-4
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         m1 {1 2 3 4}
         m2 {1 2 3 x}
         os (proto/ext-no-check empty-s x 4)]
     (is (= (l/unify empty-s m1 m2) os))))
 
 (deftest unify-map-map-5
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         m1 {1 2 3 4}
         m2 {1 4 3 x}]
     (is (= (l/unify empty-s m1 m2) nil))))
@@ -367,14 +367,14 @@
 (defrecord foo-struct [a b])
 
 (deftest unify-struct-map-1
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         m1 (->foo-struct 1 2)
         m2 (->foo-struct 1 x)
         os (proto/ext-no-check empty-s x 2)]
     (is (= (l/unify empty-s m1 m2) os))))
 
 (deftest unify-struct-map-2
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         m1 (->foo-struct 1 2)
         m2 (->foo-struct 1 3)]
     (is (= (l/unify empty-s m1 m2) nil))))
@@ -383,14 +383,14 @@
 ;; walk
 
 (deftest test-basic-walk
-  (is (= (let [x  (l/lvar 'x)
-               y  (l/lvar 'y)
+  (is (= (let [x  (lvar 'x)
+               y  (lvar 'y)
                ss (to-s [[x 5] [y x]])]
            (walk ss y))
          5)))
 
 (deftest test-deep-walk
-  (is (= (let [[x y z c b a :as s] (map lvar '[x y z c b a])
+  (is (= (let [[x y z c b a :as s] (map #(lvar %) '[x y z c b a])
                ss (to-s [[x 5] [y x] [z y] [c z] [b c] [a b]])]
            (walk ss a))
          5)))
@@ -399,8 +399,8 @@
 ;; reifyo
 
 (deftest test-reify-lvar-name
-  (is (= (let [x  (l/lvar 'x)
-               y  (l/lvar 'y)]
+  (is (= (let [x  (lvar 'x)
+               y  (lvar 'y)]
            (reify-lvar-name (to-s [[x 5] [y x]])))
          '_2)))
 
@@ -408,8 +408,8 @@
 ;; walk*
 
 (deftest test-walk*
-  (is (= (let [x  (l/lvar 'x)
-               y  (l/lvar 'y)]
+  (is (= (let [x  (lvar 'x)
+               y  (lvar 'y)]
            (walk* (to-s [[x 5] [y x]]) `(~x ~y)))
          '(5 5))))
 
@@ -532,8 +532,8 @@
          ())))
 
 (deftest test-conso-1
-  (let [a (l/lvar 'a)
-        d (l/lvar 'd)]
+  (let [a (lvar 'a)
+        d (lvar 'd)]
     (is (= (run* [q]
              (conso a d q))
            [(lcons a d)]))))
@@ -571,7 +571,7 @@
 (deftest test-firsto
   (is (= (run* [q]
            (firsto q '(1 2)))
-         (list (lcons '(1 2) (l/lvar 'x))))))
+         (list (lcons '(1 2) (lvar 'x))))))
 
 ;; =============================================================================
 ;; resto
@@ -1198,7 +1198,7 @@
       '(x)))
 
 (deftest test-custom-var-reifier-1
-  (let [x (l/lvar 'x)]
+  (let [x (lvar 'x)]
     (is (= (-run {:reify-vars (fn [v rs] rs)} [q]
                  (== q x))
            `(~x)))))
@@ -1741,7 +1741,7 @@
          '([{:a {:b 1}} {:b 1}]))))
 
 ;; (deftest test-137-oom
-;;   (is (= (let [vs (repeatedly 20 l/lvar)]
+;;   (is (= (let [vs (repeatedly 20 #(lvar %))]
 ;;            (first
 ;;             (run 1 [q]
 ;;               (== q vs)

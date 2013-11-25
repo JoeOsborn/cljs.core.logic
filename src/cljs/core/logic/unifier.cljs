@@ -16,7 +16,7 @@
 ;; Easy Unification
 
 (defn- lvarq-sym? [s]
-  (and (symbol? s) (= (first (str s)) \?)))
+  (and (symbol? s) (identical? (first (str s)) "?")))
 
 (defn- proc-lvar [lvar-expr store]
   (let [v (if-let [u (@store lvar-expr)]
@@ -26,7 +26,7 @@
     v))
 
 (defn- lcons-expr? [expr]
-  (and (seq? expr) (some '#{.} (set expr))))
+  (and (seq? expr) (contains? (set expr) '.)))
 
 (declare prep*)
 
@@ -73,7 +73,7 @@
                  (prep* expr lvars true)
 
                  :else (walk-term expr (replace-lvar lvars)))]
-    (if (satisfies? cljs.core/IMeta prepped)
+    (if (satisfies? IWithMeta prepped)
       (with-meta prepped {::lvars (keys @lvars)})
       prepped)))
 
