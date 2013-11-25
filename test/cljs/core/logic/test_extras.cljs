@@ -7,7 +7,7 @@
                      -with-prefix tree-constraint? with-id remc
                      -constrain-tree ext-run-cs]]
             [cljs.core.logic :as l
-             :refer [== empty-s lcons lvar to-s reify-lvar-name fail succeed
+             :refer [== empty-s lcons to-s reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
                      featurec everyg composeg solutions pair ext-run-csg
@@ -19,13 +19,13 @@
             [cljs.core.logic.unifier :as u])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [lvar umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc in extend-to-fd
-                            eq]]))
+                            eq lvars]]))
 
 (deftest test-ckanren-1
   (is (= (into #{}
@@ -127,8 +127,8 @@
 
 
 (deftest test-with-id
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         n* (sorted-set 1 3 5)
         c (proto/with-id (fd/-distinctc x #{y} (conj n* 7)) 1)]
     (is (= (id c) 1))))
@@ -232,9 +232,9 @@
          (into #{} '([1 10] [2 5] [5 2] [10 1])))))
 
 (deftest test-remc []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         c (fd/+c x y z)
         cs (addc (make-cs) empty-s c)
         cp (get (:cm cs) 0)
@@ -243,14 +243,14 @@
     (is (= (:cm cs) {}))))
 
 (deftest test-treec-id-1 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         c (with-id (!= x y) 0)]
     (is (zero? (id c)))))
 
 (deftest test-tree-constraint? []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         c (!=c (list (pair x 1) (pair y 2)))
         cs (addc (make-cs) empty-s c)
         ]
@@ -260,8 +260,8 @@
     ))
 
 (deftest test-prefix-protocols []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         c (!=c (list (pair x 1) (pair y 2)))
         c (-with-prefix c (list (pair x 1)))]
     (is (= (-prefix c)
@@ -269,21 +269,21 @@
 
 
 (deftest test-!=-1 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((!= x y) empty-s)]
     (is (= (-prefix ((:cm (:cs s)) 0)) {x y}))))
 
 (deftest test-!=-2 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((!= x y) empty-s)
         s ((== x y) s)]
     (is (= s nil))))
 
 (deftest test-!=-4 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((== x 1) empty-s)
         s ((== y 2) s)
         s ((!= x y) s)]
@@ -291,8 +291,8 @@
     (is (empty? (:km (:cs s))))))
 
 (deftest test-!=-5 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((== x 1) empty-s)
         s ((!= x y) s)
         s ((== y 2) s)]
@@ -300,8 +300,8 @@
     (is (empty? (:km (:cs s))))))
 
 (deftest test-!=-6 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s ((!= x 1) empty-s)]
     (is (= (-prefix ((:cm (:cs s)) 0)) {x 1}))))
 
@@ -404,7 +404,7 @@
          '([1 2]))))
 
 (deftest test-eq-vars-1 []
-  (let [x0 (l/lvar 'x)
+  (let [x0 (lvar 'x)
         x1 (with-meta x0 {:foo 'bar})
         s  (l/unify empty-s x0 x1)]
     (is (= s empty-s))))
@@ -560,13 +560,13 @@
     (get-square rows x y)))
 
 (defn sudokufd [hints]
-  (let [vars (repeatedly 81 lvar)
+  (let [vars (lvars 81)
         rows (->rows vars)
         cols (->cols rows)
         sqs  (->squares rows)]
     (run-nc 1 [q]
             (== q vars)
-            (distribute q :cljs.core.logic/ff)
+            ;; (distribute q :cljs.core.logic/ff)
             (everyg #(in % (fd/domain 1 2 3 4 5 6 7 8 9)) vars)
             (init vars hints)
             (everyg fd/distinct rows)
@@ -764,25 +764,25 @@
          '((_0 :- (hashc _0 _1))))))
 
 (deftest test-entanglement-add-dom-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (entangle x y)
               (l/add-dom x :cljs.core.logic/fd (fd/domain 1 2 3)))]
     (is (= (l/get-dom s y :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (entangle x y)
               (l/add-dom y :cljs.core.logic/fd (fd/domain 1 2 3)))]
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-3
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle x y)
               (entangle y z)
@@ -790,9 +790,9 @@
     (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle y x)
               (entangle z x)
@@ -801,9 +801,9 @@
     (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle y x)
               (entangle z x)
@@ -812,9 +812,9 @@
     (is (= (l/get-dom s z :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-one-root-3
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle y x)
               (entangle z x)
@@ -823,9 +823,9 @@
     (is (= (l/get-dom s y :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-4
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle x y)
               (entangle y z)
@@ -833,9 +833,9 @@
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-root-var-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (l/unify x y)
               (entangle x z)
@@ -843,9 +843,9 @@
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-add-dom-root-var-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (l/unify y x)
               (entangle x z)
@@ -853,25 +853,25 @@
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-entanglement-update-dom-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (entangle x y)
               (l/update-dom x :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
     (is (= (l/get-dom s y :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-2
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (entangle x y)
               (l/update-dom y :cljs.core.logic/nom (fnil (fn [d] (conj d :foo)) #{})))]
     (is (= (l/get-dom s x :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-3
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle x y)
               (entangle y z)
@@ -879,9 +879,9 @@
     (is (= (l/get-dom s z :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-update-dom-4
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
-        z (l/lvar 'z)
+  (let [x (lvar 'x)
+        y (lvar 'y)
+        z (lvar 'z)
         s (-> empty-s
               (entangle x y)
               (entangle y z)
@@ -889,19 +889,19 @@
     (is (= (l/get-dom s x :cljs.core.logic/nom) #{:foo}))))
 
 (deftest test-entanglement-fd-in-1
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s (entangle x y))
         s (((in x (fd/domain 1 2 3)) s))]
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
 
 (deftest test-attrs-1 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (add-attr empty-s x :foo 'bar)]
     (is (= (get-attr s x :foo) 'bar))))
 
 (deftest test-attrs-2 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (proto/ext-no-check empty-s x 1)
         s (add-attr s x :foo 'bar)
         s (add-attr s x :baz 'woz)]
@@ -909,7 +909,7 @@
     (is (= (get-attr s x :baz) 'woz))))
 
 (deftest test-attrs-2 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (proto/ext-no-check empty-s x 1)
         s (add-attr s x :foo 'bar)
         s (add-attr s x :baz 'woz)
@@ -917,26 +917,26 @@
     (is (= (get-attr s x :foo) nil))))
 
 (deftest test-root-1 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (proto/ext-no-check empty-s x 1)]
     (= (root-var s x) x)
     (= (root-val s x) 1)))
 
 (deftest test-root-2 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (add-attr empty-s x :foo 'bar)]
     (is (l/subst-val? (root-val s x)))))
 
 (deftest test-root-3 []
-  (let [x (l/lvar 'x)
-        y (l/lvar 'y)
+  (let [x (lvar 'x)
+        y (lvar 'y)
         s (-> empty-s
               (proto/ext-no-check x 1)
               (proto/ext-no-check y x))]
     (is (= (root-var s y) x))))
 
 (deftest test-ext-run-cs-1 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (proto/ext-no-check empty-s x (l/subst-val l/unbound))
         s (add-attr s x :cljs.core.logic/fd (fd/domain 1 2 3))
         s (ext-run-cs s x 1)]
@@ -944,13 +944,13 @@
     (is (= (walk s x) 1))))
 
 (deftest test-update-dom-1 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (l/add-dom empty-s x ::nom '[(swap a b)])
         s (l/update-dom s x ::nom (fn [d] (conj d '(swap x y))))]
     (is (= (l/get-dom s x ::nom) '[(swap a b) (swap x y)]))))
 
 (deftest test-update-dom-2 []
-  (let [x (l/lvar 'x)
+  (let [x (lvar 'x)
         s (l/update-dom empty-s x ::nom
                         (fnil (fn [d] (conj d '(swap x y))) []))]
     (is (= (l/get-dom s x ::nom) '[(swap x y)]))))

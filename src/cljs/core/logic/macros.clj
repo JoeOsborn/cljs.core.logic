@@ -442,7 +442,7 @@
 (defmacro fnm
   {:arglists '([t as tabled? & cs])}
   [t as & cs]
-  (if-let [cs (and (keyword-identical? (first cs) :tabled) (rest cs))]
+  (if-let [cs (and (identical? (first cs) :tabled) (rest cs))]
     `(-fnm tabled ~t ~as ~@cs)
     `(-fnm fn ~t ~as ~@cs)))
 
@@ -666,9 +666,7 @@
         domsym (gensym "dom_")]
     `(let [~domsym ~dom]
        (fresh []
-         ~@(map (fn [x#]
-                  `(cljs.core.logic.fd/dom ~x# ~domsym))
-                xs)))))
+         ~@(map (fn [x#] `(cljs.core.logic.fd/dom ~x# ~domsym)) xs)))))
 
 (def binops->fd
   '{+  cljs.core.logic.fd/+
@@ -937,3 +935,27 @@
     `(defn ~name [~@args ~(first lsyms) ~(last lsyms)]
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
+
+(defn next-id
+  []
+  (-> (str (gensym))
+      (clojure.string/replace #"G__" "")
+      read-string))
+
+(defmacro lvar
+  ([] (let [id# (next-id)
+            name# (str id#)]
+        `(cljs.core.logic/LVar. ~id# true ~name# nil ~(hash name#) nil)))
+  ([name] `(lvar ~name true))
+  ([name unique]
+     `(let [id# (if ~unique
+                  ~(next-id)
+                  ~name)
+            name# (if ~unique
+                    (str ~name "__" id#)
+                    (str ~name))]
+        (cljs.core.logic/LVar. id# ~unique name# ~name (hash ~name) nil))))
+
+(defmacro lvars
+  [n]
+  (vec (for [i (range n)] `(lvar))))

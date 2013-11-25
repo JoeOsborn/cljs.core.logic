@@ -77,8 +77,8 @@
   IEquiv
   (-equiv [_ o]
     (if (instance? Pair o)
-      (and (= lhs (.-lhs o))
-           (= rhs (.-rhs o)))
+      (and (or (identical? lhs (.-lhs o)) (= lhs (.-lhs o)))
+           (or (identical? rhs (.-rhs o)) (= rhs (.-rhs o))))
       false))
 
   IPrintWithWriter
@@ -283,10 +283,10 @@
 
   IEquiv
   (-equiv [this o]
-    (println s (.-s o))
     (or (identical? this o)
         (and (instance? Substitutions o)
-             (= s (.-s o)))))
+             (or (identical? s (.-s o))
+                 (= s (.-s o))))))
 
   ICounted
   (-count [this] (count s))
@@ -673,7 +673,8 @@
     (f v))
 
   proto/IOccursCheckTerm
-  (occurs-check-term [v x ^not-native s] (= (walk s v) x))
+  (occurs-check-term [v x ^not-native s]
+    (or (identical? (walk s v) x) (= (walk s v) x)))
 
   proto/IBuildTerm
   (build-term [u ^not-native s]
@@ -755,8 +756,7 @@
   (-equiv [this o]
     (or (identical? this o)
         (and (instance? LCons o)
-             (loop [me this
-                    you o]
+             (loop [me this you o]
                (cond
                 (nil? me) (nil? you)
                 (lvar? me) true
@@ -764,11 +764,12 @@
                 (and (lcons? me) (lcons? you))
                 (let [mef  (lfirst me)
                       youf (lfirst you)]
-                  (and (or (= mef youf)
+                  (and (or (identical? mef youf)
+                           (= mef youf)
                            (lvar? mef)
                            (lvar? youf))
                        (recur (lnext me) (lnext you))))
-                :else (= me you))))))
+                :else (or (identical? me you) (= me you)))))))
 
   IHash
   (-hash [this]
@@ -862,7 +863,7 @@
   (cond
    (sequential? v)
    (if (and (counted? u) (counted? v)
-            (not (= (count u) (count v))))
+            (not (clojure.core/== (count u) (count v))))
      nil
      (loop [^not-native u (-seq u) ^not-native v (-seq v) s s]
        (if-not (nil? u)
@@ -877,7 +878,7 @@
    :else nil))
 
 (defn unify-with-map* [u v s]
-  (when (= (count u) (count v))
+  (when (clojure.core/== (count u) (count v))
     (loop [ks (keys u) s s]
       (if (seq ks)
         (let [kf (first ks)
@@ -1997,9 +1998,14 @@
            (-runnable? [_]
              (not (lvar? (walk s x))))))
        proto/IConstraintOp
-       (-rator [_] (if (seq? pform)
-                     `(predc ~pform)
-                     `cljs.core.logic/predc))
+       (-rator [_]
+         (println
+          (if (seq? pform)
+           `(predc ~pform)
+           `cljs.core.logic/predc))
+         (if (seq? pform)
+           `(predc ~pform)
+           `cljs.core.logic/predc))
        (-rands [_] [x])
        proto/IReifiableConstraint
        (-reifyc [c v r s]
@@ -2013,6 +2019,12 @@
   ([x p] (predc x p p))
   ([x p pform]
      (cgoal (-predc x p pform))))
+
+;; (defmacro predc
+;;   ([pform] `(predc ~@pform))
+;;   ([x p] (predc x p p))
+;;   ([x p pform]
+;;      (cgoal (-predc x p pform))))
 
 ;; ===========================================================================
 ;; Negation as failure
@@ -2183,5 +2195,7 @@
     (fresh [n]
       (!= 0 n)
       (== q n)))
+
+  (time (dotimes [i 10000] (doall (run* [q] (== q true)))))
   )
 
