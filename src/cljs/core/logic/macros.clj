@@ -172,7 +172,7 @@
   (let [a (gensym "a")]
     `(fn [~a]
        (println ~title)
-       ~@(map (partial trace-lvar a) lvars)
+       ~@(map #(trace-lvar a %) lvars)
        ~a)))
 
 ;; ===========================================================================
@@ -557,7 +557,7 @@
   [a vars & body]
   (let [get-var-dom (fn [a [v b]]
                       `(~b (cljs.core.logic/get-dom-fd ~a ~v)))]
-    `(let [~@(mapcat (partial get-var-dom a) (partition 2 vars))]
+    `(let [~@(mapcat #(get-var-dom a %) (partition 2 vars))]
        ~@body)))
 
 ;; consider ^:partial type hint for arguments
@@ -899,7 +899,7 @@
         osym (gensym "o")]
     `(defn ~name [~fsym ~osym]
        (conde
-        ~@(map list (map (partial handle-cclause fsym osym) cclauses))))))
+        ~@(map list (map #(handle-cclause fsym osym %) cclauses))))))
 
 (defmacro def-->e [name args & pcss]
   (let [fsym (gensym "l1_")

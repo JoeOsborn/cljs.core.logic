@@ -7,7 +7,7 @@
                      tree-constraint? take* unify-terms ext-no-check id bind
                      lfirst lnext ifa -cached? -add reify-tabled
                      -reify-tabled reuse ready? subunify
-                     unify-with-record unify-with-pmap -member-count]]
+                     unify-with-record unify-with-pmap -member-count mplus]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -50,7 +50,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :lhs lhs
       :rhs rhs
       not-found))
@@ -115,7 +115,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :km km
       :cm cm
       :cid cid
@@ -232,8 +232,8 @@
   (if (identical? u v)
     s
     (let [u (walk s u)
-          v (walk s v)]      
-      (if (and (lvar? u) (= u v))
+          v (walk s v)]
+      (if (and (lvar? u) (-equiv u v))
         s
         (if (and (not (lvar? u)) (lvar? v))
           (proto/unify-terms v u s)
@@ -283,6 +283,7 @@
 
   IEquiv
   (-equiv [this o]
+    (println s (.-s o))
     (or (identical? this o)
         (and (instance? Substitutions o)
              (= s (.-s o)))))
@@ -301,7 +302,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :s   s
       :vs  vs
       :ts  ts
@@ -322,9 +323,10 @@
   
   IAssociative
   (-contains-key? [this k]
-    (contains? #{:s :vs :cs :cq :cqs :oc} k))
+    (or (identical? :s k) (identical? :vs k) (identical? :cs k)
+        (identical? :cq k) (identical? :cqs k) (identical? :oc k)))
   (-assoc [this k v]
-    (case k
+    (condp keyword-identical? k
       :s   (Substitutions. v vs ts cs cq cqs oc _meta)
       :vs  (Substitutions. s  v ts cs cq cqs oc _meta)
       :ts  (Substitutions. s vs  v cs cq cqs oc _meta)
@@ -376,12 +378,10 @@
         (loop [lv v [v vp :as me] (find s v)]
           (cond
            (nil? me) lv
-
            (not (lvar? vp))
            (if (subst-val? vp)
              (with-meta v (meta vp))
              v)
-
            :else (recur vp (find s vp)))))
       v))
 
@@ -602,7 +602,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :name name
       :oname oname
       :id id
@@ -1031,11 +1031,11 @@
   
   proto/IBind
   (bind [this g]
-    (proto/mplus (g a) (fn [] (proto/bind f g))))
+    (mplus (g a) (fn [] (bind f g))))
   
   proto/IMPlus
   (mplus [this fp]
-    (Choice. a (fn [] (proto/mplus (fp) f))))
+    (Choice. a (fn [] (mplus (fp) f))))
   
   proto/ITake
   (take* [this]
@@ -1061,13 +1061,13 @@
 (extend-protocol proto/IBind
   default
   (bind [this g]
-    (cond (fn? this) (-inc (proto/bind (this) g))
+    (cond (fn? this) (-inc (bind (this) g))
           :else (throw (ex-info "No protocol method" {})))))
 
 (extend-protocol proto/IMPlus
   default
   (mplus [this f]
-    (cond (fn? this) (-inc (proto/mplus (f) this))
+    (cond (fn? this) (-inc (mplus (f) this))
           :else (Choice. this f))))
 
 (extend-protocol proto/ITake
@@ -1303,7 +1303,7 @@
   (-lookup [this k]
     (-lookup this k nil))
   (-lookup [this k not-found]
-    (case k
+    (condp keyword-identical? k
       :ansl ansl
       :anss anss
       not-found))
@@ -1357,7 +1357,7 @@
               w  (into a (next w))]
           (if (empty? w)
             (f)
-            (proto/mplus (f) (fn [] w))))))
+            (mplus (f) (fn [] w))))))
 
      :else (recur (next w) (conj a (first w))))))
 
@@ -1429,30 +1429,34 @@
     (waiting-stream-check
      this
      ;; success continuation
-     (fn [f] (proto/bind f g))
+     (fn [f] (bind f g))
      ;; failure continuation
      (fn []
        (into []
              (map (fn [ss]
                     (make-suspended-stream (.-cache ss) (.-ansv* ss)
-                                           (fn [] (proto/bind ((.-f ss)) g))))
+                                           (fn [] (bind ((.-f ss)) g))))
                   this)))))
 
   proto/IMPlus
   (mplus [this f]
     (waiting-stream-check this
                           ;; success continuation
-                          (fn [fp] (proto/mplus fp f))
+                          (fn [fp] (mplus fp f))
                           ;; failure continuation
                           (fn []
                             (let [a-inf (f)]
                               (if (waiting-stream? a-inf)
                                 (into a-inf this)
-                                (proto/mplus a-inf (fn [] this)))))))
+                                (mplus a-inf (fn [] this)))))))
 
   proto/ITake
   (take* [this]
     (waiting-stream-check this (fn [f] (take* f)) (fn [] ()))))
+
+;; (extend-protocol IBind)
+;; (extend-protocol IMPlus)
+;; (extend-protocol ITake)
 
 (defn master
   "Take the argument to the goal and check that we don't
@@ -1520,13 +1524,6 @@
           a)
         ((remcg c) a)))))
 
-;; TODO NOW: try an implementation that allows constraints
-;; to run roughly in the order they normally would. reverse
-;; xcs in run-constraints, (into cq (reverse xcs)), cq should
-;; be persistent list.
-
-;; TRIED: but causes overflow errors for crypt1, and if we switch to BigInt
-;; for crypt1 out of memory errors, needs more investigation
 
 (defn fix-constraints
   "A goal to run the constraints in cq until it is empty. Of
@@ -1567,8 +1564,6 @@
             (run-constraints* (next xs) cs ws)) a)
           ((run-constraints* (next xs) cs ws) a))))))
 
-;; TODO: we've hard coded finite domains here
-
 (defn verify-all-bound [a constrained]
   (letfn [(verify-all-bound* [a constrained]
             (when constrained
@@ -1593,8 +1588,6 @@
                         (enforceable? c)))
                     (get km v)))
             vs)))
-
-;; TODO: we've hard coded force-ans here
 
 (declare force-ans)
 
