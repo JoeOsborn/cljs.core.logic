@@ -339,274 +339,6 @@
   (let [s (reduce (fn [m [k v]] (conj m (pair k v))) #{} v)]
     (make-s s (make-cs))))
 
-;; Constraint Store
-
-(declare lvar? bindable? add-var)
-
-(defn var-rands [a c]
-  (->> (proto/-rands c)
-       (map #(proto/root-var a %))
-       (filter lvar?)
-       (into [])))
-
-(defn unbound-rands [a c]
-  (->> (var-rands a c)
-       (filter #(lvar? (proto/root-val a %)))))
-
-(defprotocol IConstraintStore
-  (-addc [cs a c])
-  (-updatec [cs a c])
-  (-remc [cs a c])
-  (-runc [cs c state])
-  (-constraints-for [cs a x ws])
-  (-migrate [cs s root]))
-
-;; ConstraintStore
-;; -----
-;; km  - mapping logic vars to constraints ids
-;; cm  - mapping constraint ids to to actual constraints
-;; cid - the current constraint id, an integer, incremented
-;;       everytime we add a constraint to the store
-;; running - set of running constraint ids
-
-(deftype ConstraintStore [km cm cid running]
-  IConstraintStore
-  (-addc [this a c]
-    (let [vars (var-rands a c)
-          c (proto/with-id c cid)
-          cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
-      (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
-  
-  (-updatec [this a c]
-    (let [oc (cm (id c))
-          nkm (if (implements? proto/IEntailedVar c)
-                (reduce (fn [km x]
-                          (if (proto/-entailed-var? c x)
-                            (dissoc km x)
-                            km))
-                        km (var-rands a oc))
-                km)]
-      (ConstraintStore. nkm (assoc cm (id c) c) cid running)))
-
-  (-remc [this a c]
-    (let [vs (var-rands a c)
-          ocid (id c)
-          nkm (reduce (fn [km v]
-                        (let [vcs (disj (get km v) ocid)]
-                          (if (empty? vcs)
-                            (dissoc km v)
-                            (assoc km v vcs))))
-                      km vs)
-          ncm (dissoc cm ocid)]
-      (ConstraintStore. nkm ncm cid running)))
-
-  (-runc [this c state]
-    (if state
-      (ConstraintStore. km cm cid (conj running (id c)))
-      (ConstraintStore. km cm cid (disj running (id c)))))
-
-  (-constraints-for [this a x ws]
-    (when-let [ids (get km (-root-var a x))]
-      (filter #((proto/-watched-stores %) ws) (map cm (remove running ids)))))
-
-  (-migrate [this x root]
-    (let [xcs    (km x)
-          rootcs (km root #{})
-          nkm    (assoc (dissoc km x) root (into rootcs xcs))]
-      (ConstraintStore. nkm cm cid running)))
-
-  ICounted
-  (-count [this] (count cm)))
-
-(defn add-var [cs x c]
-  (when-not (lvar? x)
-    (throw (js/Error. (str "constraint store assoc expected logic var key: "
-                           x))))
-  (let [cm (.-cm cs)
-        km (.-km cs)
-        cid (.-cid cs)
-        nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
-        ncm (assoc cm cid c)]
-    (ConstraintStore. nkm ncm cid (.-running cs))))
-
-(defn make-cs []
-  (ConstraintStore. {} {} 0 #{}))
-
-(declare empty-s choice lvar lvar? pair lcons run-constraints*)
-
-(defn unify [s u v]
-  (if (identical? u v)
-    s
-    (let [u (-walk s u)
-          v (-walk s v)]
-      (if (and (lvar? u) (= u v))
-        s
-        (if (and (not (lvar? u)) (lvar? v))
-          (-unify-terms v u s)
-          (-unify-terms u v s))))))
-
-(defn build [s u]
-  (-build-term u s))
-
-(def not-found (js-obj))
-
-(defn ^boolean lvar? [x]
-  (instance? LVar x))
-
-(defn add-attr [s x attr attrv]
-  (let [x (proto/root-var s x)
-        v (proto/root-val s x)]
-    (if (subst-val? v)
-      (proto/update-var s x (assoc-meta v attr attrv))
-      (let [v (if (lvar? v) ::unbound v)]
-        (ext-no-check s x (with-meta (subst-val v) {attr attrv}))))))
-
-(defn rem-attr [s x attr]
-  (let [x (proto/root-var s x)
-        v (proto/root-val s x)]
-    (if (subst-val? v)
-      (let [new-meta (dissoc (meta v) attr)]
-        (if (and (zero? (count new-meta)) (not= (.-v v) ::unbound))
-          (proto/update-var s x (.-v v))
-          (proto/update-var s x (with-meta v new-meta))))
-      s)))
-
-(defn get-attr [s x attr]
-  (let [v (proto/root-val s x)]
-    (if (subst-val? v)
-      (-> v meta attr))))
-
-(defn sync-eset [s v seenset f]
-  (if (not= seenset ::no-prop)
-    (reduce
-     (fn [s y]
-       (let [y (proto/root-var s y)]
-         (if-not (contains? seenset y)
-           (f s y)
-           s)))
-     s
-     (.-eset v))
-    s))
-
-(defn add-dom
-  ([s x dom domv]
-     (let [x (proto/root-var s x)]
-       (add-dom s x dom domv nil)))
-  ([s x dom domv seenset]
-     (let [v (proto/root-val s x)
-           s (if (subst-val? v)
-               (proto/update-var s x (assoc-dom v dom domv))
-               (let [v (if (lvar? v) ::unbound v)]
-                 (ext-no-check s x (subst-val v {dom domv}))))]
-       (sync-eset s v seenset
-                  (fn [s y]
-                    (add-dom s y dom domv (conj (or seenset #{}) x)))))))
-
-(defn update-dom
-  ([s x dom f]
-     (let [x (proto/root-var s x)]
-       (update-dom s x dom f nil)))
-  ([s x dom f seenset]
-     (let [v (proto/root-val s x)
-           v (if (lvar? v)
-               (subst-val ::unbound)
-               v)
-           doms (.-doms v)
-           s (proto/update-var s x (assoc-dom v dom (f (get doms dom))))]
-       (sync-eset s v seenset
-                  (fn [s y]
-                    (update-dom s y dom f (conj (or seenset #{}) x)))))))
-
-(defn rem-dom
-  ([s x dom]
-     (let [x (proto/root-var s x)]
-       (rem-dom s x dom nil)))
-  ([s x dom seenset]
-     (let [v (proto/root-val s x)
-           s (if (subst-val? v)
-               (let [new-doms (dissoc (.-doms v) dom)]
-                 (if (and (zero? (count new-doms)) (not= (.-v v) ::unbound))
-                   (proto/update-var s x (.-v v))
-                   (proto/update-var s x (assoc v :doms new-doms))))
-               s)]
-       (sync-eset s v seenset
-                  (fn [s y] (rem-dom s y dom (conj (or seenset #{}) x)))))))
-
-(defn get-dom [s x dom]
-  (let [v (proto/root-val s x)]
-    (cond
-     (subst-val? v) (let [v' (.-v v)]
-                      (if (not= v' ::unbound)
-                        v'
-                        (-> v :doms dom)))
-     (not (lvar? v)) v)))
-
-(def empty-f (fn []))
-
-(defn annotate [k v]
-  (fn [a]
-    (vary-meta a assoc k v)))
-
-(defn merge-doms [s x doms]
-  (let [xdoms (.-doms (proto/root-val s x))]
-    (loop [doms (seq doms) s s]
-      (if doms
-        (let [[dom domv] (first doms)]
-          (let [xdomv (get xdoms dom ::not-found)
-                ndomv (if (keyword-identical? xdomv ::not-found)
-                        domv
-                        (proto/-merge-doms domv xdomv))]
-            (when ndomv
-              (recur (next doms)
-                     (add-dom s x dom ndomv #{})))))
-        s))))
-
-(defn update-eset [s doms eset]
-  (loop [eset (seq eset) s s]
-    (if eset
-      (when-let [s (merge-doms s (proto/root-var s (first eset)) doms)]
-        (recur (next eset) s))
-      s)))
-
-(defn merge-with-root [s x root]
-  (let [xv    (proto/root-val s x)
-        rootv (proto/root-val s root)
-        eset  (set/union (.-eset rootv) (.-eset xv))
-        doms (loop [xd (seq (.-doms xv)) rd (.-doms rootv) r {}]
-               (if xd
-                 (let [[xk xv] (first xd)]
-                   (if-let [[_ rv] (find rd xk)]
-                     (let [nd (proto/-merge-doms xv rv)]
-                       (when nd
-                         (recur (next xd)
-                                (dissoc rd xk) (assoc r xk nd))))
-                     (recur (next xd) rd (assoc r xk xv))))
-                 (merge r rd)))
-        nv (when doms
-             (subst-val (.-v rootv) doms eset
-                        (merge (meta xv) (meta rootv))))]
-    (when nv
-      (-> s
-          (ext-no-check root nv)
-          (update-eset doms eset)))))
-
-;; ==========================================================================
-;; Entanglement
-
-(defn to-subst-val [v]
-  (if (subst-val? v)
-    v
-    (subst-val ::unbound)))
-
-(defn entangle [s x y]
-  (let [x  (proto/root-var s x)
-        y  (proto/root-var s y)
-        xv (to-subst-val (proto/root-val s x))
-        yv (to-subst-val (proto/root-val s y))]
-    (-> s
-        (proto/update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
-        (proto/update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
-
 ;; ===========================================================================
 ;; Logic Variables
 
@@ -643,7 +375,7 @@
           (if (tree-term? v)
             (-ext -s u v)
             (if (-> u clojure.core/meta ::unbound)
-              (-ext-no-check s u (assoc (proto/root-val s u) :v v))
+              (-ext-no-check s u (assoc (-root-val s u) :v v))
               (-ext-no-check s u v)))
           :else nil))
   
@@ -662,7 +394,7 @@
                         :else nil)]
       (if repoint
         (let [[root other] repoint
-              s (assoc s :cs (proto/migrate (.-cs s) other root))
+              s (assoc s :cs (-migrate (.-cs s) other root))
               s (if (-> other clojure.core/meta ::unbound)
                   (merge-with-root s other root)
                   s)]
@@ -729,13 +461,282 @@
 (defn lvars [n]
   (repeatedly n lvar))
 
+;; Constraint Store
+
+(declare lvar? bindable? add-var)
+
+(defn var-rands [a c]
+  (->> (-rands c)
+       (map #(-root-var a %))
+       (filter lvar?)
+       (into [])))
+
+(defn unbound-rands [a c]
+  (->> (var-rands a c)
+       (filter #(lvar? (-root-val a %)))))
+
+(defprotocol IConstraintStore
+  (-addc [cs a c])
+  (-updatec [cs a c])
+  (-remc [cs a c])
+  (-runc [cs c state])
+  (-constraints-for [cs a x ws])
+  (-migrate [cs s root]))
+
+;; ConstraintStore
+;; -----
+;; km  - mapping logic vars to constraints ids
+;; cm  - mapping constraint ids to to actual constraints
+;; cid - the current constraint id, an integer, incremented
+;;       everytime we add a constraint to the store
+;; running - set of running constraint ids
+
+(deftype ConstraintStore [km cm cid running]
+  IConstraintStore
+  (-addc [this a c]
+    (let [vars (var-rands a c)
+          c (-with-id c cid)
+          cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
+      (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
+  
+  (-updatec [this a c]
+    (let [oc (cm (id c))
+          nkm (if (implements? -IEntailedVar c)
+                (reduce (fn [km x]
+                          (if (-entailed-var? c x)
+                            (dissoc km x)
+                            km))
+                        km (var-rands a oc))
+                km)]
+      (ConstraintStore. nkm (assoc cm (id c) c) cid running)))
+
+  (-remc [this a c]
+    (let [vs (var-rands a c)
+          ocid (id c)
+          nkm (reduce (fn [km v]
+                        (let [vcs (disj (get km v) ocid)]
+                          (if (empty? vcs)
+                            (dissoc km v)
+                            (assoc km v vcs))))
+                      km vs)
+          ncm (dissoc cm ocid)]
+      (ConstraintStore. nkm ncm cid running)))
+
+  (-runc [this c state]
+    (if state
+      (ConstraintStore. km cm cid (conj running (id c)))
+      (ConstraintStore. km cm cid (disj running (id c)))))
+
+  (-constraints-for [this a x ws]
+    (when-let [ids (get km (-root-var a x))]
+      (filter #((-watched-stores %) ws)
+              (map cm (remove running ids)))))
+
+  (-migrate [this x root]
+    (let [xcs    (km x)
+          rootcs (km root #{})
+          nkm    (assoc (dissoc km x) root (into rootcs xcs))]
+      (ConstraintStore. nkm cm cid running)))
+
+  ICounted
+  (-count [this] (count cm)))
+
+(defn add-var [cs x c]
+  (when-not (lvar? x)
+    (throw (js/Error. (str "constraint store assoc expected logic var key: "
+                           x))))
+  (let [cm (.-cm cs)
+        km (.-km cs)
+        cid (.-cid cs)
+        nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
+        ncm (assoc cm cid c)]
+    (ConstraintStore. nkm ncm cid (.-running cs))))
+
+(defn make-cs []
+  (ConstraintStore. {} {} 0 #{}))
+
+(declare empty-s choice lvar lvar? pair lcons run-constraints*)
+
+(defn unify [s u v]
+  (if (identical? u v)
+    s
+    (let [u (-walk s u)
+          v (-walk s v)]
+      (if (and (lvar? u) (= u v))
+        s
+        (if (and (not (lvar? u)) (lvar? v))
+          (-unify-terms v u s)
+          (-unify-terms u v s))))))
+
+(defn build [s u]
+  (-build-term u s))
+
+(def not-found (js-obj))
+
+(defn ^boolean lvar? [x]
+  (instance? LVar x))
+
+(defn add-attr [s x attr attrv]
+  (let [x (-root-var s x)
+        v (-root-val s x)]
+    (if (subst-val? v)
+      (-update-var s x (assoc-meta v attr attrv))
+      (let [v (if (lvar? v) ::unbound v)]
+        (ext-no-check s x (with-meta (subst-val v) {attr attrv}))))))
+
+(defn rem-attr [s x attr]
+  (let [x (-root-var s x)
+        v (-root-val s x)]
+    (if (subst-val? v)
+      (let [new-meta (dissoc (meta v) attr)]
+        (if (and (zero? (count new-meta)) (not= (.-v v) ::unbound))
+          (-update-var s x (.-v v))
+          (-update-var s x (with-meta v new-meta))))
+      s)))
+
+(defn get-attr [s x attr]
+  (let [v (-root-val s x)]
+    (if (subst-val? v)
+      (-> v meta attr))))
+
+(defn sync-eset [s v seenset f]
+  (if (not= seenset ::no-prop)
+    (reduce
+     (fn [s y]
+       (let [y (-root-var s y)]
+         (if-not (contains? seenset y)
+           (f s y)
+           s)))
+     s
+     (.-eset v))
+    s))
+
+(defn add-dom
+  ([s x dom domv]
+     (let [x (-root-var s x)]
+       (add-dom s x dom domv nil)))
+  ([s x dom domv seenset]
+     (let [v (-root-val s x)
+           s (if (subst-val? v)
+               (-update-var s x (assoc-dom v dom domv))
+               (let [v (if (lvar? v) ::unbound v)]
+                 (ext-no-check s x (subst-val v {dom domv}))))]
+       (sync-eset s v seenset
+                  (fn [s y]
+                    (add-dom s y dom domv (conj (or seenset #{}) x)))))))
+
+(defn update-dom
+  ([s x dom f]
+     (let [x (-root-var s x)]
+       (update-dom s x dom f nil)))
+  ([s x dom f seenset]
+     (let [v (-root-val s x)
+           v (if (lvar? v)
+               (subst-val ::unbound)
+               v)
+           doms (.-doms v)
+           s (-update-var s x (assoc-dom v dom (f (get doms dom))))]
+       (sync-eset s v seenset
+                  (fn [s y]
+                    (update-dom s y dom f (conj (or seenset #{}) x)))))))
+
+(defn rem-dom
+  ([s x dom]
+     (let [x (-root-var s x)]
+       (rem-dom s x dom nil)))
+  ([s x dom seenset]
+     (let [v (-root-val s x)
+           s (if (subst-val? v)
+               (let [new-doms (dissoc (.-doms v) dom)]
+                 (if (and (zero? (count new-doms)) (not= (.-v v) ::unbound))
+                   (-update-var s x (.-v v))
+                   (-update-var s x (assoc v :doms new-doms))))
+               s)]
+       (sync-eset s v seenset
+                  (fn [s y] (rem-dom s y dom (conj (or seenset #{}) x)))))))
+
+(defn get-dom [s x dom]
+  (let [v (-root-val s x)]
+    (cond
+     (subst-val? v) (let [v' (.-v v)]
+                      (if (not= v' ::unbound)
+                        v'
+                        (-> v :doms dom)))
+     (not (lvar? v)) v)))
+
+(def empty-f (fn []))
+
+(defn annotate [k v]
+  (fn [a]
+    (vary-meta a assoc k v)))
+
+(defn merge-doms [s x doms]
+  (let [xdoms (.-doms (-root-val s x))]
+    (loop [doms (seq doms) s s]
+      (if doms
+        (let [[dom domv] (first doms)]
+          (let [xdomv (get xdoms dom ::not-found)
+                ndomv (if (keyword-identical? xdomv ::not-found)
+                        domv
+                        (-merge-doms domv xdomv))]
+            (when ndomv
+              (recur (next doms)
+                     (add-dom s x dom ndomv #{})))))
+        s))))
+
+(defn update-eset [s doms eset]
+  (loop [eset (seq eset) s s]
+    (if eset
+      (when-let [s (merge-doms s (-root-var s (first eset)) doms)]
+        (recur (next eset) s))
+      s)))
+
+(defn merge-with-root [s x root]
+  (let [xv    (-root-val s x)
+        rootv (-root-val s root)
+        eset  (set/union (.-eset rootv) (.-eset xv))
+        doms (loop [xd (seq (.-doms xv)) rd (.-doms rootv) r {}]
+               (if xd
+                 (let [[xk xv] (first xd)]
+                   (if-let [[_ rv] (find rd xk)]
+                     (let [nd (-merge-doms xv rv)]
+                       (when nd
+                         (recur (next xd)
+                                (dissoc rd xk) (assoc r xk nd))))
+                     (recur (next xd) rd (assoc r xk xv))))
+                 (merge r rd)))
+        nv (when doms
+             (subst-val (.-v rootv) doms eset
+                        (merge (meta xv) (meta rootv))))]
+    (when nv
+      (-> s
+          (ext-no-check root nv)
+          (update-eset doms eset)))))
+
+;; ==========================================================================
+;; Entanglement
+
+(defn to-subst-val [v]
+  (if (subst-val? v)
+    v
+    (subst-val ::unbound)))
+
+(defn entangle [s x y]
+  (let [x  (-root-var s x)
+        y  (-root-var s y)
+        xv (to-subst-val (-root-val s x))
+        yv (to-subst-val (-root-val s y))]
+    (-> s
+        (-update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
+        (-update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
+
 ;; ==========================================================================
 ;; LCons
 
 (declare lcons?)
 
 (deftype LCons [a d ^:unsynchronized-mutable cache meta]
-  proto/ITreeTerm  
+  -ITreeTerm  
   IMeta
   (-meta [this] meta)
   
@@ -743,20 +744,20 @@
   (-with-meta [this new-meta]
     (LCons. a d cache new-meta))
 
-  proto/LConsSeq
+  -LConsSeq
   (lfirst [_] a)
   (lnext [_] d)
 
-  proto/LConsPrint
+  -LConsPrint
   (toShortString [this]
     (cond
-     (instance? LCons d) (str a " " (proto/toShortString d))
+     (instance? LCons d) (str a " " (-toShortString d))
      :else (str a " . " d)))
 
   Object
   (toString [this] (cond
                     (instance? LCons d)
-                    (str "(" a " " (proto/toShortString d) ")")
+                    (str "(" a " " (-toShortString d) ")")
                     :else (str "(" a " . " d ")")))
 
   IEquiv
@@ -787,7 +788,7 @@
         cache)
       cache))
 
-  proto/IUnifyTerms
+  -IUnifyTerms
   (unify-terms [^not-native u ^not-native v ^not-native s]
     (cond
      (sequential? v)
@@ -818,19 +819,19 @@
 
      :else nil))
 
-  proto/IReifyTerm
+  -IReifyTerm
   (reify-term [v s]    
     (loop [v v s s]
       (if (lcons? v)
         (recur (lnext v) (-reify* s (lfirst v)))
         (-reify* s v))))
 
-  proto/IWalkTerm
+  -IWalkTerm
   (walk-term [v f]
     (lcons (f (lfirst v))
            (f (lnext v))))
 
-  proto/IOccursCheckTerm
+  -IOccursCheckTerm
   (occurs-check-term [v x ^not-native s]
     (loop [v v x x s s]
       (if (lcons? v)
@@ -838,7 +839,7 @@
             (recur (lnext v) x s))
         (occurs-check s x v))))
 
-  proto/IBuildTerm
+  -IBuildTerm
   (build-term [u s]
     (loop [u u s s]
       (if (lcons? u)
@@ -861,7 +862,7 @@
 
 (defn ^boolean tree-term? [x]
   (or (coll? x)
-      (implements? proto/ITreeTerm x)))
+      (implements? -ITreeTerm x)))
 
 ;; ==========================================================================
 ;; Unification
@@ -896,7 +897,7 @@
               nil)))
         s))))
 
-(extend-protocol proto/IUnifyTerms
+(extend-protocol -IUnifyTerms
   nil
   (unify-terms [u v s]
     (if (nil? v) s nil))
@@ -908,7 +909,7 @@
      (unify-with-sequential* u v s)
      (map? u)
      (cond
-      (implements? proto/IUnifyWithRecord v)
+      (implements? -IUnifyWithRecord v)
       (unify-with-record v u s)
 
       (map? v)
@@ -922,7 +923,7 @@
 ;; ===========================================================================
 ;; Reification
 
-(extend-protocol proto/IReifyTerm
+(extend-protocol -IReifyTerm
   nil
   (reify-term [v s] s)
 
@@ -940,11 +941,11 @@
 
 (defn walk-record-term [v f]
   (with-meta
-    (loop [v v r (proto/-uninitialized v)]
+    (loop [v v r (-uninitialized v)]
       (if (seq v)
         (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc r (proto/walk-term (f vfk) f)
-                                 (proto/walk-term (f vfv) f))))
+          (recur (next v) (assoc r (-walk-term (f vfk) f)
+                                 (-walk-term (f vfv) f))))
         r))
     (meta v)))
 
@@ -954,12 +955,12 @@
     (loop [^not-native v v ^not-native r (transient {})]
       (if (seq v)
         (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc! r (proto/walk-term (f vfk) f)
-                                  (proto/walk-term (f vfv) f))))
+          (recur (next v) (assoc! r (-walk-term (f vfk) f)
+                                  (-walk-term (f vfv) f))))
         (persistent! r)))
     (meta v)))
 
-(extend-protocol proto/IWalkTerm
+(extend-protocol -IWalkTerm
   nil
   (walk-term [v f] (f nil))
 
@@ -967,7 +968,7 @@
   (walk-term [v f]
     (cond (seq? v)
           (with-meta
-            (doall (map #(proto/walk-term (f %) f) v))
+            (doall (map #(-walk-term (f %) f) v))
             (meta v))
           (record? v)
           (walk-record-term v f)
@@ -984,14 +985,14 @@
     (with-meta
       (loop [v v ^not-native r (transient [])]
         (if (seq v)
-          (recur (next v) (conj! r (proto/walk-term (f (first v)) f)))
+          (recur (next v) (conj! r (-walk-term (f (first v)) f)))
           (persistent! r)))
       (meta v))))
 
 ;; ===========================================================================
 ;; Occurs Check Term
 
-(extend-protocol proto/IOccursCheckTerm
+(extend-protocol -IOccursCheckTerm
   nil
   (occurs-check-term [v x s] false)
 
@@ -1008,7 +1009,7 @@
 ;; ==========================================================================
 ;; Build Term
 
-(extend-protocol proto/IBuildTerm
+(extend-protocol -IBuildTerm
   nil
   (build-term [u s] s)
 
@@ -1037,15 +1038,15 @@
       :a a
       not-found))
   
-  proto/IBind
+  -IBind
   (bind [this g]
-    (proto/mplus (g a) (fn [] (proto/bind f g))))
+    (-mplus (g a) (fn [] (-bind f g))))
   
-  proto/IMPlus
+  -IMPlus
   (mplus [this fp]
-    (Choice. a (fn [] (proto/mplus (fp) f))))
+    (Choice. a (fn [] (-mplus (fp) f))))
   
-  proto/ITake
+  -ITake
   (take* [this]
     (lazy-seq (cons a (lazy-seq (take* f))))))
 
@@ -1056,33 +1057,33 @@
 ;; MZero
 
 (extend-type nil
-  proto/IBind
+  -IBind
   (bind [_ g] nil)
-  proto/IMPlus
+  -IMPlus
   (mplus [_ f] (f))
-  proto/ITake
+  -ITake
   (take* [_] '()))
 
 ;; ---------------------------------------------------------------------------
 ;; Unit and Inc
 
-(extend-protocol proto/IBind
+(extend-protocol -IBind
   default
   (bind [this g]
-    (cond (fn? this) (-inc (proto/bind (this) g))
+    (cond (fn? this) (-inc (-bind (this) g))
           :else (throw (ex-info "No protocol method" {})))))
 
-(extend-protocol proto/IMPlus
+(extend-protocol -IMPlus
   default
   (mplus [this f]
-    (cond (fn? this) (-inc (proto/mplus (f) this))
+    (cond (fn? this) (-inc (-mplus (f) this))
           :else (Choice. this f))))
 
-(extend-protocol proto/ITake
+(extend-protocol -ITake
   default
   (take* [this]
     (cond (fn? this)
-          (lazy-seq (proto/take* (this)))
+          (lazy-seq (-take* (this)))
           :else this)))
 
 ;; ===========================================================================
@@ -1102,7 +1103,7 @@
 
 (defn ext-run-csg [u v]
   (fn [a]
-    (proto/ext-run-cs a u v)))
+    (-ext-run-cs a u v)))
 
 (defn ==
   "A goal that attempts to unify terms u and v."
@@ -1122,7 +1123,7 @@
   ([s g]
      (solutions s (lvar) g))
   ([s q g]
-     (proto/take* ((all g (reifyg q)) s))))
+     (-take* ((all g (reifyg q)) s))))
 
 ;; ===========================================================================
 ;; conda (soft-cut), condu (committed-choice)
@@ -1134,7 +1135,7 @@
 
 ;; TODO : if -> when
 
-(extend-protocol proto/IIfA
+(extend-protocol -IIfA
   nil
   (ifa [b gs c]
     (when c
@@ -1153,7 +1154,7 @@
   (ifa [b gs c]
     (reduce bind b gs)))
 
-(extend-protocol proto/IIfU
+(extend-protocol -IIfU
   nil
   (ifu [b gs c]
     (when c
@@ -1165,7 +1166,7 @@
 
   default
   (ifu [b gs c]
-    (cond (fn? b) (-inc (proto/ifu (b) gs c))
+    (cond (fn? b) (-inc (-ifu (b) gs c))
           :else nil))
 
   Choice
@@ -1316,7 +1317,7 @@
       :anss anss
       not-found))
 
-  proto/IAnswerCache
+  -IAnswerCache
   (-add [this x]
     (AnswerCache. (conj ansl x) (conj anss x) _meta))
   (-cached? [_ x]
@@ -1331,7 +1332,7 @@
   (AnswerCache. '() #{} nil))
 
 (defrecord SuspendedStream [cache ansv* f]
-  proto/ISuspendedStream
+  -ISuspendedStream
   (ready? [this]
     (not (identical? (.-ansl @cache) ansv*))))
 
@@ -1365,7 +1366,7 @@
               w  (into a (next w))]
           (if (empty? w)
             (f)
-            (proto/mplus (f) (fn [] w))))))
+            (-mplus (f) (fn [] w))))))
 
      :else (recur (next w) (conj a (first w))))))
 
@@ -1376,7 +1377,7 @@
 ;; them
 
 (extend-type Substitutions
-  proto/ITabled
+  -ITabled
 
   ;; returns a substitution that maps fresh vars to
   ;; new ones. similar to Prolog's copy_term/2. this is to avoid
@@ -1432,33 +1433,33 @@
 ;; Waiting Stream
 
 (extend-type PersistentVector
-  proto/IBind
+  -IBind
   (bind [this g]
     (waiting-stream-check
      this
      ;; success continuation
-     (fn [f] (proto/bind f g))
+     (fn [f] (-bind f g))
      ;; failure continuation
      (fn []
        (into []
              (map (fn [ss]
                     (make-suspended-stream (.-cache ss) (.-ansv* ss)
-                                           (fn [] (proto/bind ((.-f ss)) g))))
+                                           (fn [] (-bind ((.-f ss)) g))))
                   this)))))
 
-  proto/IMPlus
+  -IMPlus
   (mplus [this f]
     (waiting-stream-check this
                           ;; success continuation
-                          (fn [fp] (proto/mplus fp f))
+                          (fn [fp] (-mplus fp f))
                           ;; failure continuation
                           (fn []
                             (let [a-inf (f)]
                               (if (waiting-stream? a-inf)
                                 (into a-inf this)
-                                (proto/mplus a-inf (fn [] this)))))))
+                                (-mplus a-inf (fn [] this)))))))
 
-  proto/ITake
+  -ITake
   (take* [this]
     (waiting-stream-check this (fn [f] (take* f)) (fn [] ()))))
 
@@ -1491,39 +1492,39 @@
     (let [a (reduce (fn [a x]
                       (ext-no-check a x (subst-val ::unbound)))
                     a (unbound-rands a c))]
-      (assoc a :cs (proto/addc (.-cs a) a c)))))
+      (assoc a :cs (-addc (.-cs a) a c)))))
 
 (defn updatecg [c]
   (fn [a]
-    (assoc a :cs (proto/updatec (.-cs a) a c))))
+    (assoc a :cs (-updatec (.-cs a) a c))))
 
 (defn remcg [c]
   (fn [a]
-    (assoc a :cs (proto/remc (.-cs a) a c))))
+    (assoc a :cs (-remc (.-cs a) a c))))
 
 (defn runcg [c]
   (fn [a]
-    (assoc a :cs (proto/runc (.-cs a) c true))))
+    (assoc a :cs (-runc (.-cs a) c true))))
 
 (defn stopcg [c]
   (fn [a]
-    (assoc a :cs (proto/runc (.-cs a) c false))))
+    (assoc a :cs (-runc (.-cs a) c false))))
 
 (defn ^boolean ientailed? [c]
-  (implements? proto/IEntailed c))
+  (implements? -IEntailed c))
 
 (defn ^boolean entailed? [c c' a]
   (let [id (id c)]
     (and (or ((-> a :cs :cm) id)
              (nil? id))
-         (proto/-entailed? c'))))
+         (-entailed? c'))))
 
 (defn run-constraint [c]
   (fn [a]
-    (let [c' (proto/-step c a)]
+    (let [c' (-step c a)]
       (if (or (not (ientailed? c'))
               (not (entailed? c c' a)))
-        (if (proto/-runnable? c')
+        (if (-runnable? c')
           ((composeg* (runcg c) c' (stopcg c)) a)
           a)
         ((remcg c) a)))))
@@ -1557,7 +1558,7 @@
   (fn [a]
     (let [cq (.-cq a)
           a  (reduce (fn [a c]
-                       (proto/queue a c))
+                       (-queue a c))
                      (assoc a :cq (or cq [])) xcs)]
       (if cq
         a
@@ -1568,7 +1569,7 @@
           (nil? (seq xs)))
     s#
     (fn [a]
-      (let [xcs (proto/constraints-for cs a (first xs) ws)]
+      (let [xcs (-constraints-for cs a (first xs) ws)]
         (if (seq xcs)
           ((composeg*
             (run-constraints xcs)
@@ -1618,7 +1619,7 @@
   (let [cs  (.-cs  a)
         rcs (->> (vals (.-cm cs))
                  (filter reifiable?)
-                 (map #(proto/-reifyc % v r a))
+                 (map #(-reifyc % v r a))
                  (filter #(not (nil? %)))
                  (into #{}))]
     (if (empty? rcs)
@@ -1641,16 +1642,16 @@
   (reify
     IFn
     (-invoke [_ a]
-      (let [c' (proto/-step c a)]
-        (if (proto/-runnable? c')
+      (let [c' (-step c a)]
+        (if (-runnable? c')
           (when-let [a (c' a)]
-            (let [c' (proto/-step c a)]
+            (let [c' (-step c a)]
               (if (and (ientailed? c')
                        (not (entailed? c c' a)))
                 ((addcg c) a)
                 a)))
           ((addcg c) a))))
-    proto/IUnwrapConstraint
+    -IUnwrapConstraint
     (-unwrap [_] c)))
 
 ;; TODO: this stuff needs to be moved into fd - David
@@ -1672,7 +1673,7 @@
     v))
 
 ;; TODO: handle all Clojure tree types
-(extend-protocol proto/IForceAnswerTerm
+(extend-protocol -IForceAnswerTerm
   nil
   (-force-ans [v x] s#)
 
@@ -1714,11 +1715,11 @@
   (fn [a]
     ((let [v (walk a x)]
        (if (lvar? v)
-         (proto/-force-ans (get-dom-fd a x) v)
-         (let [x (proto/root-var a x)]
+         (-force-ans (get-dom-fd a x) v)
+         (let [x (-root-var a x)]
            (if (sequential? v)
-             (proto/-force-ans (sort-by-strategy v x a) x)
-             (proto/-force-ans v x))))) a)))
+             (-force-ans (sort-by-strategy v x a) x)
+             (-force-ans v x))))) a)))
 
 (defn distribute [v* strategy]
   (fn [a]
@@ -1737,10 +1738,10 @@
          (if (or (identical? u v) (= u v))
            cs
            (if (and (not (lvar? u)) (lvar? v))
-             (proto/-disunify-terms v u s cs)
-             (proto/-disunify-terms u v s cs)))))))
+             (-disunify-terms v u s cs)
+             (-disunify-terms u v s cs)))))))
 
-(extend-protocol proto/IDisunifyTerms
+(extend-protocol -IDisunifyTerms
   nil
   (-disunify-terms [u v s cs]
     (if-not (nil? v) nil cs))
@@ -1783,7 +1784,7 @@
 
 (defn recover-vars-from-term [x]
   (let [r (atom #{})]
-    (proto/walk-term
+    (-walk-term
      x
      (fn [x]
        (if (lvar? x)
@@ -1804,8 +1805,8 @@
 
 (defn !=c [p]
   (reify
-    proto/ITreeConstraint
-    proto/IConstraintStep
+    -ITreeConstraint
+    -IConstraintStep
     (-step [this s]
       (reify
         IFn
@@ -1826,26 +1827,26 @@
                   (remcg this)
                   (cgoal (!=c p))) s))
               ((remcg this) s))))
-        proto/IRunnable
+        -IRunnable
         (-runnable? [_]
           (some #(not= (walk s %) %) (recover-vars p)))
-        proto/IEntailed
+        -IEntailed
         (-entailed? [_]
           (empty? p))))
-    proto/IPrefix
+    -IPrefix
     (-prefix [_] p)
-    proto/IWithPrefix
+    -IWithPrefix
     (-with-prefix [_ p] (!=c p))
-    proto/IReifiableConstraint
+    -IReifiableConstraint
     (-reifyc [this v r a]
       (let [p* (-reify a (map (fn [[lhs rhs]] `(~lhs ~rhs)) p) r)]
         (if (empty? p*)
           '()
           `(~'!= ~@p*))))
-    proto/IConstraintOp
+    -IConstraintOp
     (-rator [_] `cljs.core.logic/!=)
     (-rands [_] (seq (recover-vars p)))
-    proto/IConstraintWatchedStores
+    -IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
 
 (defn !=
@@ -1907,21 +1908,21 @@
 (declare partial-map?)
 
 (defrecord PMap []
-  proto/INonStorable
+  -INonStorable
 
-  proto/IUnifyTerms
+  -IUnifyTerms
   (unify-terms [u v s]
     (if (map? v)
       (unify-with-pmap* u v s)
       nil))
 
-  proto/IUnifyWithRecord
+  -IUnifyWithRecord
   (unify-with-record [u v s]
     (if (map? v)
       (unify-with-pmap* u v s)
       nil))
 
-  proto/IUninitialized
+  -IUninitialized
   (-uninitialized [_] (PMap.)))
 
 (defn partial-map
@@ -1933,7 +1934,7 @@
 (defn ^boolean partial-map? [x]
   (instance? PMap x))
 
-(extend-protocol proto/IFeature
+(extend-protocol -IFeature
   default
   (-feature [x]
     (cond (map? x) (partial-map x)
@@ -1942,7 +1943,7 @@
 (defn -featurec
   [x fs]
   (reify
-    proto/IConstraintStep
+    -IConstraintStep
     (-step [this s]
       (reify
         IFn
@@ -1950,18 +1951,18 @@
           ((composeg
             (== fs x)
             (remcg this)) s))
-        proto/IRunnable
+        -IRunnable
         (-runnable? [_]
           (not (lvar? (walk s x))))))
-    proto/IConstraintOp
+    -IConstraintOp
     (-rator [_] `cljs.core.logic/featurec)
     (-rands [_] [x])
-    proto/IReifiableConstraint
+    -IReifiableConstraint
     (-reifyc [_ v r a]
       (let [fs (into {} fs)
             r  (-reify* r (walk* a fs))]
         `(featurec ~(walk* r x) ~(walk* r fs))))
-    proto/IConstraintWatchedStores
+    -IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
 
 (defn featurec
@@ -1980,7 +1981,7 @@
             (let [x (walk s x)]
               (if (lvar? x)
                 (throw fk)
-                (proto/walk-term x
+                (-walk-term x
                            (fn [x]
                              (let [x (walk s x)]
                                (cond
@@ -2000,7 +2001,7 @@
   ([x p] (-predc x p p))
   ([x p pform]
      (reify
-       proto/IConstraintStep
+       -IConstraintStep
        (-step [this s]
          (reify
            IFn
@@ -2008,20 +2009,20 @@
              (let [x (walk s x)]
                (when (p x)
                  ((remcg this) s))))
-           proto/IRunnable
+           -IRunnable
            (-runnable? [_]
              (not (lvar? (walk s x))))))
-       proto/IConstraintOp
+       -IConstraintOp
        (-rator [_] (if (seq? pform)
                      `(predc ~pform)
                      `cljs.core.logic/predc))
        (-rands [_] [x])
-       proto/IReifiableConstraint
+       -IReifiableConstraint
        (-reifyc [c v r s]
          (if (and (not= p pform) (fn? pform))
            (pform c v r s)
            pform))
-       proto/IConstraintWatchedStores
+       -IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
 
 (defn predc
@@ -2041,23 +2042,23 @@
 (defn -nafc
   ([c args]
      (reify
-       proto/IConstraintStep
+       -IConstraintStep
        (-step [this s]
          (reify
            IFn
            (-invoke [_ s]
              (when-not (tramp ((apply c args) s))
                ((remcg this) s)))
-           proto/IRunnable
+           -IRunnable
            (-runnable? [_]
              (every? #(ground-term? % s) args))))
-       proto/IConstraintOp
+       -IConstraintOp
        (-rator [_] `cljs.core.logic/nafc)
        (-rands [_] (vec (concat [c] args)))
-       proto/IReifiableConstraint
+       -IReifiableConstraint
        (-reifyc [_ v r s]
          `(nafc ~c ~@(-reify s args r)))
-       proto/IConstraintWatchedStores
+       -IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
 
 (defn nafc
@@ -2072,7 +2073,7 @@
 
 (declare treec)
 
-(extend-protocol proto/IConstrainTree
+(extend-protocol -IConstrainTree
   LCons
   (-constrain-tree [t fc s]
     (loop [t t s s]
@@ -2101,34 +2102,34 @@
 
 (defn constrain-tree [t fc]
   (fn [a]
-    (proto/-constrain-tree t fc a)))
+    (-constrain-tree t fc a)))
 
 (defn -fixc
   ([x f reifier] (-fixc x f nil reifier))
   ([x f runnable reifier]
      (reify
-       proto/IConstraintStep
+       IConstraintStep
        (-step [this s]
          (let [xv (walk s x)]
            (reify
              IFn
              (-invoke [_ s]
                ((composeg (f xv s reifier) (remcg this)) s))
-             proto/IRunnable
+             IRunnable
              (-runnable? [_]
                (if (fn? runnable)
                  (runnable x s)
                  (not (lvar? xv)))))))
-       proto/IConstraintOp
+       IConstraintOp
        (-rator [_] `cljs.core.logic/fixc)
        (-rands [_] (if (vector? x) x [x]))
-       proto/IReifiableConstraint
+       IReifiableConstraint
        (-reifyc [c v r s]
          (if (fn? reifier)
            (reifier c x v r s)
            (let [x (walk* r x)]
              `(fixc ~x ~reifier))))
-       proto/IConstraintWatchedStores
+       IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
 
 (defn fixc
