@@ -20,6 +20,85 @@
 
 (def ^:dynamic *logic-dbs* [])
 
+(def ^:dynamic *occurs-check* true)
+
+(defprotocol IUnifyTerms
+  (-unify-terms [u v s]))
+
+(defprotocol IUnifyWithNil
+  (-unify-with-nil [v u s]))
+
+(defprotocol IUnifyWithObject
+  (-unify-with-object [v u s]))
+
+(defprotocol IUnifyWithLVar
+  (-unify-with-lvar [v u s]))
+
+(defprotocol IUnifyWithLSeq
+  (-unify-with-lseq [v u s]))
+
+(defprotocol IUnifyWithSequential
+  (-unify-with-seq [v u s]))
+
+(defprotocol IUnifyWithMap
+  (-unify-with-map [v u s]))
+
+(defprotocol IReifyTerm
+  (-reify-term [v s]))
+
+(defprotocol IWalkTerm
+  (-walk-term [v s]))
+
+(defprotocol IOccursCheckTerm
+  (-occurs-check-term [v u s]))
+
+(defprotocol IBuildTerm
+  (-build-term [u s]))
+
+(defprotocol IBind
+  (-bind [this g]))
+
+(defprotocol IMPlus
+  (-mplus [a f]))
+
+(defprotocol ITake
+  (-take* [a]))
+
+;; Pair
+
+(defprotocol IPair
+  (-lhs [this])
+  (-rhs [this]))
+
+(deftype Pair [lhs rhs]
+  ICounted
+  (-count [_] 2)
+  IIndexed
+  (-nth [this i]
+    (condp cljs.core/== i
+      0 lhs
+      1 rhs
+      (throw (js/Error. "Index out of bounds."))))
+  (-nth [_ i not-found]
+    (condp cljs.core/==
+      0 lhs
+      1 rhs
+      not-found))
+  IPair
+  (-lhs [_] lhs)
+  (-rhs [_] rhs)
+  IEquiv
+  (-equiv [_ o]
+    (and (instance? Pair o)
+         (= lhs (.-lhs o))
+         (= rhs (.-rhs o))))
+  IPrintWithWriter
+  (-pr-writer [x writer opts]
+    (-write writer (str "(" lhs " . " rhs ")"))))
+
+(defn- pair [lhs rhs]
+  (Pair. lhs rhs))
+
 (def fk (js/Error.))
 
 ;; Utilities
@@ -37,56 +116,7 @@
   (assoc x :doms (dissoc (.-doms x) k)))
 
 (defn ^boolean record? [x]
-  (satisfies? IRecord x))
-
-;; Pair
-
-(deftype Pair [lhs rhs]
-  Object
-  (toString [_]
-    (str "(" lhs " . " rhs ")"))
-  
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :lhs lhs
-      :rhs rhs
-      not-found))
-
-  ICounted
-  (-count [_] 2)
-
-  IIndexed
-  (-nth [this i]
-    (case i
-      0 lhs
-      1 rhs
-      (throw (ex-info "Index out of bounds" {:index i :coll this}))))
-  (-nth [_ i not-found]
-    (case i
-      0 lhs
-      1 rhs
-      not-found))
-
-  IMapEntry
-  (-key [_] lhs)
-  (-val [_] rhs)
-
-  IEquiv
-  (-equiv [_ o]
-    (if (instance? Pair o)
-      (and (= lhs (.-lhs o))
-           (= rhs (.-rhs o)))
-      false))
-
-  IPrintWithWriter
-  (-pr-writer [x writer opts]
-    (-write writer (str "(" (.-lhs x) " . " (.-rhs x) ")"))))
-
-(defn- pair [lhs rhs]
-  (Pair. lhs rhs))
+  (implements? IRecord x))
 
 ;; Constraint Store
 
@@ -131,7 +161,7 @@
 
   (updatec [this a c]
     (let [oc (cm (id c))
-          nkm (if (satisfies? cljs.core.logic.protocols.IEntailedVar c)
+          nkm (if (implements? proto/IEntailedVar c)
                 (reduce (fn [km x]
                           (if (proto/-entailed-var? c x)
                             (dissoc km x)
@@ -620,7 +650,7 @@
 
   IEquiv
   (-equiv [this o]
-    (if (satisfies? proto/IVar o)
+    (if (implements? proto/IVar o)
       (if unique
         (identical? id (.-id o))
         (identical? name (.-name o)))
@@ -712,14 +742,14 @@
        (LVar. id unique name oname (hash name) nil))))
 
 (defn ^boolean lvar? [x]
-  (satisfies? proto/IVar x))
+  (implements? proto/IVar x))
 
 (defn lvars [n]
   (repeatedly n lvar))
 
 (defn ^boolean bindable? [x]
   (or (lvar? x)
-      (satisfies? proto/IBindable x)))
+      (implements? proto/IBindable x)))
 
 ;; ==========================================================================
 ;; LCons
@@ -853,7 +883,7 @@
 
 (defn ^boolean tree-term? [x]
   (or (coll? x)
-      (satisfies? proto/ITreeTerm x)))
+      (implements? proto/ITreeTerm x)))
 
 ;; ==========================================================================
 ;; Unification
@@ -900,7 +930,7 @@
      (unify-with-sequential* u v s)
      (map? u)
      (cond
-      (satisfies? proto/IUnifyWithRecord v)
+      (implements? proto/IUnifyWithRecord v)
       (unify-with-record v u s)
 
       (map? v)
@@ -1502,7 +1532,7 @@
     (assoc a :cs (proto/runc (.-cs a) c false))))
 
 (defn ^boolean ientailed? [c]
-  (satisfies? proto/IEntailed c))
+  (implements? proto/IEntailed c))
 
 (defn ^boolean entailed? [c c' a]
   (let [id (id c)]
