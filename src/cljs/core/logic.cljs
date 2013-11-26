@@ -64,6 +64,27 @@
 (defprotocol ITake
   (-take* [a]))
 
+;; Utilities
+
+(defn assoc-meta [x k v]
+  (with-meta x (assoc (meta x) k v)))
+
+(defn dissoc-meta [x k]
+  (with-meta x (dissoc (meta x) k)))
+
+(defn assoc-dom [x k v]
+  (assoc x :doms (assoc (.-doms x) k v)))
+
+(defn dissoc-dom [x k]
+  (assoc x :doms (dissoc (.-doms x) k)))
+
+(defn ^boolean record? [x]
+  (implements? IRecord x))
+
+(defn ^boolean bindable? [x]
+  (or (lvar? x)
+      (implements? IBindable x)))
+
 ;; Pair
 
 (defprotocol IPair
@@ -183,7 +204,7 @@
       this
       (let [u (-walk this u)
             v (-walk this v)]
-        (if (identical? u v)
+        (if (or (identical? u v) (= u v))
           this
           (-unify-terms u v this)))))
 
@@ -211,9 +232,7 @@
 
   ICollection
   (-conj [this pair]
-    (if (lvar? k)
-      (Substitutions. (conj s pair) vs ts cs cq cqs oc new-meta)
-      (throw (ex-info (str "key must be a logic var") {}))))
+    (Substitutions. (conj s pair) vs ts cs cq cqs oc new-meta))
     
   ISubstitutionsCLP
   (-root-val [this v]
@@ -275,10 +294,7 @@
 (defn tabled-s
   ([] (tabled-s false))
   ([oc] (tabled-s oc nil))
-  ([oc meta]
-     (-> (with-meta (make-s) meta)
-         (assoc :oc oc)
-         (assoc :ts (atom {})))))
+  ([oc meta] (Substitutions. #{} nil (atom {}) (make-cs) nil #{} oc meta)))
 
 (def ^not-native empty-s (make-s))
 
@@ -290,27 +306,6 @@
     (make-s s (make-cs))))
 
 (def fk (js/Error.))
-
-;; Utilities
-
-(defn assoc-meta [x k v]
-  (with-meta x (assoc (meta x) k v)))
-
-(defn dissoc-meta [x k]
-  (with-meta x (dissoc (meta x) k)))
-
-(defn assoc-dom [x k v]
-  (assoc x :doms (assoc (.-doms x) k v)))
-
-(defn dissoc-dom [x k]
-  (assoc x :doms (dissoc (.-doms x) k)))
-
-(defn ^boolean record? [x]
-  (implements? IRecord x))
-
-(defn ^boolean bindable? [x]
-  (or (lvar? x)
-      (implements? IBindable x)))
 
 ;; Constraint Store
 
@@ -325,6 +320,14 @@
 (defn unbound-rands [a c]
   (->> (var-rands a c)
        (filter #(lvar? (proto/root-val a %)))))
+
+(defprotocol IConstraintStore
+  (-addc [cs a c])
+  (-updatec [cs a c])
+  (-remc [cs a c])
+  (-runc [cs c state])
+  (-constraints-for [cs a x ws])
+  (-migrate [cs s root]))
 
 ;; ConstraintStore
 ;; -----
@@ -345,15 +348,15 @@
       :cid cid
       :running running
       not-found))
-
+  
   proto/IConstraintStore
-  (addc [this a c]
+  (-addc [this a c]
     (let [vars (var-rands a c)
           c (proto/with-id c cid)
           cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
       (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
 
-  (updatec [this a c]
+  (-updatec [this a c]
     (let [oc (cm (id c))
           nkm (if (implements? proto/IEntailedVar c)
                 (reduce (fn [km x]
@@ -1777,7 +1780,7 @@
        cs
        (let [u (walk s u)
              v (walk s v)]
-         (if (identical? u v)
+         (if (or (identical? u v) (= u v))
            cs
            (if (and (not (lvar? u)) (lvar? v))
              (proto/-disunify-terms v u s cs)
