@@ -369,15 +369,16 @@
   
   IUnifyTerms
   (-unify-terms [u v s]
-    (cond (lvar? v) (-unify-with-lvar v u s)          
-          (non-storable? v) (throw (js/Error. (str v " is non-storable")))
-          (not (keyword-identical? v ::not-found))
-          (if (tree-term? v)
-            (-ext -s u v)
-            (if (-> u clojure.core/meta ::unbound)
-              (-ext-no-check s u (assoc (-root-val s u) :v v))
-              (-ext-no-check s u v)))
-          :else nil))
+    (cond
+      (lvar? v) (-unify-with-lvar v u s)          
+      (non-storable? v) (throw (js/Error. (str v " is non-storable")))
+      (not (keyword-identical? v ::not-found))
+      (if (tree-term? v)
+        (-ext -s u v)
+        (if (-> u clojure.core/meta ::unbound)
+          (-ext-no-check s u (assoc (-root-val s u) :v v))
+          (-ext-no-check s u v)))
+      :else nil))
   
   IUnifyWithNil
   (-unify-with-nil [v u ^not-native s]
@@ -531,33 +532,43 @@
   IUnifyTerms
   (-unify-terms [^not-native u ^not-native v ^not-native s]
     (cond
-     (sequential? v)
-     (loop [u u v (seq v) s s]
-       (if-not (nil? v)
-         (if (lcons? u)
-           (if-let [s (unify s (lfirst u) (first v))]
-             (recur (lnext u) (next v) s)
-             nil)
-           (unify s u v))
-         (if (lvar? u)
-           (if-let [s (unify s u '())]
-             s
-             (unify s u nil))
-           nil)))
-
-     (lcons? v)
-     (loop [u u v v s s]
-       (if (lvar? u)
-         (unify s u v)
-         (cond
-          (lvar? v) (unify s v u)
+      (sequential? v) (-unify-with-seq u v s)            
+      (lcons? v) (-unify-with-lseq v u s)
+      :else nil))
+  
+  IUnifyWithNil
+  (-unify-with-nil [v u s] (fail s))
+  
+  IUnifyWithObject
+  (-unify-with-object [v u s] (fail s))
+  
+  IUnifyWithLSeq
+  (-unify-with-lseq [^not-native v ^not-native u ^not-native s]
+    (loop [u u v v s s]
+      (if (lvar? u)
+        (-unify s u v)
+        (cond
+          (lvar? v) (-unify s v u)
           (and (lcons? u) (lcons? v))
-          (if-let [s (unify s (lfirst u) (lfirst v))]
-            (recur (lnext u) (lnext v) s)
+          (if-let [s (-unify s (-lfirst u) (-lfirst v))]
+            (recur (-lnext u) (-lnext v) s)
             nil)
-          :else (unify s u v))))
-
-     :else nil))
+          :else (-unify s u v)))))
+  
+  IUnifyWithSequential
+  (-unify-with-seq [u v s]
+    (loop [u u v (seq v) s s]
+      (if-not (nil? v)
+        (if (lcons? u)
+          (if-let [s (-unify s (-lfirst u) (first v))]
+            (recur (-lnext u) (next v) s)
+            nil)
+          (-unify s u v))
+        (if (lvar? u)
+          (if-let [s (-unify s u '())]
+            s
+            (-unify s u nil))
+          nil))))
 
   IReifyTerm
   (-reify-term [v s]    
