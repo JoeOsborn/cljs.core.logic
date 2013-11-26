@@ -461,6 +461,145 @@
 (defn lvars [n]
   (repeatedly n lvar))
 
+;; ==========================================================================
+;; LCons
+
+(defprotocol LConsSeq
+  (-lfirst [this])
+  (-lnext [this]))
+
+(defprotocol LConsPrint
+  (-pr-seq [lcons]))
+
+(declare lcons? LCons failed?)
+
+(deftype LCons [a d ^:unsynchronized-mutable cache meta]
+  ITreeTerm
+  
+  IMeta
+  (-meta [this] meta)
+  
+  IWithMeta
+  (-with-meta [this new-meta]
+    (LCons. a d cache new-meta))
+
+  LConsSeq
+  (-lfirst [_] a)
+  (-lnext [_] d)
+
+  IPrintWithWriter
+  (-pr-writer [x writer opts]
+    (pr-sequential-writer writer pr-writer "(" " " ")" opts (-pr-seq x)))
+
+  LConsPrint
+  (-pr-seq [x]
+    (cond
+      (lcons? d) (str a " " (-pr-seq d))
+      :else (str a " . " d)))
+
+  Object
+  (toString [this]
+    (cond
+      (lcons? d) (str "(" a " " (-pr-seq d) ")")
+      :else (str "(" a " . " d ")")))
+
+  IEquiv
+  (-equiv [this o]
+    (or (identical? this o)
+        (and (instance? LCons o)
+             (loop [me this
+                    you o]
+               (cond
+                 (nil? me) (nil? you)
+                 (lvar? me) true
+                 (lvar? you) true
+                 (and (lcons? me) (lcons? you))
+                 (let [mef  (-lfirst me)
+                       youf (-lfirst you)]
+                   (and (or (= mef youf)
+                            (lvar? mef)
+                            (lvar? youf))
+                        (recur (lnext me) (lnext you))))
+                 :else (= me you))))))
+
+  IHash
+  (-hash [this]
+    (if (cljs.core/== cache -1)
+      (set! (.-cache this) (uai (umi (int 31) (hash d)) (hash a)))
+      cache))
+
+  IUnifyTerms
+  (-unify-terms [^not-native u ^not-native v ^not-native s]
+    (cond
+     (sequential? v)
+     (loop [u u v (seq v) s s]
+       (if-not (nil? v)
+         (if (lcons? u)
+           (if-let [s (unify s (lfirst u) (first v))]
+             (recur (lnext u) (next v) s)
+             nil)
+           (unify s u v))
+         (if (lvar? u)
+           (if-let [s (unify s u '())]
+             s
+             (unify s u nil))
+           nil)))
+
+     (lcons? v)
+     (loop [u u v v s s]
+       (if (lvar? u)
+         (unify s u v)
+         (cond
+          (lvar? v) (unify s v u)
+          (and (lcons? u) (lcons? v))
+          (if-let [s (unify s (lfirst u) (lfirst v))]
+            (recur (lnext u) (lnext v) s)
+            nil)
+          :else (unify s u v))))
+
+     :else nil))
+
+  IReifyTerm
+  (-reify-term [v s]    
+    (loop [v v s s]
+      (if (lcons? v)
+        (recur (lnext v) (-reify* s (lfirst v)))
+        (-reify* s v))))
+
+  IWalkTerm
+  (-walk-term [v f]
+    (lcons (f (lfirst v))
+           (f (lnext v))))
+
+  IOccursCheckTerm
+  (-occurs-check-term [v x ^not-native s]
+    (loop [v v x x s s]
+      (if (lcons? v)
+        (or (occurs-check s x (lfirst v))
+            (recur (lnext v) x s))
+        (occurs-check s x v))))
+
+  IBuildTerm
+  (-build-term [u s]
+    (loop [u u s s]
+      (if (lcons? u)
+        (recur (lnext u) (build s (lfirst u)))
+        (build s u)))))
+
+(defn lcons
+  "Constructs a sequence a with an improper tail d if d is a logic variable."
+  [a d]
+  (if (or (coll? d) (nil? d))
+    (cons a (seq d))
+    (LCons. a d -1 nil)))
+
+(defn ^boolean lcons? [x]
+  (instance? LCons x))
+
+(defn ^boolean tree-term? [x]
+  (or (coll? x)
+      (implements? ITreeTerm x)))
+
 ;; Constraint Store
 
 (declare lvar? bindable? add-var)
@@ -729,140 +868,6 @@
     (-> s
         (-update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
         (-update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
-
-;; ==========================================================================
-;; LCons
-
-(declare lcons?)
-
-(deftype LCons [a d ^:unsynchronized-mutable cache meta]
-  -ITreeTerm  
-  IMeta
-  (-meta [this] meta)
-  
-  IWithMeta
-  (-with-meta [this new-meta]
-    (LCons. a d cache new-meta))
-
-  -LConsSeq
-  (lfirst [_] a)
-  (lnext [_] d)
-
-  -LConsPrint
-  (toShortString [this]
-    (cond
-     (instance? LCons d) (str a " " (-toShortString d))
-     :else (str a " . " d)))
-
-  Object
-  (toString [this] (cond
-                    (instance? LCons d)
-                    (str "(" a " " (-toShortString d) ")")
-                    :else (str "(" a " . " d ")")))
-
-  IEquiv
-  (-equiv [this o]
-    (or (identical? this o)
-        (and (instance? LCons o)
-             (loop [me this
-                    you o]
-               (cond
-                (nil? me) (nil? you)
-                (lvar? me) true
-                (lvar? you) true
-                (and (lcons? me) (lcons? you))
-                (let [mef  (lfirst me)
-                      youf (lfirst you)]
-                  (and (or (= mef youf)
-                           (lvar? mef)
-                           (lvar? youf))
-                       (recur (lnext me) (lnext you))))
-                :else (= me you))))))
-
-  IHash
-  (-hash [this]
-    (if (cljs.core/== cache -1)
-      (do
-        (set! cache (uai (umi (int 31) (hash d))
-                         (hash a)))
-        cache)
-      cache))
-
-  -IUnifyTerms
-  (unify-terms [^not-native u ^not-native v ^not-native s]
-    (cond
-     (sequential? v)
-     (loop [u u v (seq v) s s]
-       (if-not (nil? v)
-         (if (lcons? u)
-           (if-let [s (unify s (lfirst u) (first v))]
-             (recur (lnext u) (next v) s)
-             nil)
-           (unify s u v))
-         (if (lvar? u)
-           (if-let [s (unify s u '())]
-             s
-             (unify s u nil))
-           nil)))
-
-     (lcons? v)
-     (loop [u u v v s s]
-       (if (lvar? u)
-         (unify s u v)
-         (cond
-          (lvar? v) (unify s v u)
-          (and (lcons? u) (lcons? v))
-          (if-let [s (unify s (lfirst u) (lfirst v))]
-            (recur (lnext u) (lnext v) s)
-            nil)
-          :else (unify s u v))))
-
-     :else nil))
-
-  -IReifyTerm
-  (reify-term [v s]    
-    (loop [v v s s]
-      (if (lcons? v)
-        (recur (lnext v) (-reify* s (lfirst v)))
-        (-reify* s v))))
-
-  -IWalkTerm
-  (walk-term [v f]
-    (lcons (f (lfirst v))
-           (f (lnext v))))
-
-  -IOccursCheckTerm
-  (occurs-check-term [v x ^not-native s]
-    (loop [v v x x s s]
-      (if (lcons? v)
-        (or (occurs-check s x (lfirst v))
-            (recur (lnext v) x s))
-        (occurs-check s x v))))
-
-  -IBuildTerm
-  (build-term [u s]
-    (loop [u u s s]
-      (if (lcons? u)
-        (recur (lnext u) (build s (lfirst u)))
-        (build s u))))
-
-  IPrintWithWriter
-  (-pr-writer [x writer opts]
-    (-write writer (str x))))
-
-(defn lcons
-  "Constructs a sequence a with an improper tail d if d is a logic variable."
-  [a d]
-  (if (or (coll? d) (nil? d))
-    (cons a (seq d))
-    (LCons. a d -1 nil)))
-
-(defn ^boolean lcons? [x]
-  (instance? LCons x))
-
-(defn ^boolean tree-term? [x]
-  (or (coll? x)
-      (implements? -ITreeTerm x)))
 
 ;; ==========================================================================
 ;; Unification
