@@ -570,31 +570,34 @@
             (-unify s u nil))
           nil))))
 
+  IUnifyWithMap
+  (-unify-with-map [v u s] (fail s))  
+
   IReifyTerm
   (-reify-term [v s]    
     (loop [v v s s]
       (if (lcons? v)
-        (recur (lnext v) (-reify* s (lfirst v)))
+        (recur (-lnext v) (-reify* s (-lfirst v)))
         (-reify* s v))))
 
   IWalkTerm
   (-walk-term [v f]
-    (lcons (f (lfirst v))
-           (f (lnext v))))
+    (lcons (f (-lfirst v))
+           (f (-lnext v))))
 
   IOccursCheckTerm
   (-occurs-check-term [v x ^not-native s]
     (loop [v v x x s s]
       (if (lcons? v)
-        (or (occurs-check s x (lfirst v))
-            (recur (lnext v) x s))
-        (occurs-check s x v))))
+        (or (-occurs-check s x (-lfirst v))
+            (recur (-lnext v) x s))
+        (-occurs-check s x v))))
 
   IBuildTerm
   (-build-term [u s]
     (loop [u u s s]
       (if (lcons? u)
-        (recur (lnext u) (build s (lfirst u)))
+        (recur (-lnext u) (build s (-lfirst u)))
         (build s u)))))
 
 (defn lcons
@@ -610,6 +613,215 @@
 (defn ^boolean tree-term? [x]
   (or (coll? x)
       (implements? ITreeTerm x)))
+
+;; ==========================================================================
+;; Unification
+
+(extend-protocol IUnifyTerms
+  nil
+  (-unify-terms [u v s]
+    (-unify-with-nil v u s))
+
+  default
+  (-unify-terms [u v s]
+    (cond
+      (sequential? u) (-unify-with-seq v u s)
+      (implements? IUnifyWithRecord v) (unify-with-record v u s)
+      :else (if (= u v)
+              s
+              nil)))
+
+  PersistentArrayMap
+  (-unify-terms [u v s]
+    (-unify-with-map v u s))
+
+  PersistentHashMap
+  (-unify-terms [u v s]
+    (-unify-with-map v u s)))
+
+;; ---------------------------------------------------------------------------
+;; Unify nil with X
+
+(extend-protocol IUnifyWithNil
+  nil
+  (-unify-with-nil [v u s] s)
+
+  default
+  (-unify-with-nil [v u s] (fail s)))
+
+;; ---------------------------------------------------------------------------
+;; Unify Object with X
+
+(extend-protocol IUnifyWithObject
+  nil
+  (-unify-with-object [v u s]
+    (fail s))
+
+  default
+  (-unify-with-object [v u s]
+    (if (= u v) s (fail s))))
+
+;; ---------------------------------------------------------------------------
+;; Unify LVar with X
+
+(extend-protocol IUnifyWithLVar
+  nil
+  (-unify-with-lvar [v u ^not-native s]
+    (-ext-no-check s u v))
+
+  default
+  (-unify-with-lvar [v u ^not-native s]
+    (-ext s u v)))
+
+;; -----------------------------------------------------------------------------
+;; Unify LCons with X
+
+(extend-protocol IUnifyWithLSeq
+  nil
+  (-unify-with-lseq [v u s] (fail s))
+
+  default
+  (-unify-with-lseq [v ^not-native u ^not-native s]
+    (if (and (sequential? v) (not (nil? v)))
+      (loop [u u ^not-native v (-seq v) s s]
+        (if-not (nil? v)
+          (if (lcons? u)
+            (let [s (-unify s (-lfirst u) (-first v))]
+              (if-not (failed? s)
+                (recur (-lnext u) (-next v) s)
+                s))
+            (-unify s u v))
+          (if (lvar? u)
+            (-unify s u '())
+            (fail s))))
+      (fail s))))
+
+;; ---------------------------------------------------------------------------
+;; Unify Sequential with X
+
+(extend-protocol IUnifyWithSequential
+  nil
+  (-unify-with-seq [v u s] (fail s))
+
+  default
+  (-unify-with-seq [^not-native v ^not-native u ^not-native s]
+    (if (and (sequential? v)
+             (not (nil? v))
+             (and (counted? u) (counted? v)
+                  (not (cljs.core/== (count u) (count v)))))
+      (loop [^not-native u (-seq u) ^not-native v (-seq v) s s]
+        (if-not (nil? u)
+          (if-not (nil? v)
+            (let [s (-unify s (-first u) (-first v))]
+              (if-not (failed? s)
+                (recur (-next u) (-next v) s)
+                s))
+            (fail s))
+          (if-not (nil? v) (fail s) s)))
+      (fail s))))
+
+;; ---------------------------------------------------------------------------
+;; Unify IPersistentMap with X
+
+(def not-found (js-obj))
+
+(defn unify-with-map* [v u s]
+  (if (cljs.core/== (count u) (count v))
+    (loop [ks (keys u) s s]
+      (if (seq ks)
+        (let [kf (first ks)
+              vf (get v kf not-found)]
+          (if (identical? vf not-found)
+            (fail s)
+            (if-let [s (-unify s (get u kf) vf)]
+              (recur (next ks) s)
+              (fail s))))
+        s))
+    (fail s)))
+
+(extend-protocol IUnifyWithMap
+  nil
+  (-unify-with-map [v u s] (fail s))
+
+  default
+  (-unify-with-map [v u s] (fail s))
+
+  PersistentArrayMap
+  (-unify-with-map [v u s]
+    (unify-with-map* v u s))
+
+  PersistentHashMap
+  (-unify-with-map [v u s]
+    (unify-with-map* v u s)))
+
+;; ===========================================================================
+;; Reification
+
+(extend-protocol IReifyTerm
+  nil
+  (-reify-term [v s] s)
+
+  default
+  (-reify-term [v ^not-native s]
+    (if (sequential? v)
+      (loop [v v s s]
+        (if (seq v)
+          (recur (next v) (-reify* s (first v)))
+          s))
+      s)))
+
+;; ==========================================================================
+;; Walk Term
+
+(defn walk-record-term [v f]
+  (with-meta
+    (loop [v v r (-uninitialized v)]
+      (if (seq v)
+        (let [[vfk vfv] (first v)]
+          (recur (next v) (assoc r (-walk-term (f vfk) f)
+                                 (-walk-term (f vfv) f))))
+        r))
+    (meta v)))
+
+(defn walk-term-map*
+  [^not-native v f]
+  (with-meta
+    (loop [^not-native v v ^not-native r (transient {})]
+      (if (seq v)
+        (let [[vfk vfv] (first v)]
+          (recur (next v) (assoc! r (-walk-term (f vfk) f)
+                                  (-walk-term (f vfv) f))))
+        (persistent! r)))
+    (meta v)))
+
+(extend-protocol -IWalkTerm
+  nil
+  (walk-term [v f] (f nil))
+
+  default
+  (walk-term [v f]
+    (cond (seq? v)
+          (with-meta
+            (doall (map #(-walk-term (f %) f) v))
+            (meta v))
+          (record? v)
+          (walk-record-term v f)
+          :else (f v)))
+
+  PersistentHashMap
+  (walk-term [v f] (walk-term-map* v f))
+
+  PersistentArrayMap
+  (walk-term [v f] (walk-term-map* v f))
+
+  PersistentVector
+  (walk-term [v f]
+    (with-meta
+      (loop [v v ^not-native r (transient [])]
+        (if (seq v)
+          (recur (next v) (conj! r (-walk-term (f (first v)) f)))
+          (persistent! r)))
+      (meta v))))
 
 ;; Constraint Store
 
@@ -880,130 +1092,6 @@
         (-update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
         (-update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
 
-;; ==========================================================================
-;; Unification
-
-(defn unify-with-sequential* [^not-native u ^not-native v ^not-native s]
-  (cond
-   (sequential? v)
-   (if (and (counted? u) (counted? v)
-            (not (= (count u) (count v))))
-     nil
-     (loop [^not-native u (-seq u) ^not-native v (-seq v) s s]
-       (if-not (nil? u)
-         (if-not (nil? v)
-           (if-let [s (unify s (first u) (first v))]
-             (recur (next u) (next v) s)
-             nil)
-           nil)
-         (if-not (nil? v) nil s))))
-
-   (lcons? v) (unify-terms v u s)
-   :else nil))
-
-(defn unify-with-map* [u v s]
-  (when (= (count u) (count v))
-    (loop [ks (keys u) s s]
-      (if (seq ks)
-        (let [kf (first ks)
-              vf (get v kf ::not-found)]
-          (when-not (keyword-identical? vf ::not-found)
-            (if-let [s (unify s (get u kf) vf)]
-              (recur (next ks) s)
-              nil)))
-        s))))
-
-(extend-protocol -IUnifyTerms
-  nil
-  (unify-terms [u v s]
-    (if (nil? v) s nil))
-
-  default
-  (unify-terms [u v s]
-    (cond
-     (sequential? u)
-     (unify-with-sequential* u v s)
-     (map? u)
-     (cond
-      (implements? -IUnifyWithRecord v)
-      (unify-with-record v u s)
-
-      (map? v)
-      (unify-with-map* u v s)
-
-      :else nil)
-     :else (if (= u v)
-             s
-             nil))))
-
-;; ===========================================================================
-;; Reification
-
-(extend-protocol -IReifyTerm
-  nil
-  (reify-term [v s] s)
-
-  default
-  (reify-term [v ^not-native s]
-    (cond (coll? v)
-          (loop [v v s s]
-            (if (seq v)
-              (recur (next v) (-reify* s (first v)))
-              s))
-          :else s)))
-
-;; ==========================================================================
-;; Walk Term
-
-(defn walk-record-term [v f]
-  (with-meta
-    (loop [v v r (-uninitialized v)]
-      (if (seq v)
-        (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc r (-walk-term (f vfk) f)
-                                 (-walk-term (f vfv) f))))
-        r))
-    (meta v)))
-
-(defn walk-term-map*
-  [^not-native v f]
-  (with-meta
-    (loop [^not-native v v ^not-native r (transient {})]
-      (if (seq v)
-        (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc! r (-walk-term (f vfk) f)
-                                  (-walk-term (f vfv) f))))
-        (persistent! r)))
-    (meta v)))
-
-(extend-protocol -IWalkTerm
-  nil
-  (walk-term [v f] (f nil))
-
-  default
-  (walk-term [v f]
-    (cond (seq? v)
-          (with-meta
-            (doall (map #(-walk-term (f %) f) v))
-            (meta v))
-          (record? v)
-          (walk-record-term v f)
-          :else (f v)))
-
-  PersistentHashMap
-  (walk-term [v f] (walk-term-map* v f))
-
-  PersistentArrayMap
-  (walk-term [v f] (walk-term-map* v f))
-
-  PersistentVector
-  (walk-term [v f]
-    (with-meta
-      (loop [v v ^not-native r (transient [])]
-        (if (seq v)
-          (recur (next v) (conj! r (-walk-term (f (first v)) f)))
-          (persistent! r)))
-      (meta v))))
 
 ;; ===========================================================================
 ;; Occurs Check Term
