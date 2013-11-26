@@ -2,12 +2,6 @@
   (:refer-clojure :exclude [==])
   (:require [clojure.set :as set]
             [clojure.string :as string]
-            [cljs.core.logic.protocols :as proto
-             :refer [walk non-storable? reifiable? enforceable?
-                     tree-constraint? take* unify-terms ext-no-check id bind
-                     lfirst lnext ifa -cached? -add reify-tabled
-                     -reify-tabled reuse ready? subunify
-                     unify-with-record unify-with-pmap -member-count]]
             [cljs.reader :as reader])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
@@ -78,6 +72,10 @@
 (defn dissoc-dom [x k]
   (assoc x :doms (dissoc (.-doms x) k)))
 
+(def unbound-names
+  (let [r (range 100)]
+    (zipmap r (map (comp symbol str) (repeat "_") r))))
+
 (defn ^boolean record? [x]
   (implements? IRecord x))
 
@@ -120,6 +118,28 @@
 (defn pair [lhs rhs]
   (Pair. lhs rhs))
 
+;; =======================================================================
+;; SubstValue
+;; v - the actual ground value of the var
+;; doms - the constraint domains assigned to the var
+;; eset - set of other vars this var is entangled with
+
+(defrecord SubstValue [v doms eset]
+  Object
+  (toString [_] (str v)))
+
+(defn ^boolean subst-val? [x]
+  (instance? SubstValue x))
+
+(defn subst-val
+  ([x] (SubstValue. x nil nil))
+  ([x doms] (SubstValue. x doms nil))
+  ([x doms _meta] (with-meta (SubstValue. x doms nil) _meta))
+  ([x doms eset _meta] (with-meta (SubstValue. x doms eset) _meta)))
+
+;; ==========================================================================
+;; Substitutions
+
 (defprotocol ISubstitutions
   (-occurs-check [this u v])
   (-ext [this u v])
@@ -129,7 +149,7 @@
   (-unify [this u v])
   (-reify-lvar-name [_])
   (-reify* [this v])
-  (-reify [this v]))
+  (-reify [s v] [s v r]))
 
 (defprotocol ISubstitutionsCLP
   (-root-val [s v])
@@ -216,17 +236,24 @@
             (-unify-terms u v s))))))
 
   (-reify-lvar-name [this]
-    (symbol (str "_." (count s))))
+    (let [c (count s)]
+      (if (< c 100)
+        (unbound-names c)
+        (symbol (str "_" (count s))))))
 
   (-reify* [this v]
     (let [v (-walk this v)]
       (-reify-term v this)))
-
+  
   (-reify [this v]
     (let [v (-walk* this v)]
-      (-walk* ^not-native (-reify* ^not-native empty-s v) v)))
+      (-walk* ^not-native
+              (-reify* ^not-native (with-meta empty-s (meta s)) v) v)))
   
-
+  (-reify [this v r]
+    (let [v (walk* s v)]
+      (walk* ^not-native (-reify* r v) v)))
+  
   ICounted
   (-count [this] (count s))
 
@@ -312,8 +339,6 @@
   (let [s (reduce (fn [m [k v]] (conj m (pair k v))) #{} v)]
     (make-s s (make-cs))))
 
-(def fk (js/Error.))
-
 ;; Constraint Store
 
 (declare lvar? bindable? add-var)
@@ -351,7 +376,7 @@
           c (proto/with-id c cid)
           cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
       (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
-
+  
   (-updatec [this a c]
     (let [oc (cm (id c))
           nkm (if (implements? proto/IEntailedVar c)
@@ -407,28 +432,6 @@
 (defn make-cs []
   (ConstraintStore. {} {} 0 #{}))
 
-;; =======================================================================
-;; SubstValue
-;; v - the actual ground value of the var
-;; doms - the constraint domains assigned to the var
-;; eset - set of other vars this var is entangled with
-
-(defrecord SubstValue [v doms eset]
-  Object
-  (toString [_] (str v)))
-
-(defn ^boolean subst-val? [x]
-  (instance? SubstValue x))
-
-(defn subst-val
-  ([x] (SubstValue. x nil nil))
-  ([x doms] (SubstValue. x doms nil))
-  ([x doms _meta] (with-meta (SubstValue. x doms nil) _meta))
-  ([x doms eset _meta] (with-meta (SubstValue. x doms eset) _meta)))
-
-;; ==========================================================================
-;; Substitutions
-
 (declare empty-s choice lvar lvar? pair lcons run-constraints*)
 
 (defn unify [s u v]
@@ -442,32 +445,8 @@
           (-unify-terms v u s)
           (-unify-terms u v s))))))
 
-(def unbound-names
-  (let [r (range 100)]
-    (zipmap r (map (comp symbol str) (repeat "_") r))))
-
-(defn reify-lvar-name [s]
-  (let [c (count s)]
-    (if (< c 100)
-      (unbound-names c)
-      (symbol (str "_" (count s))))))
-
-(defn -reify* [s v]
-  (let [v (walk s v)]
-    (proto/reify-term v s)))
-
-(defn -reify
-  ([s v]
-     (let [v (walk* s v)]
-       (walk* ^not-native (-reify* (with-meta empty-s (meta s)) v) v)))
-  ([s v r]
-     (let [v (walk* s v)]
-       (walk* ^not-native (-reify* r v) v))))
-
 (defn build [s u]
-  (proto/build-term u s))
-
-(declare empty-s choice lvar make-s LVar)
+  (-build-term u s))
 
 (def not-found (js-obj))
 
