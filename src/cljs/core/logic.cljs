@@ -957,6 +957,7 @@
 
   Substitutions
   (-ifa [b gs c]
+    ;; (reduce -bind b gs)
     (loop [b b [g0 & goals] gs]
       (if g0
         (when-let [b (g0 b)]
@@ -965,11 +966,7 @@
   
   Choice
   (-ifa [b gs c]
-    (loop [b b [g0 & goals] gs]
-      (if g0
-        (when-let [b (g0 b)]
-          (recur b gr))
-        b)))
+    (reduce -bind b gs))
 
   Inc
   (-ifa [b gs c]
@@ -1005,11 +1002,7 @@
 
   Choice
   (-ifu [b gs c]
-    (loop [b b [g0 & goals] gs]
-      (if g0
-        (when-let [b (g0 b)]
-          (recur b gr))
-        b)))
+    (reduce -bind (.-a b) gs))
 
   default
   (-ifu [b gs c]
@@ -1025,7 +1018,7 @@
   "Copies a term u into v. Non-relational."
   [u v]
   (project [u]
-    (== (walk* (build empty-s u) u) v)))
+    (== (-walk* (build empty-s u) u) v)))
 
 ;; ==========================================================================
 ;; Useful goals

@@ -937,3 +937,25 @@
     `(defn ~name [~@args ~(first lsyms) ~(last lsyms)]
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
+
+(defmacro ==
+  "A goal that attempts to unify terms u and v."
+  [u v]
+  `(fn [a#]
+     (let [has-cs?# (pos? (count (.-cs a#)))]
+       (if-let [ap# (cljs.core.logic/-unify
+                     (if has-cs?#
+                       (cljs.core.logic/Substitutions.
+                        (.-s a#) [] (.-ts a#) (.-cs a#) (.-cq a#) (.-cqs a#)
+                        (.-oc a#) (.-_meta a#))
+                       a#) ~u ~v)]
+         (let [vs# (if has-cs?# (.-vs ap#))
+               changed?# (pos? (count vs#))]
+           (if changed?#
+             ((cljs.core.logic/run-constraints* vs# (.-cs ap#)
+                                                :cljs.core.logic/subst)
+              (cljs.core.logic/Substitutions.
+               (.-s ap#) nil (.-ts ap#) (.-cs ap#) (.-cq ap#) (.-cqs ap#)
+               (.-oc ap#) (.-_meta ap#)))
+             ap#))
+         (cljs.core.logic/fail a#)))))
