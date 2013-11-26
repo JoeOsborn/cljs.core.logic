@@ -80,7 +80,7 @@
       1 rhs
       (throw (js/Error. "Index out of bounds."))))
   (-nth [_ i not-found]
-    (condp cljs.core/==
+    (condp cljs.core/== i
       0 lhs
       1 rhs
       not-found))
@@ -96,8 +96,198 @@
   (-pr-writer [x writer opts]
     (-write writer (str "(" lhs " . " rhs ")"))))
 
-(defn- pair [lhs rhs]
+(defn pair [lhs rhs]
   (Pair. lhs rhs))
+
+(defprotocol ISubstitutions
+  (-occurs-check [this u v])
+  (-ext [this u v])
+  (-ext-no-check [this u v])
+  (-walk [this v])
+  (-walk* [this v])
+  (-unify [this u v])
+  (-reify-lvar-name [_])
+  (-reify* [this v])
+  (-reify [this v]))
+
+(defprotocol ISubstitutionsCLP
+  (-root-val [s v])
+  (-root-var [s v])
+  (-ext-run-cs [s x v])
+  (-queue [s c])
+  (-update-var [s x v]))
+
+;; Substitutions
+;; -----
+;; s   - persistent hashmap to store logic var bindings
+;; vs  - changed var set
+;; ts  - atom containing a hashmap of
+;;       tabled goals -> atoms of sets containing cached answers
+;; cs  - constraint store
+;; cq  - for the constraint queue
+;; cqs - constraint ids in the queue
+;; oc  - occurs check
+
+(deftype Substitutions [s vs ts cs cq cqs oc _meta]
+  IEquiv
+  (-equiv [this o]
+    (or (identical? this o)
+        (and (instance? Substitutions o)
+             (= s (.-s o)))))
+
+  IPrintWithWriter
+  (-pr-writer [this writer opts]
+    (-pr-writer s writer opts))
+
+  ISubstitutions
+  (-occurs-check [this u v]
+    (let [v (-walk this v)]
+      (-occurs-check-term v u this)))
+
+  (-ext [this u v]
+    (if (and ^boolean *occurs-check*
+             ^boolean (-occurs-check this u v))
+      (fail this)
+      (-ext-no-check this u v)))
+
+  (-ext-no-check [this u v]
+    (let [u (if-not (lvar? v)
+              (assoc-meta u ::root true)
+              u)]
+      (Substitutions. (conj s (Pair. u v))
+                      (if vs (conj vs u)) ts cs cq cqs oc _meta)))
+
+  (-walk [this v]
+    (if (bindable? v)
+      (loop [lv v me (find s v)]
+        (if (nil? me)
+          lv
+          (let [v  (key me)
+                vp (val me)]
+            (if (not (bindable? vp))
+              (if (subst-val? vp)
+                (let [sv (.-v vp)]
+                  (if (keyword-identical? sv ::unbound)
+                    (with-meta v (assoc (meta vp) ::unbound true))
+                    sv))
+                vp)
+              (recur vp (find s vp))))))
+      v))
+
+  (-walk* [this v]
+    (let [v (-walk this v)]
+      (-walk-term v this)))
+
+  (-unify [this u v]
+    (if (identical? u v)
+      this
+      (let [u (-walk this u)
+            v (-walk this v)]
+        (if (identical? u v)
+          this
+          (-unify-terms u v this)))))
+
+  (-reify-lvar-name [this]
+    (symbol (str "_." (count s))))
+
+  (-reify* [this v]
+    (let [v (-walk this v)]
+      (-reify-term v this)))
+
+  (-reify [this v]
+    (let [v (-walk* this v)]
+      (-walk* ^not-native (-reify* ^not-native empty-s v) v)))
+  
+
+  ICounted
+  (-count [this] (count s))
+
+  IMeta
+  (-meta [this] _meta)
+
+  IWithMeta
+  (-with-meta [this new-meta]
+    (Substitutions. s vs ts cs cq cqs oc new-meta))
+
+  ICollection
+  (-conj [this pair]
+    (if (lvar? k)
+      (Substitutions. (conj s pair) vs ts cs cq cqs oc new-meta)
+      (throw (ex-info (str "key must be a logic var") {}))))
+    
+  ISubstitutionsCLP
+  (-root-val [this v]
+    (if (lvar? v)
+      (loop [lv v [v vp :as me] (find s v)]
+        (cond
+         (nil? me) lv
+         (not (lvar? vp)) vp
+         :else (recur vp (find s vp))))
+      v))
+
+  (-root-var [this v]
+    (if (lvar? v)
+      (if (-> v meta ::root)
+        v
+        (loop [lv v [v vp :as me] (find s v)]
+          (cond (nil? me) lv
+                (not (lvar? vp))
+                (if (subst-val? vp)
+                  (with-meta v (meta vp))
+                  v)
+                :else (recur vp (find s vp)))))
+      v))
+
+  (-ext-run-cs [this x v]
+    (let [x  (-root-var this x)
+          xs (if (lvar? v)
+               [x (-root-var this v)]
+               [x])
+          s  (if oc
+               (-ext this x v)
+               (-ext-no-check this x v))]
+      (when s
+        ((run-constraints* xs cs ::subst) s))))
+
+  (-queue [this c]
+    (let [id (id c)]
+      (if-not (cqs id)
+        (Substitutions. s vs ts cs (conj (or cq []) c) (conj cqs id) v _meta)
+        this)))
+
+  (-update-var [this x v]
+    (Substitutions. (conj s (pair x v)) vs ts cs cq cqs  v _meta)) 
+
+  IBind
+  (-bind [this g] (g this))
+  
+  IMPlus
+  (-mplus [this f] (choice this f))
+  
+  ITake
+  (-take* [this] this))
+
+(defn make-s
+  ([] (make-s #{}))
+  ([m] (make-s m (make-cs)))
+  ([m cs] (Substitutions. m nil nil cs nil #{} true nil)))
+
+(defn tabled-s
+  ([] (tabled-s false))
+  ([oc] (tabled-s oc nil))
+  ([oc meta]
+     (-> (with-meta (make-s) meta)
+         (assoc :oc oc)
+         (assoc :ts (atom {})))))
+
+(def ^not-native empty-s (make-s))
+
+(defn ^boolean subst? [x]
+  (instance? Substitutions x))
+
+(defn to-s [v]
+  (let [s (reduce (fn [m [k v]] (conj m (pair k v))) #{} v)]
+    (make-s s (make-cs))))
 
 (def fk (js/Error.))
 
@@ -117,6 +307,10 @@
 
 (defn ^boolean record? [x]
   (implements? IRecord x))
+
+(defn ^boolean bindable? [x]
+  (or (lvar? x)
+      (implements? IBindable x)))
 
 ;; Constraint Store
 
@@ -294,159 +488,12 @@
 (defn build [s u]
   (proto/build-term u s))
 
-(declare empty-s make-s)
+(declare empty-s choice lvar make-s LVar)
 
-;; Substitutions
-;; -----
-;; s   - persistent hashmap to store logic var bindings
-;; vs  - changed var set
-;; ts  - atom containing a hashmap of
-;;       tabled goals -> atoms of sets containing cached answers
-;; cs  - constraint store
-;; cq  - for the constraint queue
-;; cqs - constraint ids in the queue
-;; oc  - occurs check
+(def not-found (js-obj))
 
-(deftype Substitutions [s vs ts cs cq cqs oc _meta]
-  Object
-  (toString [_] (str s))
-
-  IEquiv
-  (-equiv [this o]
-    (or (identical? this o)
-        (and (instance? Substitutions o)
-             (= s (.-s o)))))
-
-  ICounted
-  (-count [this] (count s))
-
-  IMeta
-  (-meta [this] _meta)
-
-  IWithMeta
-  (-with-meta [this new-meta]
-    (Substitutions. s vs ts cs cq cqs oc new-meta))
-
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :s   s
-      :vs  vs
-      :ts  ts
-      :cs  cs
-      :cq  cq
-      :cqs cqs
-      :oc  oc
-      not-found))
-
-  ICollection
-  (-conj [this [k v]]
-    (if (lvar? k)
-      (assoc this k v)
-      (throw (ex-info (str "key must be a logic var") {}))))
-
-  IEmptyableCollection
-  (-empty [this] empty-s)
-  
-  IAssociative
-  (-contains-key? [this k]
-    (contains? #{:s :vs :cs :cq :cqs :oc} k))
-  (-assoc [this k v]
-    (case k
-      :s   (Substitutions. v vs ts cs cq cqs oc _meta)
-      :vs  (Substitutions. s  v ts cs cq cqs oc _meta)
-      :ts  (Substitutions. s vs  v cs cq cqs oc _meta)
-      :cs  (Substitutions. s vs ts  v cq cqs oc _meta)
-      :cq  (Substitutions. s vs ts cs  v cqs oc _meta)
-      :cqs (Substitutions. s vs ts cs cq   v oc _meta)
-      :oc  (Substitutions. s vs ts cs cq cqs  v _meta)
-      (throw (ex-info (str "Substitutions has no field for key" k) {}))))
-
-  proto/ISubstitutions
-  (ext-no-check [this u v]
-    (let [u (if-not (lvar? v)
-              (assoc-meta u ::root true)
-              u)]
-      (Substitutions. (assoc s u v)
-                      (if vs (conj vs u)) ts cs cq cqs oc _meta)))
-
-  (walk [this v]
-    (if (bindable? v)
-      (loop [lv v me (find s v)]
-        (if (nil? me)
-          lv
-          (let [v  (key me)
-                vp (val me)]
-            (if (not (bindable? vp))
-              (if (subst-val? vp)
-                (let [sv (.-v vp)]
-                  (if (keyword-identical? sv ::unbound)
-                    (with-meta v (assoc (meta vp) ::unbound true))
-                    sv))
-                vp)
-              (recur vp (find s vp))))))
-      v))
-
-  proto/ISubstitutionsCLP
-  (root-val [this v]
-    (if (lvar? v)
-      (loop [lv v [v vp :as me] (find s v)]
-        (cond
-         (nil? me) lv
-         (not (lvar? vp)) vp
-         :else (recur vp (find s vp))))
-      v))
-
-  (root-var [this v]
-    (if (lvar? v)
-      (if (-> v meta ::root)
-        v
-        (loop [lv v [v vp :as me] (find s v)]
-          (cond
-           (nil? me) lv
-
-           (not (lvar? vp))
-           (if (subst-val? vp)
-             (with-meta v (meta vp))
-             v)
-
-           :else (recur vp (find s vp)))))
-      v))
-
-  (ext-run-cs [this x v]
-    (let [x  (proto/root-var this x)
-          xs (if (lvar? v)
-               [x (proto/root-var this v)]
-               [x])
-          s  (if oc
-               (ext this x v)
-               (ext-no-check this x v))]
-      (when s
-        ((run-constraints* xs cs ::subst) s))))
-
-  (queue [this c]
-    (let [id (id c)]
-      (if-not (cqs id)
-        (-> this
-            (assoc :cq (conj (or cq []) c))
-            (assoc :cqs (conj cqs id)))
-        this)))
-
-  (update-var [this x v]
-    (assoc this :s (assoc (.-s this) x v)))
-
-  proto/IBind
-  (bind [this g]    
-    (g this))
-  
-  proto/IMPlus
-  (mplus [this f]
-    (choice this f))
-  
-  proto/ITake
-  (take* [this] this))
+(defn ^boolean lvar? [x]
+  (instance? LVar x))
 
 (defn add-attr [s x attr attrv]
   (let [x (proto/root-var s x)
@@ -536,28 +583,7 @@
                         (-> v :doms dom)))
      (not (lvar? v)) v)))
 
-(defn- make-s
-  ([] (make-s {}))
-  ([m] (make-s m (make-cs)))
-  ([m cs] (Substitutions. m nil nil cs nil #{} true nil)))
-
-(defn tabled-s
-  ([] (tabled-s false))
-  ([oc] (tabled-s oc nil))
-  ([oc meta]
-     (-> (with-meta (make-s) meta)
-         (assoc :oc oc)
-         (assoc :ts (atom {})))))
-
-(def ^not-native empty-s (make-s))
 (def empty-f (fn []))
-
-(defn ^boolean subst? [x]
-  (instance? Substitutions x))
-
-(defn to-s [v]
-  (let [s (reduce (fn [m [k v]] (assoc m k v)) {} v)]
-    (make-s s (make-cs))))
 
 (defn annotate [k v]
   (fn [a]
@@ -627,16 +653,11 @@
 ;; Logic Variables
 
 (deftype LVar [id unique name oname hash meta]
-  proto/IVar
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :name name
-      :oname oname
-      :id id
-      not-found))
+  Object
+  (toString [_] (pr-str this))
+
+  IHash
+  (-hash [_] hash)
 
   IMeta
   (-meta [this] meta)
@@ -645,92 +666,99 @@
   (-with-meta [this new-meta]
     (LVar. id unique name oname hash new-meta))
 
-  Object
-  (toString [_] (str "<lvar:" name ">"))
-
+  IPrintWithWriter
+  (-pr-writer [x writer opts]
+    (-write writer (str "<lvar:" name ">")))
+  
   IEquiv
   (-equiv [this o]
-    (if (implements? proto/IVar o)
-      (if unique
-        (identical? id (.-id o))
-        (identical? name (.-name o)))
-      false))
-
-  IHash
-  (-hash [_] hash)
-
-  proto/IUnifyTerms
-  (unify-terms [u v ^not-native s]
-    (cond
-     (lvar? v)
-     (let [repoint (cond
-                    (-> u clojure.core/meta ::unbound) [u v]
-                    (-> v clojure.core/meta ::unbound) [v u]
-                    :else nil)]
-       (if repoint
-         (let [[root other] repoint
-               s (assoc s :cs (proto/migrate (.-cs s) other root))
-               s (if (-> other clojure.core/meta ::unbound)
-                   (merge-with-root s other root)
-                   s)]
-           (when s
-             (ext-no-check s other root)))
-         (ext-no-check s u v)))
-
-     (non-storable? v)
-     (throw (ex-info (str v " is non-storable") {}))
-
-     (not= v ::not-found)
-     (if (tree-term? v)
-       (ext s u v)
-       (if (-> u clojure.core/meta ::unbound)
-         (ext-no-check s u (assoc (proto/root-val s u) :v v))
-         (ext-no-check s u v)))
-
-     :else nil))
-
-  proto/IReifyTerm
-  (reify-term [v ^not-native s]
+    (and (instance LVar o)
+         (if unique
+           (identical? id (.-id o))
+           (identical? name (.-name o)))))
+  
+  IUnifyTerms
+  (-unify-terms [u v s]
+    (cond (lvar? v) (-unify-with-lvar v u s)          
+          (non-storable? v) (throw (js/Error. (str v " is non-storable")))
+          (not (keyword-identical? v ::not-found))
+          (if (tree-term? v)
+            (-ext -s u v)
+            (if (-> u clojure.core/meta ::unbound)
+              (-ext-no-check s u (assoc (proto/root-val s u) :v v))
+              (-ext-no-check s u v)))
+          :else nil))
+  
+  IUnifyWithNil
+  (-unify-with-nil [v u ^not-native s]
+    (-ext-no-check s v u))
+  
+  IUnifyWithObject
+  (-unify-with-object [v u ^not-native s]
+    (-ext s v u))
+  
+  IUnifyWithLVar
+  (-unify-with-lvar [v u ^not-native s]
+    (let [repoint (cond (-> u clojure.core/meta ::unbound) [u v]
+                        (-> v clojure.core/meta ::unbound) [v u]
+                        :else nil)]
+      (if repoint
+        (let [[root other] repoint
+              s (assoc s :cs (proto/migrate (.-cs s) other root))
+              s (if (-> other clojure.core/meta ::unbound)
+                  (merge-with-root s other root)
+                  s)]
+          (when s
+            (-ext-no-check s other root)))
+        (-ext-no-check s u v))))
+  
+  IUnifyWithLSeq
+  (-unify-with-lseq [v u ^not-native s]
+    (-ext s v u))
+  
+  IUnifyWithSequential
+  (-unify-with-seq [v u ^not-native s]
+    (-ext s v u))
+  
+  IUnifyWithMap
+  (-unify-with-map [v u ^not-native s]
+    (-ext s v u))
+  
+  IReifyTerm
+  (-reify-term [v ^not-native s]
     (let [rf (-> s clojure.core/meta :reify-vars)]
       (if (fn? rf)
         (rf v s)
         (if rf
-          (ext s v (reify-lvar-name s))
-          (ext s v (.-oname v))))))
+          (-ext s v (-reify-lvar-name s))
+          (-ext s v (.-oname v))))))
+  
+  IWalkTerm
+  (-walk-term [v f] (f v))
+  ;; (-walk-term [v s] v)
+  
+  IOccursCheckTerm
+  (-occurs-check-term [v x ^not-native s]
+    (= (-walk s v) x))
 
-  proto/IWalkTerm
-  (walk-term [v f]
-    (f v))
-
-  proto/IOccursCheckTerm
-  (occurs-check-term [v x ^not-native s] (= (walk s v) x))
-
-  proto/IBuildTerm
-  (build-term [u ^not-native s]
+  IBuildTerm
+  (-build-term [u ^not-native s]
     (let [m (.-s s)
           cs (.-cs s)
           lv (lvar 'ignore)]
       (if (contains? m u)
         s
-        (make-s (assoc m u lv) cs))))
+        (make-s (conj m (Pair. u lv)) cs)))))
 
-  IPrintWithWriter
-  (-pr-writer [x writer opts]
-    (-write writer (str "<lvar:" (.-name x) ">"))))
+(def lvar-sym-counter (array 0))
 
 (defn next-id
   []
-  (-> (str (gensym))
-      (clojure.string/replace #"G__" "")
-      reader/read-string))
+  (str "_" (aset lvar-sym-counter 0 (inc (aget lvar-sym-counter 0)))))
 
 (defn lvar
-  ([]
-     (let [id (next-id)
-           name (str id)]
-       (LVar. id true name nil (hash name) nil)))
-  ([name]
-     (lvar name true))
+  ([] (lvar 'gen))
+  ([name] (lvar name true))
   ([name unique]
      (let [oname name
            id   (if unique
@@ -741,15 +769,8 @@
                   (str name))]
        (LVar. id unique name oname (hash name) nil))))
 
-(defn ^boolean lvar? [x]
-  (implements? proto/IVar x))
-
 (defn lvars [n]
   (repeatedly n lvar))
-
-(defn ^boolean bindable? [x]
-  (or (lvar? x)
-      (implements? proto/IBindable x)))
 
 ;; ==========================================================================
 ;; LCons
