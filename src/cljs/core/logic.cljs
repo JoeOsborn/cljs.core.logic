@@ -550,9 +550,10 @@
         (cond
           (lvar? v) (-unify s v u)
           (and (lcons? u) (lcons? v))
-          (if-let [s (-unify s (-lfirst u) (-lfirst v))]
-            (recur (-lnext u) (-lnext v) s)
-            nil)
+          (let [s (-unify s (-lfirst u) (-lfirst v))]
+            (if-not (failed? s)
+              (recur (-lnext u) (-lnext v) s)
+              s))
           :else (-unify s u v)))))
   
   IUnifyWithSequential
@@ -560,15 +561,16 @@
     (loop [u u v (seq v) s s]
       (if-not (nil? v)
         (if (lcons? u)
-          (if-let [s (-unify s (-lfirst u) (first v))]
-            (recur (-lnext u) (next v) s)
-            nil)
+          (let [s (-unify s (-lfirst u) (first v))]
+            (if-not (failed? s)
+              (recur (-lnext u) (next v) s)
+              s))
           (-unify s u v))
         (if (lvar? u)
           (if-let [s (-unify s u '())]
             s
             (-unify s u nil))
-          nil))))
+          (fail s)))))
 
   IUnifyWithMap
   (-unify-with-map [v u s] (fail s))  
@@ -726,18 +728,19 @@
 (def not-found (js-obj))
 
 (defn unify-with-map* [v u s]
-  (if (cljs.core/== (count u) (count v))
+  (if-not (cljs.core/== (count u) (count v))
+    (fail s)
     (loop [ks (keys u) s s]
       (if (seq ks)
         (let [kf (first ks)
               vf (get v kf not-found)]
           (if (identical? vf not-found)
             (fail s)
-            (if-let [s (-unify s (get u kf) vf)]
-              (recur (next ks) s)
-              (fail s))))
-        s))
-    (fail s)))
+            (let [s (-unify s (get u kf) vf)]
+              (if-not (failed? s)
+                (recur (next ks) s)
+                (fail s)))))
+        s))))
 
 (extend-protocol IUnifyWithMap
   nil
@@ -773,55 +776,381 @@
 ;; ==========================================================================
 ;; Walk Term
 
-(defn walk-record-term [v f]
+(defn walk-term-record [^not-native v f]
   (with-meta
-    (loop [v v r (-uninitialized v)]
-      (if (seq v)
+    (loop [^not-native v v
+           ^not-native r (-uninitialized v)]
+      (if (-seq v)
         (let [[vfk vfv] (first v)]
           (recur (next v) (assoc r (-walk-term (f vfk) f)
                                  (-walk-term (f vfv) f))))
         r))
     (meta v)))
 
-(defn walk-term-map*
-  [^not-native v f]
+(defn walk-term-map* [^not-native v f]
   (with-meta
-    (loop [^not-native v v ^not-native r (transient {})]
-      (if (seq v)
-        (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc! r (-walk-term (f vfk) f)
-                                  (-walk-term (f vfv) f))))
+    (loop [^not-native v v
+           ^not-native r (transient {})]
+      (if (-seq v)
+        (let [[vfk vfv] (-first v)]
+          (recur (-next v)
+                 (-assoc! r (-walk-term (f vfk) f) (-walk-term (f vfv) f))))
         (persistent! r)))
     (meta v)))
 
-(extend-protocol -IWalkTerm
+(extend-protocol IWalkTerm
   nil
-  (walk-term [v f] (f nil))
+  (-walk-term [v f] (f nil))
 
   default
-  (walk-term [v f]
-    (cond (seq? v)
-          (with-meta
-            (doall (map #(-walk-term (f %) f) v))
-            (meta v))
-          (record? v)
-          (walk-record-term v f)
-          :else (f v)))
+  (-walk-term [v f]
+    (cond
+      (sequential? v)
+      (with-meta (doall (map #(-walk-term (f %) f) v)) (meta v))
+      (record? v) (walk-term-record v f)
+      :else (f v)))
 
   PersistentHashMap
-  (walk-term [v f] (walk-term-map* v f))
+  (-walk-term [v f] (walk-term-map* v f))
 
   PersistentArrayMap
-  (walk-term [v f] (walk-term-map* v f))
+  (-walk-term [v f] (walk-term-map* v f))
 
   PersistentVector
-  (walk-term [v f]
+  (-walk-term [^not-native v f]
     (with-meta
-      (loop [v v ^not-native r (transient [])]
-        (if (seq v)
-          (recur (next v) (conj! r (-walk-term (f (first v)) f)))
+      (loop [^not-native v v
+             ^not-native r (transient [])]
+        (if (-seq v)
+          (recur (-next v) (-conj! r (-walk-term (f (first v)) f)))
           (persistent! r)))
       (meta v))))
+
+;; ===========================================================================
+;; Occurs Check Term
+
+(extend-protocol IOccursCheckTerm
+  nil
+  (-occurs-check-term [v x s] false)
+
+  default
+  (-occurs-check-term [v x ^not-native s]
+    (if (sequential? v)
+      (loop [^not-native v (-seq v) x x s s]
+        (if-not (nil? v)
+          (or (-occurs-check s x (-first v))
+              (recur (-next v) x s))
+          false))
+      false)))
+
+;; ==========================================================================
+;; Build Term
+
+(extend-protocol IBuildTerm
+  nil
+  (-build-term [u s] s)
+
+  default
+  (-build-term [u s]
+    (if (sequential? u)
+      (reduce build s u)
+      s)))
+
+;; ===========================================================================
+;; Goals and Goal Constructors
+
+(defn mplus [a f]
+  (if (implements? IMPlus a)
+    (-mplus ^not-native a f)
+    (Choice. a f)))
+
+(defn take* [x]
+  (if (implements? ITake x)
+    (-take* ^not-native x)
+    (list x)))
+
+(declare Inc)
+
+(deftype Choice [a f]
+  IBind
+  (-bind [this g]
+    (mplus (g a) (-inc (-bind ^not-native f g))))
+  
+  IMPlus
+  (-mplus [this fp]
+    (Choice. a (-inc (-mplus (fp) f))))
+  
+  ITake
+  (-take* [this]
+    (lazy-seq (cons a (lazy-seq (take* f))))))
+
+(defn choice [a f]
+  (Choice. a f))
+
+;; ---------------------------------------------------------------------------
+;; Inc
+
+(deftype Inc [f]
+  IFn
+  (-invoke [_] (f))
+  
+  IBind
+  (-bind [this g]
+    (-inc (let [^not-native a (f)]
+            (-bind a g))))
+  
+  IMPlus
+  (-mplus [this fp]
+    (-inc (mplus (fp) this)))
+  
+  ITake
+  (-take* [this] (lazy-seq (take* (f)))))
+
+;; ---------------------------------------------------------------------------
+;; Fail
+
+(deftype Fail [a]
+  IBind
+  (-bind [this g] this)
+  IMPlus
+  (-mplus [this fp] fp)
+  ITake
+  (-take* [this] '()))
+
+(defn failed? [x]
+  (instance? Fail x))
+
+;; ===========================================================================
+;; Syntax
+
+(defn succeed
+  "A goal that always succeeds."
+  [a] a)
+
+(defn fail
+  "A goal that always fails."
+  [a] nil)
+
+(def s# succeed)
+
+(def u# fail)
+
+;; ===========================================================================
+;; conda (soft-cut), condu (committed-choice)
+
+(defprotocol IIfA
+  (-ifa [b gs c]))
+
+(defprotocol IIfU
+  (-ifu [b gs c]))
+
+(extend-protocol IIfA
+  nil
+  (-ifa [b gs c]
+    (when c
+      (force c)))
+
+  Fail
+  (-ifa [b gs c]
+    (when c
+      (force c)))
+
+  Substitutions
+  (-ifa [b gs c]
+    (loop [b b [g0 & goals] gs]
+      (if g0
+        (when-let [b (g0 b)]
+          (recur b gr))
+        b)))
+  
+  Choice
+  (-ifa [b gs c]
+    (loop [b b [g0 & goals] gs]
+      (if g0
+        (when-let [b (g0 b)]
+          (recur b gr))
+        b)))
+
+  Inc
+  (-ifa [b gs c]
+    (-inc (-ifa (b) gs c)))
+
+  default
+  (-ifa [b gs c]
+    (when (fn? b)
+      (-inc (-ifa (b) gs c)))))
+
+(extend-protocol IIfU
+  nil
+  (-ifu [b gs c]
+    (when c
+      (force c)))
+
+  Fail
+  (-ifu [b gs c]
+    (when c
+      (force c)))
+
+  Substitutions
+  (-ifu [b gs c]
+    (loop [b b [g0 & goals] gs]
+      (if g0
+        (when-let [b (g0 b)]
+          (recur b gr))
+        b)))
+  
+  Inc
+  (-ifu [b gs c]
+    (-inc (-ifu (b) gs c)))
+
+  Choice
+  (-ifu [b gs c]
+    (loop [b b [g0 & goals] gs]
+      (if g0
+        (when-let [b (g0 b)]
+          (recur b gr))
+        b)))
+
+  default
+  (-ifu [b gs c]
+    (when (fn? b)
+      (-inc (-ifu (b) gs c)))))
+
+(defn onceo [g] (condu (g)))
+
+;; ==========================================================================
+;; copy-term
+
+(defn copy-term
+  "Copies a term u into v. Non-relational."
+  [u v]
+  (project [u]
+    (== (walk* (build empty-s u) u) v)))
+
+;; ==========================================================================
+;; Useful goals
+
+(defn nilo
+  "A relation where a is nil"
+  [a]
+  (== nil a))
+
+(defn emptyo
+  "A relation where a is the empty list"
+  [a]
+  (== '() a))
+
+(defn conso
+  "A relation where l is a collection, such that a is the first of l
+  and d is the rest of l. If ground d must be bound to a proper tail."
+  [a d l]
+  (== (lcons a d) l))
+
+(defn firsto
+  "A relation where l is a collection, such that a is the first of l"
+  [l a]
+  (fresh [d]
+    (conso a d l)))
+
+(defn resto
+  "A relation where l is a collection, such that d is the rest of l"
+  [l d]
+  (fresh [a]
+    (== (lcons a d) l)))
+
+(defn everyg
+  "A pseudo-relation that takes a coll and ensures that the goal g
+   succeeds on every element of the collection."
+  [g coll]
+  (fn [a]
+    (let [coll (walk a coll)]
+      (((fn everyg* [g coll]
+          (if (seq coll)
+            (all
+             (g (first coll))
+             (everyg* g (next coll)))
+            s#)) g coll) a))))
+
+;; ===========================================================================
+;; More convenient goals
+
+(declare !=)
+
+(defne membero
+  "A relation where l is a collection, such that l contains x."
+  [x l]
+  ([_ [x . tail]])
+  ([_ [head . tail]]
+     (membero x tail)))
+
+(defne member1o
+  "Like membero but uses to disequality further constraining
+   the results. For example, if x and l are ground and x occurs
+   multiple times in l, member1o will succeed only once."
+  [x l]
+  ([_ [x . tail]])
+  ([_ [head . tail]]
+     (!= x head)
+     (member1o x tail)))
+
+(defne appendo
+  "A relation where x, y, and z are proper collections,
+  such that z is x appended to y"
+  [x y z]
+  ([() _ y])
+  ([[a . d] _ [a . r]] (appendo d y r)))
+
+(declare rembero)
+
+(defne permuteo
+  "A relation that will permute xl into the yl. May not
+   terminate if xl is not ground."
+  [xl yl]
+  ([() ()])
+  ([[x . xs] _]
+     (fresh [ys]
+       (permuteo xs ys)
+       (rembero x yl ys))))
+
+(defn composeg
+  ([] identity)
+  ([g0 g1]
+     (fn [a]
+       (let [a (g0 a)]
+         (and a (g1 a))))))
+
+;; ---------------------------------------------------------------------------
+;; MZero
+
+(extend-type nil
+  IBind
+  (-bind [_ g] nil)
+  IMPlus
+  (-mplus [_ f] (f))
+  ITake
+  (-take* [_] '()))
+
+;; ---------------------------------------------------------------------------
+;; Unit and Inc
+
+(extend-protocol IBind
+  default
+  (bind [this g]
+    (cond (fn? this) (-inc (-bind (this) g))
+      :else (throw (ex-info "No protocol method" {})))))
+
+(extend-protocol -IMPlus
+  default
+  (mplus [this f]
+    (cond (fn? this) (-inc (-mplus (f) this))
+          :else (Choice. this f))))
+
+(extend-protocol -ITake
+  default
+  (take* [this]
+    (cond (fn? this)
+          (lazy-seq (-take* (this)))
+          :else this)))
 
 ;; Constraint Store
 
@@ -1092,119 +1421,6 @@
         (-update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
         (-update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
 
-
-;; ===========================================================================
-;; Occurs Check Term
-
-(extend-protocol -IOccursCheckTerm
-  nil
-  (occurs-check-term [v x s] false)
-
-  default
-  (occurs-check-term [v x s]
-    (cond (coll? v)
-          (loop [v v x x s s]
-            (if (seq v)
-              (or (occurs-check s x (first v))
-                  (recur (next v) x s))
-              false))
-          :else false)))
-
-;; ==========================================================================
-;; Build Term
-
-(extend-protocol -IBuildTerm
-  nil
-  (build-term [u s] s)
-
-  default
-  (build-term [u s]
-    (cond (coll? u)
-          (reduce build s u)
-          :else s)))
-
-;; ===========================================================================
-;; Goals and Goal Constructors
-
-(defn composeg
-  ([] identity)
-  ([g0 g1]
-     (fn [a]
-       (let [a (g0 a)]
-         (and a (g1 a))))))
-
-(deftype Choice [a f]
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :a a
-      not-found))
-  
-  -IBind
-  (bind [this g]
-    (-mplus (g a) (fn [] (-bind f g))))
-  
-  -IMPlus
-  (mplus [this fp]
-    (Choice. a (fn [] (-mplus (fp) f))))
-  
-  -ITake
-  (take* [this]
-    (lazy-seq (cons a (lazy-seq (take* f))))))
-
-(defn choice [a f]
-  (Choice. a f))
-
-;; ---------------------------------------------------------------------------
-;; MZero
-
-(extend-type nil
-  -IBind
-  (bind [_ g] nil)
-  -IMPlus
-  (mplus [_ f] (f))
-  -ITake
-  (take* [_] '()))
-
-;; ---------------------------------------------------------------------------
-;; Unit and Inc
-
-(extend-protocol -IBind
-  default
-  (bind [this g]
-    (cond (fn? this) (-inc (-bind (this) g))
-          :else (throw (ex-info "No protocol method" {})))))
-
-(extend-protocol -IMPlus
-  default
-  (mplus [this f]
-    (cond (fn? this) (-inc (-mplus (f) this))
-          :else (Choice. this f))))
-
-(extend-protocol -ITake
-  default
-  (take* [this]
-    (cond (fn? this)
-          (lazy-seq (-take* (this)))
-          :else this)))
-
-;; ===========================================================================
-;; Syntax
-
-(defn succeed
-  "A goal that always succeeds."
-  [a] a)
-
-(defn fail
-  "A goal that always fails."
-  [a] nil)
-
-(def s# succeed)
-
-(def u# fail)
-
 (defn ext-run-csg [u v]
   (fn [a]
     (-ext-run-cs a u v)))
@@ -1228,150 +1444,6 @@
      (solutions s (lvar) g))
   ([s q g]
      (-take* ((all g (reifyg q)) s))))
-
-;; ===========================================================================
-;; conda (soft-cut), condu (committed-choice)
-;;
-;; conda once a line succeeds no others are tried
-;; condu a line can succeed only one time
-
-;; TODO : conda and condu should probably understanding logging
-
-;; TODO : if -> when
-
-(extend-protocol -IIfA
-  nil
-  (ifa [b gs c]
-    (when c
-      (force c)))
-
-  Substitutions
-  (ifa [b gs c]
-    (reduce bind b gs))
-
-  default
-  (ifa [b gs c]
-    (cond (fn? b) (-inc (ifa (b) gs c))
-          :else nil))
-
-  Choice
-  (ifa [b gs c]
-    (reduce bind b gs)))
-
-(extend-protocol -IIfU
-  nil
-  (ifu [b gs c]
-    (when c
-      (force c)))
-
-  Substitutions
-  (ifu [b gs c]
-    (reduce bind b gs))
-
-  default
-  (ifu [b gs c]
-    (cond (fn? b) (-inc (-ifu (b) gs c))
-          :else nil))
-
-  Choice
-  (ifu [b gs c]
-    (reduce bind (.-a b) gs)))
-
-(defn onceo [g] (condu (g)))
-
-;; ==========================================================================
-;; copy-term
-
-(defn copy-term
-  "Copies a term u into v. Non-relational."
-  [u v]
-  (project [u]
-    (== (walk* (build empty-s u) u) v)))
-
-;; ==========================================================================
-;; Useful goals
-
-(defn nilo
-  "A relation where a is nil"
-  [a]
-  (== nil a))
-
-(defn emptyo
-  "A relation where a is the empty list"
-  [a]
-  (== '() a))
-
-(defn conso
-  "A relation where l is a collection, such that a is the first of l
-  and d is the rest of l. If ground d must be bound to a proper tail."
-  [a d l]
-  (== (lcons a d) l))
-
-(defn firsto
-  "A relation where l is a collection, such that a is the first of l"
-  [l a]
-  (fresh [d]
-    (conso a d l)))
-
-(defn resto
-  "A relation where l is a collection, such that d is the rest of l"
-  [l d]
-  (fresh [a]
-    (== (lcons a d) l)))
-
-(defn everyg
-  "A pseudo-relation that takes a coll and ensures that the goal g
-   succeeds on every element of the collection."
-  [g coll]
-  (fn [a]
-    (let [coll (walk a coll)]
-      (((fn everyg* [g coll]
-          (if (seq coll)
-            (all
-             (g (first coll))
-             (everyg* g (next coll)))
-            s#)) g coll) a))))
-
-;; ===========================================================================
-;; More convenient goals
-
-(declare !=)
-
-(defne membero
-  "A relation where l is a collection, such that l contains x."
-  [x l]
-  ([_ [x . tail]])
-  ([_ [head . tail]]
-     (membero x tail)))
-
-(defne member1o
-  "Like membero but uses to disequality further constraining
-   the results. For example, if x and l are ground and x occurs
-   multiple times in l, member1o will succeed only once."
-  [x l]
-  ([_ [x . tail]])
-  ([_ [head . tail]]
-     (!= x head)
-     (member1o x tail)))
-
-(defne appendo
-  "A relation where x, y, and z are proper collections,
-  such that z is x appended to y"
-  [x y z]
-  ([() _ y])
-  ([[a . d] _ [a . r]] (appendo d y r)))
-
-(declare rembero)
-
-(defne permuteo
-  "A relation that will permute xl into the yl. May not
-   terminate if xl is not ground."
-  [xl yl]
-  ([() ()])
-  ([[x . xs] _]
-     (fresh [ys]
-       (permuteo xs ys)
-       (rembero x yl ys))))
 
 ;; ===========================================================================
 ;; Rel
