@@ -47,7 +47,7 @@
   (-reify-term [v s]))
 
 (defprotocol IWalkTerm
-  (-walk-term [v s]))
+  (-walk-term [v f]))
 
 (defprotocol IOccursCheckTerm
   (-occurs-check-term [v u s]))
@@ -197,16 +197,23 @@
 
   (-walk* [this v]
     (let [v (-walk this v)]
-      (-walk-term v this)))
+      (-walk-term v
+                  (fn [x]
+                    (let [x (-walk s x)]
+                      (if (tree-term? x)
+                        (-walk* s x)
+                        x))))))
 
   (-unify [this u v]
     (if (identical? u v)
       this
       (let [u (-walk this u)
             v (-walk this v)]
-        (if (or (identical? u v) (= u v))
+        (if (and (lvar? u) (= u v))
           this
-          (-unify-terms u v this)))))
+          (if (and (not (lvar? u)) (lvar? v))
+            (-unify-terms v u s)
+            (-unify-terms u v s))))))
 
   (-reify-lvar-name [this]
     (symbol (str "_." (count s))))
@@ -338,18 +345,7 @@
 ;; running - set of running constraint ids
 
 (deftype ConstraintStore [km cm cid running]
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :km km
-      :cm cm
-      :cid cid
-      :running running
-      not-found))
-  
-  proto/IConstraintStore
+  IConstraintStore
   (-addc [this a c]
     (let [vars (var-rands a c)
           c (proto/with-id c cid)
@@ -367,7 +363,7 @@
                 km)]
       (ConstraintStore. nkm (assoc cm (id c) c) cid running)))
 
-  (remc [this a c]
+  (-remc [this a c]
     (let [vs (var-rands a c)
           ocid (id c)
           nkm (reduce (fn [km v]
@@ -379,16 +375,16 @@
           ncm (dissoc cm ocid)]
       (ConstraintStore. nkm ncm cid running)))
 
-  (runc [this c state]
+  (-runc [this c state]
     (if state
       (ConstraintStore. km cm cid (conj running (id c)))
       (ConstraintStore. km cm cid (disj running (id c)))))
 
-  (constraints-for [this a x ws]
-    (when-let [ids (get km (proto/root-var a x))]
+  (-constraints-for [this a x ws]
+    (when-let [ids (get km (-root-var a x))]
       (filter #((proto/-watched-stores %) ws) (map cm (remove running ids)))))
 
-  (migrate [this x root]
+  (-migrate [this x root]
     (let [xcs    (km x)
           rootcs (km root #{})
           nkm    (assoc (dissoc km x) root (into rootcs xcs))]
@@ -399,8 +395,8 @@
 
 (defn add-var [cs x c]
   (when-not (lvar? x)
-    (throw (ex-info
-            (str "constraint store assoc expected logic var key: " x) {})))
+    (throw (js/Error. (str "constraint store assoc expected logic var key: "
+                           x))))
   (let [cm (.-cm cs)
         km (.-km cs)
         cid (.-cid cs)
@@ -435,36 +431,16 @@
 
 (declare empty-s choice lvar lvar? pair lcons run-constraints*)
 
-(defn occurs-check [s u v]
-  (let [v (walk s v)]
-    (proto/occurs-check-term v u s)))
-
-(defn ext [s u v]
-  (if (and (.-oc s) ^boolean (occurs-check s u (if (subst-val? v) (.-v v) v)))
-    nil
-    (ext-no-check s u v)))
-
-(declare tree-term?)
-
-(defn walk* [s v]
-  (let [v (walk s v)]
-    (proto/walk-term v
-                     (fn [x]
-                       (let [x (walk s x)]
-                         (if (tree-term? x)
-                           (walk* s x)
-                           x))))))
-
 (defn unify [s u v]
   (if (identical? u v)
     s
-    (let [u (walk s u)
-          v (walk s v)]      
+    (let [u (-walk s u)
+          v (-walk s v)]
       (if (and (lvar? u) (= u v))
         s
         (if (and (not (lvar? u)) (lvar? v))
-          (proto/unify-terms v u s)
-          (proto/unify-terms u v s))))))
+          (-unify-terms v u s)
+          (-unify-terms u v s))))))
 
 (def unbound-names
   (let [r (range 100)]
@@ -738,7 +714,6 @@
   
   IWalkTerm
   (-walk-term [v f] (f v))
-  ;; (-walk-term [v s] v)
   
   IOccursCheckTerm
   (-occurs-check-term [v x ^not-native s]
