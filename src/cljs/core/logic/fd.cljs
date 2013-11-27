@@ -4,7 +4,8 @@
             [clojure.set :as set]
             [clojure.string :as string]
             [cljs.core :as core])
-  (:require-macros [cljs.core.logic.macros :as l :refer [defne extend-to-fd]]))
+  (:require-macros [cljs.core.logic.macros :as l
+                    :refer [defne extend-to-fd let-dom]]))
 
 (defprotocol IInterval
   (-lb [this])
@@ -30,7 +31,7 @@
          interval multi-interval)
 
 (defn bounds [i]
-  (l/pair (-lb i) (-ub i)))
+  [(-lb i) (-ub i)])
 
 (defn interval-< [i j]
   (core/< (-ub i) (-lb j)))
@@ -549,9 +550,9 @@
 (defn resolve-storable-dom
   [a x dom domp]
   (if (singleton-dom? dom)
-    (let [xv (walk a x)]
+    (let [xv (l/-walk a x)]
       (if (l/lvar? xv)
-        (l/ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
+        (l/-ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
         a))
     (ext-dom-fd a x dom domp)))
 
@@ -624,8 +625,8 @@
     l/IEnforceableConstraint
     l/IConstraintStep
     (-step [this s]
-      (let [xv (walk s x)
-            xd (-> (l/root-val s x) :doms :cljs.core.logic/fd)]
+      (let [xv (l/-walk s x)
+            xd (-> (l/-root-val s x) :doms :cljs.core.logic/fd)]
         (reify
           IFn
           (-invoke [_ s]
@@ -730,7 +731,7 @@
                  (-invoke [_ s]
                    (let [umin (-lb du)
                          vmax (-ub dv)]
-                     ((composeg*
+                     ((l/composeg*
                        (process-dom u (-keep-before du (inc vmax)) du)
                        (process-dom v (-drop-before dv umin) dv)) s)))
                  l/IEntailed
@@ -811,7 +812,7 @@
                                          vi)]
                            (when (or (not (every? singleton-dom? [wi ui vi]))
                                      (core/= (core/+ ui vi) wi))
-                             ((composeg*
+                             ((l/composeg*
                                (process-dom w wi dw)
                                (process-dom u ui du)
                                (process-dom v vi dv))
@@ -896,7 +897,7 @@
                              (when (or (not (every? singleton-dom?
                                                     [wi ui vi]))
                                        (core/= (core/* ui vi) wi))
-                               ((composeg*
+                               ((l/composeg*
                                  (process-dom w wi dw)
                                  (process-dom u ui du)
                                  (process-dom v vi dv)) s)))))))
@@ -943,7 +944,7 @@
     l/IEnforceableConstraint
     l/IConstraintStep
     (-step [this s]
-      (let [x (walk s x)]
+      (let [x (l/-walk s x)]
         (reify
           IFn
           (-invoke [_ s]
@@ -951,7 +952,7 @@
               (loop [y* (seq y*) s s]
                 (if y*
                   (let [y (first y*)
-                        v (or (get-dom s y) (walk s y))
+                        v (or (get-dom s y) (l/-walk s y))
                         s (if-not (l/lvar? v)
                             (cond
                               (= x v) nil
@@ -996,7 +997,7 @@
     l/IEnforceableConstraint
     l/IConstraintStep
     (-step [this s]
-      (let [v* (walk s v*)]
+      (let [v* (l/-walk s v*)]
         (reify
           IFn
           (-invoke [_ s]
