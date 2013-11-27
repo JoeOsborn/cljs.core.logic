@@ -457,7 +457,7 @@
       (let [repoint (cond
                       (-> u clojure.core/meta ::unbound) [u v]
                       (-> v clojure.core/meta ::unbound) [v u]
-                      :else (fail s))]
+                      :else nil)]
         (if repoint
           (let [[root other] repoint
                 s (Substitutions. (.-s s) (.-vs s) (.-ts s)
@@ -889,7 +889,7 @@
   default
   (-walk-term [v f]
     (cond
-      (seq? v)
+      (sequential? v)
       (with-meta
         (doall (map #(-walk-term (f %) f) v))
         (meta v))
@@ -1276,8 +1276,8 @@
       (fail s)))
 
   IWalkTerm
-  (-walk-term [v s]
-    (walk-term-map* v s))
+  (-walk-term [v f]
+    (walk-term-map* v f))
 
   IUninitialized
   (-uninitialized [_] (PMap.)))

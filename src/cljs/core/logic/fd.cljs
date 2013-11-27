@@ -1,18 +1,10 @@
 (ns cljs.core.logic.fd
   (:refer-clojure :exclude [== < > <= >= + - * quot distinct ISet])
-  (:require [cljs.core.logic.protocols :as proto :refer [walk]]
-            [cljs.core.logic :as l :refer [lvar?]]
+  (:require [cljs.core.logic :as l]
             [clojure.set :as set]
             [clojure.string :as string]
             [cljs.core :as core])
-  (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
-                            conde fresh -run run run* run-db run-db* run-nc
-                            run-nc* all is pred project trace-lvars trace-s
-                            log ifa* ifu* conda condu lvaro nonlvaro fnm
-                            defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc in extend-to-fd
-                            eq]]))
+  (:require-macros [cljs.core.logic.macros :as l]))
 
 (defprotocol IInterval
   (-lb [this])
@@ -96,9 +88,9 @@
     (let [s (disj s min)
           c (count s)]
       (cond
-       (= c 1) (first s)
-       (core/> c 1) (FiniteDomain. s (first s) max)
-       :else nil)))
+        (= c 1) (first s)
+        (core/> c 1) (FiniteDomain. s (first s) max)
+        :else nil)))
 
   (-drop-before [_ n]
     (apply domain (drop-while #(core/< % n) s)))
@@ -112,32 +104,32 @@
 
   (-disjoint? [this that]
     (cond
-     (integer? that)
-     (if (s that) false true)
-     (instance? FiniteDomain that)
-     (cond
-      (core/< max (:min that)) true
-      (core/> min (:max that)) true
-      :else (empty? (set/intersection s (:s that))))
-     :else (disjoint?* this that)))
+      (integer? that)
+      (if (s that) false true)
+      (instance? FiniteDomain that)
+      (cond
+        (core/< max (:min that)) true
+        (core/> min (:max that)) true
+        :else (empty? (set/intersection s (:s that))))
+      :else (disjoint?* this that)))
 
   (-intersection [this that]
     (cond
-     (integer? that)
-     (when (-member? this that) that)
-     (instance? FiniteDomain that)
-     (sorted-set->domain (set/intersection s (:s that)))
-     :else
-     (intersection* this that)))
+      (integer? that)
+      (when (-member? this that) that)
+      (instance? FiniteDomain that)
+      (sorted-set->domain (set/intersection s (:s that)))
+      :else
+      (intersection* this that)))
 
   (-difference [this that]
     (cond
-     (integer? that)
-     (sorted-set->domain (disj s that))
-     (instance? FiniteDomain that)
-     (sorted-set->domain (set/difference s (:s that)))
-     :else
-     (difference* this that)))
+      (integer? that)
+      (sorted-set->domain (disj s that))
+      (instance? FiniteDomain that)
+      (sorted-set->domain (set/difference s (:s that)))
+      :else
+      (difference* this that)))
 
   IIntervals
   (-intervals [_] (seq s))
@@ -156,9 +148,9 @@
 (defn sorted-set->domain [s]
   (let [c (count s)]
     (cond
-     (zero? c) nil
-     (= c 1) (first s)
-     :else (FiniteDomain. s (first s) (first (rseq s))))))
+      (zero? c) nil
+      (= c 1) (first s)
+      :else (FiniteDomain. s (first s) (first (rseq s))))))
 
 (defn domain
   "Construct a domain for assignment to a var. Arguments should
@@ -208,16 +200,16 @@
 
   (-drop-before [this n]
     (cond
-     (= n ub) n
-     (core/< n lb) this
-     (core/> n ub) nil
-     :else (interval n ub)))
+      (= n ub) n
+      (core/< n lb) this
+      (core/> n ub) nil
+      :else (interval n ub)))
 
   (-keep-before [this n]
     (cond
-     (core/<= n lb) nil
-     (core/> n ub) this
-     :else (interval lb (dec n))))
+      (core/<= n lb) nil
+      (core/> n ub) this
+      :else (interval lb (dec n))))
 
   ISet
   (-member? [this n]
@@ -225,75 +217,75 @@
 
   (-disjoint? [this that]
     (cond
-     (integer? that)
-     (not (-member? this that))
+      (integer? that)
+      (not (-member? this that))
 
-     (interval? that)
-     (let [i this
-           j that
-           [imin imax] (bounds i)
-           [jmin jmax] (bounds j)]
-       (or (core/> imin jmax)
-           (core/< imax jmin)))
+      (interval? that)
+      (let [i this
+            j that
+            [imin imax] (bounds i)
+            [jmin jmax] (bounds j)]
+        (or (core/> imin jmax)
+            (core/< imax jmin)))
 
-     :else (disjoint?* this that)))
+      :else (disjoint?* this that)))
 
   (-intersection [this that]
     (cond
-     (integer? that)
-     (if (-member? this that)
-       that
-       nil)
+      (integer? that)
+      (if (-member? this that)
+        that
+        nil)
 
-     (interval? that)
-     (let [i this j that
-           imin (-lb i) imax (-ub i)
-           jmin (-lb j) jmax (-ub j)]
-       (cond
-        (core/< imax jmin) nil
-        (core/< jmax imin) nil
-        (and (core/<= imin jmin)
-             (core/>= imax jmax)) j
-             (and (core/<= jmin imin)
-                  (core/>= jmax imax)) i
-                  (and (core/<= imin jmin)
-                       (core/<= imax jmax)) (interval jmin imax)
-                       (and (core/<= jmin imin)
-                            (core/<= jmax imax)) (interval imin jmax)
-                            :else (throw (ex-info (str "Interval intersection not defined " i " " j) {}))))
+      (interval? that)
+      (let [i this j that
+            imin (-lb i) imax (-ub i)
+            jmin (-lb j) jmax (-ub j)]
+        (cond
+          (core/< imax jmin) nil
+          (core/< jmax imin) nil
+          (and (core/<= imin jmin)
+               (core/>= imax jmax)) j
+               (and (core/<= jmin imin)
+                    (core/>= jmax imax)) i
+                    (and (core/<= imin jmin)
+                         (core/<= imax jmax)) (interval jmin imax)
+                         (and (core/<= jmin imin)
+                              (core/<= jmax imax)) (interval imin jmax)
+                              :else (throw (ex-info (str "Interval intersection not defined " i " " j) {}))))
 
-     :else (intersection* this that)))
+      :else (intersection* this that)))
 
   (-difference [this that]
     (cond
-     (integer? that)
-     (cond
-      (= lb that) (interval (inc lb) ub)
-      (= ub that) (interval lb (dec ub))
-      :else (if (-member? this that)
-              (multi-interval (interval lb (dec that))
-                              (interval (inc that) ub))
-              this))
+      (integer? that)
+      (cond
+        (= lb that) (interval (inc lb) ub)
+        (= ub that) (interval lb (dec ub))
+        :else (if (-member? this that)
+                (multi-interval (interval lb (dec that))
+                                (interval (inc that) ub))
+                this))
 
-     (interval? that)
-     (let [i this j that
-           imin (-lb i) imax (-ub i)
-           jmin (-lb j) jmax (-ub j)]
-       (cond
-        (core/> jmin imax) i
-        (and (core/<= jmin imin)
-             (core/>= jmax imax)) nil
-             (and (core/< imin jmin)
-                  (core/> imax jmax))
-             (multi-interval (interval imin (dec jmin))
-                             (interval (inc jmax) imax))
-                  (and (core/< imin jmin)
-                       (core/<= jmin imax)) (interval imin (dec jmin))
-                       (and (core/> imax jmax)
-                            (core/<= jmin imin)) (interval (inc jmax) imax)
-                            :else (throw (ex-info (str "Interval difference not defined " i " " j) {}))))
+      (interval? that)
+      (let [i this j that
+            imin (-lb i) imax (-ub i)
+            jmin (-lb j) jmax (-ub j)]
+        (cond
+          (core/> jmin imax) i
+          (and (core/<= jmin imin)
+               (core/>= jmax imax)) nil
+               (and (core/< imin jmin)
+                    (core/> imax jmax))
+               (multi-interval (interval imin (dec jmin))
+                               (interval (inc jmax) imax))
+               (and (core/< imin jmin)
+                    (core/<= jmin imax)) (interval imin (dec jmin))
+                    (and (core/> imax jmax)
+                         (core/<= jmin imin)) (interval (inc jmax) imax)
+                         :else (throw (ex-info (str "Interval difference not defined " i " " j) {}))))
 
-     :else (difference* this that)))
+      :else (difference* this that)))
 
   IIntervals
   (-intervals [this]
@@ -326,37 +318,37 @@
       (let [i (first is)
             j (first js)]
         (cond
-         (interval-< i j) (recur (next is) js r)
-         (interval-> i j) (recur is (next js) r)
-         :else
-         (let [[imin imax] (bounds i)
-               [jmin jmax] (bounds j)]
-           (cond
-            (core/<= imin jmin)
+          (interval-< i j) (recur (next is) js r)
+          (interval-> i j) (recur is (next js) r)
+          :else
+          (let [[imin imax] (bounds i)
+                [jmin jmax] (bounds j)]
             (cond
-             (core/< imax jmax)
-             (recur (next is)
-                    (cons (interval (inc imax) jmax) (next js))
-                    (conj r (interval jmin imax)))
-             (core/> imax jmax)
-             (recur (cons (interval (inc jmax) imax) (next is))
-                    (next js)
-                    (conj r j))
-             :else
-             (recur (next is) (next js)
-                    (conj r (interval jmin jmax))))
-            (core/> imin jmin)
-            (cond
-             (core/> imax jmax)
-             (recur (cons (interval (inc jmax) imax) (next is))
-                    (next js)
-                    (conj r (interval imin jmax)))
-             (core/< imax jmax)
-             (recur is (cons (interval (inc imax) jmax) (next js))
-                    (conj r i))
-             :else
-             (recur (next is) (next js)
-                    (conj r (interval imin imax))))))))
+              (core/<= imin jmin)
+              (cond
+                (core/< imax jmax)
+                (recur (next is)
+                       (cons (interval (inc imax) jmax) (next js))
+                       (conj r (interval jmin imax)))
+                (core/> imax jmax)
+                (recur (cons (interval (inc jmax) imax) (next is))
+                       (next js)
+                       (conj r j))
+                :else
+                (recur (next is) (next js)
+                       (conj r (interval jmin jmax))))
+              (core/> imin jmin)
+              (cond
+                (core/> imax jmax)
+                (recur (cons (interval (inc jmax) imax) (next is))
+                       (next js)
+                       (conj r (interval imin jmax)))
+                (core/< imax jmax)
+                (recur is (cons (interval (inc imax) jmax) (next js))
+                       (conj r i))
+                :else
+                (recur (next is) (next js)
+                       (conj r (interval imin imax))))))))
       (apply multi-interval r))))
 
 (defn difference* [is js]
@@ -366,37 +358,37 @@
         (let [i (first is)
               j (first js)]
           (cond
-           (interval-< i j) (recur (next is) js (conj r i))
-           (interval-> i j) (recur is (next js) r)
-           :else
-           (let [[imin imax] (bounds i)
-                 [jmin jmax] (bounds j)]
-             (cond
-              (core/< imin jmin)
+            (interval-< i j) (recur (next is) js (conj r i))
+            (interval-> i j) (recur is (next js) r)
+            :else
+            (let [[imin imax] (bounds i)
+                  [jmin jmax] (bounds j)]
               (cond
-               (core/< jmax imax)
-               (recur (cons (interval (inc jmax) imax) (next is))
-                      (next js)
-                      (conj r (interval imin (dec jmin))))
-               (core/> jmax imax)
-               (recur (next is)
-                      (cons (interval (inc imax) jmax) (next js))
-                      (conj r (interval imin (dec jmin))))
-               :else
-               (recur (next is) (next js)
-                      (conj r (interval imin (dec jmin)))))
-              (core/>= imin jmin)
-              (cond
-               (core/< imax jmax)
-               (recur (next is)
-                      (cons (interval (inc imax) jmax) (next js))
-                      r)
-               (core/> imax jmax)
-               (recur (cons (interval (inc jmax) imax) (next is))
-                      (next js)
-                      r)
-               :else (recur (next is) (next js)
-                            r))))))
+                (core/< imin jmin)
+                (cond
+                  (core/< jmax imax)
+                  (recur (cons (interval (inc jmax) imax) (next is))
+                         (next js)
+                         (conj r (interval imin (dec jmin))))
+                  (core/> jmax imax)
+                  (recur (next is)
+                         (cons (interval (inc imax) jmax) (next js))
+                         (conj r (interval imin (dec jmin))))
+                  :else
+                  (recur (next is) (next js)
+                         (conj r (interval imin (dec jmin)))))
+                (core/>= imin jmin)
+                (cond
+                  (core/< imax jmax)
+                  (recur (next is)
+                         (cons (interval (inc imax) jmax) (next js))
+                         r)
+                  (core/> imax jmax)
+                  (recur (cons (interval (inc jmax) imax) (next is))
+                         (next js)
+                         r)
+                  :else (recur (next is) (next js)
+                               r))))))
         (apply multi-interval (into r is)))
       (apply multi-interval r))))
 
@@ -412,10 +404,10 @@
           (let [i (first d0)
                 j (first d1)]
             (cond
-             (interval-< i j) (recur (next d0) d1)
-             (interval-> i j) (recur d0 (next d1))
-             (-disjoint? i j)  (recur (next d0) d1)
-             :else false)))))))
+              (interval-< i j) (recur (next d0) d1)
+              (interval-> i j) (recur d0 (next d1))
+              (-disjoint? i j)  (recur (next d0) d1)
+              :else false)))))))
 
 (declare normalize-intervals singleton-dom? multi-interval)
 
@@ -575,9 +567,9 @@
   (fn [a]
     (when dom
       (cond
-       (lvar? x) (resolve-storable-dom a x dom domp)
-       (-member? dom x) a
-       :else nil))))
+        (lvar? x) (resolve-storable-dom a x dom domp)
+        (-member? dom x) a
+        :else nil))))
 
 (declare domc)
 
@@ -705,12 +697,12 @@
                    IFn
                    (-invoke [_ s]
                      (cond
-                      (and su? sv? (= du dv)) nil
-                      (-disjoint? du dv) s
-                      su? (when-let [vdiff (-difference dv du)]
-                            ((process-dom v vdiff dv) s))
-                      :else (when-let [udiff (-difference du dv)]
-                              ((process-dom u udiff du) s))))
+                       (and su? sv? (= du dv)) nil
+                       (-disjoint? du dv) s
+                       su? (when-let [vdiff (-difference dv du)]
+                             ((process-dom v vdiff dv) s))
+                       :else (when-let [udiff (-difference du dv)]
+                               ((process-dom u udiff du) s))))
                    proto/IEntailed
                    (-entailed? [_]
                      (and du dv (-disjoint? du dv)))
@@ -836,10 +828,10 @@
                  proto/IRunnable
                  (-runnable? [_]
                    (cond
-                    du (or dv dw)
-                    dv (or du dw)
-                    dw (or du dv)
-                    :else false)))))
+                     du (or dv dw)
+                     dv (or du dw)
+                     dw (or du dv)
+                     :else false)))))
     proto/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/+)
     (-rands [_] [u v w])
@@ -920,10 +912,10 @@
                    proto/IRunnable
                    (-runnable? [_]
                      (cond
-                      du (or dv dw)
-                      dv (or du dw)
-                      dw (or du dv)
-                      :else false)))))
+                       du (or dv dw)
+                       dv (or du dw)
+                       dw (or du dv)
+                       :else false)))))
       proto/IConstraintOp
       (-rator [_] `cljs.core.logic.fd/*)
       (-rands [_] [u v w])
@@ -965,10 +957,10 @@
                         v (or (get-dom s y) (walk s y))
                         s (if-not (lvar? v)
                             (cond
-                             (= x v) nil
-                             (-member? v x)
-                             ((process-dom y (-difference v x) v) s)
-                             :else s)
+                              (= x v) nil
+                              (-member? v x)
+                              ((process-dom y (-difference v x) v) s)
+                              :else s)
                             s)]
                     (when s
                       (recur (next y*) s)))

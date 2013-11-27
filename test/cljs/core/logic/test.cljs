@@ -1,11 +1,6 @@
 (ns cljs.core.logic.test
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto
-             :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for take* root-var root-val -prefix
-                     -with-prefix tree-constraint? -constrain-tree
-                     with-id remc]]
-            [cljs.core.logic :as l
+  (:require [cljs.core.logic :as l
              :refer [empty-s lcons lvar to-s reify-lvar-name fail succeed
                      walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc 
