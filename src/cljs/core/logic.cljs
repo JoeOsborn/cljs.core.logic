@@ -64,6 +64,8 @@
 
 ;; Utilities
 
+(declare lvar?)
+
 (def not-found (js-obj))
 
 (defn assoc-meta [x k v]
@@ -111,7 +113,7 @@
 ;; ===========================================================================
 ;; Constraint Store
 
-(declare lvar? bindable? add-var non-storable?)
+(declare lvar? bindable? add-var non-storable? choice)
 
 (defn var-rands [a c]
   (->> (-rands c)
@@ -215,7 +217,7 @@
 ;; ==========================================================================
 ;; Substitutions
 
-(declare tree-term?)
+(declare tree-term? fail)
 
 (defprotocol ISubstitutions
   (-occurs-check [this u v])
@@ -941,6 +943,8 @@
 ;; ===========================================================================
 ;; Goals and Goal Constructors
 
+(declare Choice)
+
 (defn mplus [a f]
   (if (implements? IMPlus a)
     (-mplus ^not-native a f)
@@ -955,16 +959,11 @@
 
 (deftype Choice [a f]
   IBind
-  (-bind [this g]
-    (mplus (g a) (-inc (-bind ^not-native f g))))
-  
+  (-bind [this g] (mplus (g a) (-inc (-bind ^not-native f g))))
   IMPlus
-  (-mplus [this fp]
-    (Choice. a (-inc (mplus (fp) f))))
-  
+  (-mplus [this fp] (Choice. a (-inc (mplus (fp) f))))  
   ITake
-  (-take* [this]
-    (lazy-seq (cons a (lazy-seq (take* f))))))
+  (-take* [this] (lazy-seq (cons a (lazy-seq (take* f))))))
 
 (defn choice [a f]
   (Choice. a f))
@@ -976,12 +975,9 @@
   IFn
   (-invoke [_] (f))  
   IBind
-  (-bind [this g]
-    (-inc (let [^not-native a (f)]
-            (-bind a g))))  
+  (-bind [this g] (-inc (let [^not-native a (f)] (-bind a g))))
   IMPlus
-  (-mplus [this fp]
-    (-inc (mplus (fp) this)))  
+  (-mplus [this fp] (-inc (mplus (fp) this)))  
   ITake
   (-take* [this] (lazy-seq (take* (f)))))
 
@@ -998,6 +994,43 @@
 
 (defn ^boolean failed? [x]
   (instance? Fail x))
+
+(extend-type nil
+  IBind
+  (-bind [_ g] nil)
+  IMPlus
+  (-mplus [_ f] (f))
+  ITake
+  (-take* [_] '()))
+
+(extend-protocol ITake
+  nil
+  (-take* [_] '())
+  
+  default
+  (-take* [this]
+    (if (fn? this)
+      (lazy-seq (take* (this)))
+      this)))
+
+(extend-protocol IMPlus
+  nil
+  (-mplus [_ f] (f))
+  
+  default
+  (-mplus [this f]
+    (if (fn? this)
+      (-inc (mplus (f) this))
+      (Choice. this f))))
+
+(extend-protocol IBind
+  nil
+  (-bind [_ g] nil)
+  
+  default
+  (-bind [this g]
+    (if (fn? this)
+      (-inc (-bind (this) g)))))
 
 ;; ===========================================================================
 ;; Syntax
@@ -1359,7 +1392,7 @@
   it may contain values which are logic variables to support
   feature extraction."
   [x fs]
-  (cgoal (-featurec x (partial-map fs))))
+  (cgoal (-featurec x fs)))
 
 (declare choice lvar lvar? lcons run-constraints*)
 
@@ -1888,7 +1921,6 @@
    (fn [a]
      (let [v (-walk* a x)
            r (-reify* (with-meta empty-s (meta a)) v)]
-       (println v r a x)
        (if (zero? (count r))
          (choice v empty-f)
          (let [v (-walk* r v)]
