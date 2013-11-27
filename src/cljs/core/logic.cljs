@@ -266,7 +266,8 @@
 
   (-ext [this u v]
     (if (and ^boolean *occurs-check*
-             ^boolean (-occurs-check this u v))
+             ^boolean oc
+             ^boolean (-occurs-check this u (if (subst-val? v) (.-v v) v)))
       (fail this)
       (-ext-no-check this u v)))
 
@@ -350,7 +351,7 @@
   ISubstitutionsCLP
   (-root-val [this v]
     (if (lvar? v)
-      (loop [^not-native lv v ^not-native [v vp :as me] (find s v)]
+      (loop [^not-native lv v [v vp :as me] (find s v)]
         (cond
           (nil? me) lv
           (not (lvar? vp)) vp
@@ -362,7 +363,8 @@
       (if (-> v meta ::root)
         v
         (loop [lv v [v vp :as me] (find s v)]
-          (cond (nil? me) lv
+          (cond
+            (nil? me) lv
             (not (lvar? vp))
             (if (subst-val? vp)
               (with-meta v (meta vp))
@@ -384,8 +386,7 @@
   (-queue [this c]
     (let [id (id c)]
       (if-not (cqs id)
-        (Substitutions.
-         s vs ts cs (conj (or cq []) c) (conj cqs id) oc _meta)
+        (Substitutions. s vs ts cs (conj (or cq []) c) (conj cqs id) oc _meta)
         this)))
 
   (-update-var [this x v]
@@ -621,11 +622,11 @@
       cache))
 
   IUnifyTerms
-  (-unify-terms [^not-native u ^not-native v ^not-native s]
+  (-unify-terms [u v s]
     (cond
       (sequential? v) (-unify-with-seq u v s)            
       (lcons? v) (-unify-with-lseq v u s)
-      :else nil))
+      :else (fail s)))
 
   IUnifyWithNil
   (-unify-with-nil [v u s] (fail s))
@@ -717,10 +718,9 @@
 
   default
   (-unify-terms [u v s]
-    (cond
-      (sequential? u) (-unify-with-seq v u s)
-      (implements? IUnifyWithRecord v) (-unify-with-record v u s)
-      :else (-unify-with-object v u s)))
+    (if (sequential? u)
+      (-unify-with-seq v u s)
+      (-unify-with-object v u s)))
 
   PersistentArrayMap
   (-unify-terms [u v s]
@@ -745,8 +745,7 @@
 
 (extend-protocol IUnifyWithObject
   nil
-  (-unify-with-object [v u s]
-    (fail s))
+  (-unify-with-object [v u s] (fail s))
 
   default
   (-unify-with-object [v u s]
@@ -757,13 +756,12 @@
 
 (extend-protocol IUnifyWithLVar
   nil
-  (-unify-with-lvar [v u ^not-native s]
-    (-ext-no-check s u v))
+  (-unify-with-lvar [v u ^not-native s] (-ext-no-check s u v))
 
   default
-  (-unify-with-lvar [v u ^not-native s]
-    (-ext s u v)))
-;; -----------------------------------------------------------------------------
+  (-unify-with-lvar [v u ^not-native s] (-ext s u v)))
+
+;; ---------------------------------------------------------------------------
 ;; Unify LCons with X
 
 (extend-protocol IUnifyWithLSeq
@@ -772,9 +770,9 @@
 
   default
   (-unify-with-lseq [v ^not-native u ^not-native s]
-    (if (and (sequential? v) (not (nil? v)))
+    (if (sequential? v)
       (loop [u u ^not-native v (seq v) s s]
-        (if-not (nil? v)
+        (if v
           (if (lcons? u)
             (let [s (-unify s (-lfirst u) (first v))]
               (if-not (failed? s)
@@ -795,10 +793,7 @@
 
   default
   (-unify-with-seq [^not-native v ^not-native u ^not-native s]
-    (if (and (sequential? v)
-             (not (nil? v))
-             (and (counted? u) (counted? v)
-                  (not (cljs.core/== (count u) (count v)))))
+    (if (sequential? v)
       (loop [^not-native u (seq u) ^not-native v (seq v) s s]
         (if-not (nil? u)
           (if-not (nil? v)
@@ -816,7 +811,8 @@
 (defn unify-with-map* [v u s]
   (if-not (cljs.core/== (count u) (count v))
     (fail s)
-    (loop [^not-native ks (seq (keys u)) ^not-native s s]
+    (loop [^not-native ks (seq (keys u)) s s]
+      (println ks s)
       (if ks
         (let [kf (first ks)
               vf (get v kf not-found)]
@@ -852,7 +848,7 @@
 
   default
   (-reify-term [v ^not-native s]
-    (if (sequential? v)
+    (if (coll? v)
       (loop [v v s s]
         (if (seq v)
           (recur (next v) (-reify* s (first v)))
@@ -868,8 +864,9 @@
            ^not-native r (-uninitialized v)]
       (if (seq v)
         (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc r (-walk-term (f vfk) f)
-                                 (-walk-term (f vfv) f))))
+          (recur (next v) (assoc r
+                            (-walk-term (f vfk) f)
+                            (-walk-term (f vfv) f))))
         r))
     (meta v)))
 
@@ -880,7 +877,9 @@
       (if (seq v)
         (let [[vfk vfv] (first v)]
           (recur (next v)
-                 (-assoc! r (-walk-term (f vfk) f) (-walk-term (f vfv) f))))
+                 (-assoc! r
+                          (-walk-term (f vfk) f)
+                          (-walk-term (f vfv) f))))
         (persistent! r)))
     (meta v)))
 
@@ -891,8 +890,10 @@
   default
   (-walk-term [v f]
     (cond
-      (sequential? v)
-      (with-meta (doall (map #(-walk-term (f %) f) v)) (meta v))
+      (seq? v)
+      (with-meta
+        (doall (map #(-walk-term (f %) f) v))
+        (meta v))
       (record? v) (walk-term-record v f)
       :else (f v)))
 
@@ -905,9 +906,9 @@
   PersistentVector
   (-walk-term [^not-native v f]
     (with-meta
-      (loop [^not-native v v
+      (loop [^not-native v (seq v)
              ^not-native r (transient [])]
-        (if (seq v)
+        (if v
           (recur (next v) (-conj! r (-walk-term (f (first v)) f)))
           (persistent! r)))
       (meta v))))
@@ -1393,17 +1394,6 @@
 
 (declare choice lvar lvar? lcons run-constraints*)
 
-(defn unify [s u v]
-  (if (identical? u v)
-    s
-    (let [u (-walk s u)
-          v (-walk s v)]
-      (if (and (lvar? u) (= u v))
-        s
-        (if (and (not (lvar? u)) (lvar? v))
-          (-unify-terms v u s)
-          (-unify-terms u v s))))))
-
 (defn build [s u]
   (-build-term u s))
 
@@ -1740,16 +1730,16 @@
   IMPlus
   (-mplus [this f]
     (waiting-stream-check this
-                          (fn [fp] (-mplus fp f))
+                          (fn [fp] (mplus fp f))
                           (fn []
                             (let [a-inf (f)]
                               (if (waiting-stream? a-inf)
                                 (into a-inf this)
-                                (-mplus a-inf (fn [] this)))))))
+                                (mplus a-inf (fn [] this)))))))
 
   ITake
   (-take* [this]
-    (waiting-stream-check this (fn [f] (-take* f)) (fn [] ()))))
+    (waiting-stream-check this (fn [f] (take* f)) (fn [] ()))))
 
 (defn master
   "Take the argument to the goal and check that we don't
@@ -1958,6 +1948,8 @@
     ::ff (seq (sort (sort-by-member-count a) v))
     v))
 
+(declare force-ans)
+
 (defprotocol IForceAnswerTerm
   (-force-ans [v x]))
 
@@ -1982,6 +1974,7 @@
       :else (if (lvar? x)
               (ext-run-csg x v)
               s#)))
+  
   PersistentHashMap
   (-force-ans [v x]
     (letfn [(loop [ys]
@@ -2160,7 +2153,7 @@
                             vv (-walk* s v)]
                         (cond
                           (= xv vv) (recur (next sp) (dissoc p x))
-                          (nil? (unify s xv vv)) nil
+                          (nil? (-unify s xv vv)) nil
                           :else (recur (next sp) (assoc (dissoc p x) xv vv))))
                       p))]
             (if p
