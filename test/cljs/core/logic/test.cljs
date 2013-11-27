@@ -1,25 +1,13 @@
 (ns cljs.core.logic.test
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s reify-lvar-name fail succeed
-                     walk* conso s# u# != copy-term rembero membero member1o
-                     emptyo resto firsto appendo reifyg partial-map predc 
-                     featurec everyg composeg solutions pair ext-run-csg
-                     run-constraints* addcg make-cs var-rands force-ans
-                     verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? permuteo ==]]
-            [cljs.core.logic.fd :as fd :refer [interval]]
+  (:require [cljs.core.logic :as l]
+            [cljs.core.logic.fd :as fd]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
-                            conde fresh -run run run* run-db run-db* run-nc
-                            run-nc* all pred project trace-lvars trace-s
-                            log ifa* ifu* conda condu lvaro nonlvaro fnm
-                            defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc
-                            in extend-to-fd eq]]))
+                    :refer [defne tabled run* fresh run all conde in == !=
+                            defnc]]))
 
 (deftest unify-nil-object-1
   (is (= (l/unify empty-s nil 1) nil)))

@@ -4,7 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as string]
             [cljs.core :as core])
-  (:require-macros [cljs.core.logic.macros :as l]))
+  (:require-macros [cljs.core.logic.macros :as l :refer [defne extend-to-fd]]))
 
 (defprotocol IInterval
   (-lb [this])
@@ -23,9 +23,6 @@
   (-disjoint? [this that])
   (-intersection [this that])
   (-difference [this that]))
-
-(defprotocol IMemberCount
-  (-member-count [_]))
 
 (declare domain sorted-set->domain
          difference* intersection* disjoint?*
@@ -61,7 +58,7 @@
   IEquiv
   (-equiv [this that]
     (if (finite-domain? that)
-      (if (= (proto/-member-count this) (proto/-member-count that))
+      (if (= (l/-member-count this) (l/-member-count that))
         (= s (:s that))
         false)
       false))
@@ -76,7 +73,7 @@
       :max max
       not-found))
 
-  proto/IMemberCount
+  l/IMemberCount
   (-member-count [this] (count s))
 
   IInterval
@@ -134,7 +131,7 @@
   IIntervals
   (-intervals [_] (seq s))
 
-  proto/IMergeDomains
+  l/IMergeDomains
   (-merge-doms [this that]
     (-intersection this that))
 
@@ -185,7 +182,7 @@
   (toString [this]
     (pr-str this))
 
-  proto/IMemberCount
+  l/IMemberCount
   (-member-count [this] (inc (core/- ub lb)))
 
   IInterval
@@ -291,7 +288,7 @@
   (-intervals [this]
     (list this))
 
-  proto/IMergeDomains
+  l/IMergeDomains
   (-merge-doms [this that]
     (-intersection this that))
 
@@ -443,9 +440,9 @@
           false))
       false))
 
-  proto/IMemberCount
+  l/IMemberCount
   (-member-count [this]
-    (reduce core/+ 0 (map #(proto/-member-count %) is)))
+    (reduce core/+ 0 (map #(l/-member-count %) is)))
 
   IInterval
   (-lb [_] min)
@@ -498,7 +495,7 @@
   (-intervals [this]
     (seq is))
 
-  proto/IMergeDomains
+  l/IMergeDomains
   (-merge-doms [this that]
     (-intersection this that))
 
@@ -554,7 +551,7 @@
   (if (singleton-dom? dom)
     (let [xv (walk a x)]
       (if (lvar? xv)
-        (proto/ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
+        (l/ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
         a))
     (ext-dom-fd a x dom domp)))
 
@@ -593,7 +590,7 @@
     (if (empty? ls)
       (fn [a] nil)
       (fn [a]
-        (proto/mplus
+        (l/mplus
          ((f (first ls)) a)
          (fn []
            ((loop (rest ls)) a)))))))
@@ -609,7 +606,7 @@
                          (to-vals* (next is))))))))]
     (to-vals* (seq (-intervals dom)))))
 
-(extend-protocol proto/IForceAnswerTerm
+(extend-protocol l/IForceAnswerTerm
   FiniteDomain
   (-force-ans [v x]
     ((map-sum (fn [n] (l/ext-run-csg x n))) (to-vals v)))
@@ -624,11 +621,11 @@
 
 (defn -domc [x]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let [xv (walk s x)
-            xd (-> (proto/root-val s x) :doms :cljs.core.logic/fd)]
+            xd (-> (l/root-val s x) :doms :cljs.core.logic/fd)]
         (reify
           IFn
           (-invoke [_ s]
@@ -636,16 +633,16 @@
               (when (-member? xd xv)
                 (l/rem-dom s x :cljs.core.logic/fd))
               s))
-          proto/IEntailed
+          l/IEntailed
           (-entailed? [_]
             (nil? xd))
-          proto/IRunnable
+          l/IRunnable
           (-runnable? [_]
             (not (lvar? xv))))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/domc)
     (-rands [_] [x])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn domc [x]
@@ -653,8 +650,8 @@
 
 (defn ==c [u v]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let-dom s [u du v dv]
                (reify
@@ -664,18 +661,18 @@
                      ((l/composeg
                        (process-dom u i du)
                        (process-dom v i dv)) s)))
-                 proto/IEntailed
+                 l/IEntailed
                  (-entailed? [_]
                    (and (singleton-dom? du)
                         (singleton-dom? dv)
                         (= du dv)))
-                 proto/IRunnable
+                 l/IRunnable
                  (-runnable? [_]
                    (and du dv)))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/==)
     (-rands [_] [u v])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this]
       #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
@@ -687,8 +684,8 @@
 
 (defn !=c [u v]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let-dom s [u du v dv]
                (let [su? (singleton-dom? du)
@@ -703,16 +700,16 @@
                              ((process-dom v vdiff dv) s))
                        :else (when-let [udiff (-difference du dv)]
                                ((process-dom u udiff du) s))))
-                   proto/IEntailed
+                   l/IEntailed
                    (-entailed? [_]
                      (and du dv (-disjoint? du dv)))
-                   proto/IRunnable
+                   l/IRunnable
                    (-runnable? [_]
                      (and du dv (or su? sv?)))))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/!=)
     (-rands [_] [u v])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this]
       #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
@@ -724,8 +721,8 @@
 
 (defn <=c [u v]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let-dom s [u du v dv]
                (reify
@@ -736,16 +733,16 @@
                      ((composeg*
                        (process-dom u (-keep-before du (inc vmax)) du)
                        (process-dom v (-drop-before dv umin) dv)) s)))
-                 proto/IEntailed
+                 l/IEntailed
                  (-entailed? [_]
                    (and du dv (interval-<= du dv)))
-                 proto/IRunnable
+                 l/IRunnable
                  (-runnable? [_]
                    (and du dv)))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/<=)
     (-rands [_] [u v])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this]
       #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
@@ -777,8 +774,8 @@
 
 (defn +c [u v w]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let-dom s [u du v dv w dw]
                (reify
@@ -819,23 +816,23 @@
                                (process-dom u ui du)
                                (process-dom v vi dv))
                               s)))))))
-                 proto/IEntailed
+                 l/IEntailed
                  (-entailed? [_]
                    (and (singleton-dom? du)
                         (singleton-dom? dv)
                         (singleton-dom? dw)
                         (= (core/+ du dv) dw)))
-                 proto/IRunnable
+                 l/IRunnable
                  (-runnable? [_]
                    (cond
                      du (or dv dw)
                      dv (or du dw)
                      dw (or du dv)
                      :else false)))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/+)
     (-rands [_] [u v w])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this]
       #{:cljs.core.logic/subst :cljs.core.logic/fd})))
 
@@ -860,8 +857,8 @@
                            q)
                   :upper q))))]
     (reify
-      proto/IEnforceableConstraint
-      proto/IConstraintStep
+      l/IEnforceableConstraint
+      l/IConstraintStep
       (-step [this s]
         (let-dom s [u du v dv w dw]
                  (reify
@@ -903,23 +900,23 @@
                                  (process-dom w wi dw)
                                  (process-dom u ui du)
                                  (process-dom v vi dv)) s)))))))
-                   proto/IEntailed
+                   l/IEntailed
                    (-entailed? [_]
                      (and (singleton-dom? du)
                           (singleton-dom? dv)
                           (singleton-dom? dw)
                           (= (core/* du dv) dw)))
-                   proto/IRunnable
+                   l/IRunnable
                    (-runnable? [_]
                      (cond
                        du (or dv dw)
                        dv (or du dw)
                        dw (or du dv)
                        :else false)))))
-      proto/IConstraintOp
+      l/IConstraintOp
       (-rator [_] `cljs.core.logic.fd/*)
       (-rands [_] [u v w])
-      proto/IConstraintWatchedStores
+      l/IConstraintWatchedStores
       (-watched-stores [this]
         #{:cljs.core.logic/subst :cljs.core.logic/fd}))))
 
@@ -943,8 +940,8 @@
    the value of x from the remaining non-singleton domains bound to vars."
   [x y* n*]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let [x (walk s x)]
         (reify
@@ -965,13 +962,13 @@
                     (when s
                       (recur (next y*) s)))
                   ((l/remcg this) s)))))
-          proto/IRunnable
+          l/IRunnable
           (-runnable? [_]
             (singleton-dom? x)))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/-distinct)
     (-rands [_] [x])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn -distinct [x y* n*]
@@ -996,8 +993,8 @@
    values. We then construct the individual constraint for each var."
   [v*]
   (reify
-    proto/IEnforceableConstraint
-    proto/IConstraintStep
+    l/IEnforceableConstraint
+    l/IConstraintStep
     (-step [this s]
       (let [v* (walk s v*)]
         (reify
@@ -1014,13 +1011,13 @@
                         (when-let [s ((-distinct x (disj x* x) n*) s)]
                           (recur (next xs) s)))
                       ((l/remcg this) s)))))))
-          proto/IRunnable
+          l/IRunnable
           (-runnable? [_]
             (not (l/lvar? v*))))))
-    proto/IConstraintOp
+    l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/distinct)
     (-rands [_] [v*])
-    proto/IConstraintWatchedStores
+    l/IConstraintWatchedStores
     (-watched-stores [this] #{:cljs.core.logic/subst})))
 
 (defn distinct

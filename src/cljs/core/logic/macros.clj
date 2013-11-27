@@ -643,7 +643,7 @@
 
 (defmacro extend-to-fd [t]
   `(extend-type ~t
-     cljs.core.logic.fd/IMemberCount
+     cljs.core.logic/IMemberCount
      (~'-member-count [this#] 1)
 
      cljs.core.logic.fd/IInterval

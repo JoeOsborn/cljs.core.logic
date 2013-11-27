@@ -62,6 +62,9 @@
 (defprotocol ITake
   (-take* [a]))
 
+(defprotocol IMemberCount
+  (-member-count [_]))
+
 ;; Utilities
 
 (declare lvar?)
