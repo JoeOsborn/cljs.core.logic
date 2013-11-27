@@ -183,12 +183,12 @@
 (defmacro lazy-run
   [n bindings & goals]
   `(solve {:occurs-check true :n ~n :db cljs.core.logic/*logic-dbs*}
-          ~bindings @goals))
+          ~bindings ~@goals))
 
 (defmacro lazy-run*
-  [n bindings & goals]
+  [bindings & goals]
   `(solve {:occurs-check true :n false :db cljs.core.logic/*logic-dbs*}
-          ~bindings @goals))
+          ~bindings ~@goals))
 
 (defmacro all
   "Like fresh but does does not create logic variables."
@@ -230,7 +230,7 @@
 
 (defn project-binding [s]
   (fn [var]
-    `(~var (cljs.core.logic/walk* ~s ~var))))
+    `(~var (cljs.core.logic/-walk* ~s ~var))))
 
 (defn project-bindings [vars s]
   (reduce concat (map (project-binding s) vars)))
@@ -805,7 +805,7 @@
                       dbs#
                       ~kname
                       index#
-                      (cljs.core.logic/walk* subs# (nth query# index#)))
+                      (cljs.core.logic/-walk* subs# (nth query# index#)))
                      (cljs.core.logic.pldb/facts-for dbs# ~kname))]
                (cljs.core.logic/to-stream (map (fn [potential#]
                                    ((== query# potential#)

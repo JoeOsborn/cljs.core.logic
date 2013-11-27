@@ -607,7 +607,7 @@
                    (and (or (= mef youf)
                             (lvar? mef)
                             (lvar? youf))
-                        (recur (lnext me) (lnext you))))
+                        (recur (-lnext me) (-lnext you))))
                  :else (= me you))))))
 
   IHash
@@ -1880,6 +1880,7 @@
    (fn [a]
      (let [v (-walk* a x)
            r (-reify* (with-meta empty-s (meta a)) v)]
+       (println v r a x)
        (if (zero? (count r))
          (choice v empty-f)
          (let [v (-walk* r v)]
@@ -2273,6 +2274,16 @@
 (defprotocol IConstrainTree
   (-constrain-tree [t fc s]))
 
+(defn constrain-tree-map
+  [t fc s]
+  (loop [t (seq t) s s]
+    (if t
+      (let [[_ v] (first t)
+            s (fc v s)]
+        (when s
+          (recur (next t) s)))
+      s)))
+
 (extend-protocol IConstrainTree
   LCons
   (-constrain-tree [t fc s]
@@ -2284,32 +2295,23 @@
 
   PersistentArrayMap
   (-constrain-tree [t fc s]
-    (loop [t (seq t) s s]
-      (if t
-        (let [[_ v] (first t)
-              s (fc v s)]
-          (when s
-            (recur (next t) s)))
-        s)))
+    (constrain-tree-map t fc s))
 
   PersistentHashMap
   (-constrain-tree [t fc s]
-    (loop [t (seq t) s s]
-      (if t
-        (let [[_ v] (first t)
-              s (fc v s)]
-          (when s
-            (recur (next t) s)))
-        s)))
+    (constrain-tree-map t fc s))
 
   default
   (-constrain-tree [t fc s]
-    (when (sequential? t)
+    (cond
+      (sequential? t)
       (loop [^not-native t (seq t) ^not-native s s]
         (if t
           (when-let [s (fc (first t) s)]
             (recur (next t) s))
-          s)))))
+          s))
+      (record? t) (constrain-tree-map t fc s)
+      :else nil)))
 
 (defn constrain-tree [t fc]
   (fn [a]
@@ -2362,7 +2364,7 @@
         (fn [t _ _]
           (cond
             (sequential? t) s#
-            (lcons? t) (seqc (lnext t))
+            (lcons? t) (seqc (-lnext t))
             :else u#))
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))

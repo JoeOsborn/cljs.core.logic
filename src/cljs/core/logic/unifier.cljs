@@ -3,7 +3,8 @@
   (:require [cljs.core.logic.protocols :as proto
              :refer [queue walk-term take* -unwrap walk]]
             [cljs.core.logic :as l :refer [lcons reifyg fix-constraints
-                                           empty-s -reify ==]])
+                                           empty-s -reify ==]]
+            [clojure.walk :refer [postwalk]])
   (:require-macros [cljs.core.logic.macros
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
@@ -46,18 +47,16 @@
                   (first expr)
                   expr)]
        (cond
-        (lvarq-sym? expr)
-        (proc-lvar expr store)
+        (lvarq-sym? expr) (proc-lvar expr store)
 
-        (seq? expr)
-        (if (or lcons? (lcons-expr? expr))
-          (let [[f & n] expr
-                skip (= f '.)
-                tail (prep* n store lcons? skip)]
-            (if skip
-              tail
-              (lcons (prep* f store) tail)))
-          (walk-term expr (replace-lvar store)))
+        (seq? expr) (if (or lcons? (lcons-expr? expr))
+                      (let [[f & n] expr
+                            skip (= f '.)
+                            tail (prep* n store lcons? skip)]
+                        (if skip
+                          tail
+                          (lcons (prep* f store) tail)))
+                      (-walk-term expr (replace-lvar store)))
 
         :else expr))))
 
@@ -67,12 +66,9 @@
   [expr]
   (let [lvars (atom {})
         prepped (cond
-                 (lvarq-sym? expr) (proc-lvar expr lvars)
-
-                 (lcons-expr? expr)
-                 (prep* expr lvars true)
-
-                 :else (walk-term expr (replace-lvar lvars)))]
+                  (lvarq-sym? expr) (proc-lvar expr lvars)
+                  (lcons-expr? expr) (prep* expr lvars true)
+                  :else (-walk-term (replace-lvar lvars) expr))]
     (if (satisfies? cljs.core/IMeta prepped)
       (with-meta prepped {::lvars (keys @lvars)})
       prepped)))
