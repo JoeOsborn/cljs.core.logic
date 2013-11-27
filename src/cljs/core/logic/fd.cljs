@@ -532,7 +532,7 @@
 
 (defn get-dom
   [a x]
-  (if (lvar? x)
+  (if (l/lvar? x)
     (l/get-dom a x :cljs.core.logic/fd)
     x))
 
@@ -550,7 +550,7 @@
   [a x dom domp]
   (if (singleton-dom? dom)
     (let [xv (walk a x)]
-      (if (lvar? xv)
+      (if (l/lvar? xv)
         (l/ext-run-cs (l/rem-dom a x :cljs.core.logic/fd) x dom)
         a))
     (ext-dom-fd a x dom domp)))
@@ -564,7 +564,7 @@
   (fn [a]
     (when dom
       (cond
-        (lvar? x) (resolve-storable-dom a x dom domp)
+        (l/lvar? x) (resolve-storable-dom a x dom domp)
         (-member? dom x) a
         :else nil))))
 
@@ -638,7 +638,7 @@
             (nil? xd))
           l/IRunnable
           (-runnable? [_]
-            (not (lvar? xv))))))
+            (not (l/lvar? xv))))))
     l/IConstraintOp
     (-rator [_] `cljs.core.logic.fd/domc)
     (-rands [_] [x])
@@ -952,7 +952,7 @@
                 (if y*
                   (let [y (first y*)
                         v (or (get-dom s y) (walk s y))
-                        s (if-not (lvar? v)
+                        s (if-not (l/lvar? v)
                             (cond
                               (= x v) nil
                               (-member? v x)
@@ -1000,7 +1000,7 @@
         (reify
           IFn
           (-invoke [_ s]
-            (let [{x* true n* false} (group-by lvar? v*)
+            (let [{x* true n* false} (group-by l/lvar? v*)
                   n* (sort core/< n*)]
               (when (list-sorted? core/< n*)
                 (let [x* (into #{} x*)
