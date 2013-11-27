@@ -42,25 +42,61 @@
        (composeg* ~@gs))))
 
 (defmacro bind*
-  ([a g] `(cljs.core.logic.protocols/bind
-           ~(vary-meta a {:tag 'not-native}) ~g))
+  ([a g] `(cljs.core.logic/-bind ~(vary-meta a {:tag 'not-native}) ~g))
   ([a g & g-rest]
-     `(bind* (cljs.core.logic.protocols/bind
-              ~(vary-meta a {:tag 'not-native}) ~g) ~@g-rest)))
+     `(bind* (cljs.core.logic/-bind ~(vary-meta a {:tag 'not-native}) ~g)
+             ~@g-rest)))
 
 (defmacro mplus*
   ([e] e)
   ([e & e-rest]
-     `(cljs.core.logic.protocols/mplus ~e (fn [] (mplus* ~@e-rest)))))
+     `(cljs.core.logic/mplus ~e (-inc (mplus* ~@e-rest)))))
 
 (defmacro -inc [& rest]
-  `(fn ~(quote -inc) [] ~@rest))
+  `(cljs.core.logic/Inc. (fn [] ~@rest)))
 
-(defn- bind-conde-clause [a]
+(defmacro ==
+  "A goal that attempts to unify terms u and v."
+  [u v]
+  `(fn [a#]
+     (let [has-cs?# (pos? (count (.-cs a#)))]
+       (if-let [ap# (cljs.core.logic/-unify
+                     (if has-cs?#
+                       (cljs.core.logic/Substitutions.
+                        (.-s a#) [] (.-ts a#) (.-cs a#) (.-cq a#) (.-cqs a#)
+                        (.-oc a#) (.-_meta a#))
+                       a#) ~u ~v)]
+         (let [vs# (if has-cs?# (.-vs ap#))
+               changed?# (pos? (count vs#))]
+           (if changed?#
+             ((cljs.core.logic/run-constraints* vs# (.-cs ap#)
+                                                :cljs.core.logic/subst)
+              (cljs.core.logic/Substitutions.
+               (.-s ap#) nil (.-ts ap#) (.-cs ap#) (.-cq ap#) (.-cqs ap#)
+               (.-oc ap#) (.-_meta ap#)))
+             ap#))
+         (cljs.core.logic/fail a#)))))
+
+(defmacro !=
+  "Disequality constraint. Ensures that u and v will never
+   unify. u and v can be complex terms."
+  [u v]
+  `(fn [a#]
+     (let [cs# (cljs.core.logic/disunify a# ~u ~v)]
+       (if-not (nil? cs#)
+         (let [p# (:prefixc cs#)]
+           (when-not (empty? p#)
+             (if (some (fn [[u# v#]]
+                         (nil? (cljs.core.logic/unify a# u# v#))) p#)
+               a#
+               ((cljs.core.logic/cgoal (cljs.core.logic/!=c p#)) a#))))
+         a#))))
+
+(defn bind-conde-clause [a]
   (fn [g-rest]
     `(bind* ~a ~@g-rest)))
 
-(defn- bind-conde-clauses [a clauses]
+(defn bind-conde-clauses [a clauses]
   (map (bind-conde-clause a) clauses))
 
 (defmacro conde
@@ -70,14 +106,12 @@
   [& clauses]
   (let [a (gensym "a")]
     `(fn [~a]
-       (-inc
-        (mplus* ~@(bind-conde-clauses a clauses))))))
+       (-inc (mplus* ~@(bind-conde-clauses a clauses))))))
 
-(defn- lvar-bind [sym]
-  ((juxt identity
-         (fn [s] `(cljs.core.logic/lvar '~s))) sym))
+(defn lvar-bind [sym]
+  ((juxt identity (fn [s] `(cljs.core.logic/lvar '~s))) sym))
 
-(defn- lvar-binds [syms]
+(defn lvar-binds [syms]
   (mapcat lvar-bind syms))
 
 (defmacro fresh
@@ -85,26 +119,27 @@
   conjunction."
   [[& lvars] & goals]
   `(fn [a#]
-     (-inc
-      (let [~@(lvar-binds lvars)]
-        (bind* a# ~@goals)))))
+     (-inc (let [~@(lvar-binds lvars)]
+             (bind* a# ~@goals)))))
 
-(defmacro -run [opts [x :as bindings] & goals]
+(defmacro solve [opts [x :as bindings] & goals]
   (if (clojure.core/> (count bindings) 1)
     (let [[rbindings as-key [as]] (partition-by #{:as} bindings)]
       (if (seq as-key)
-        `(-run ~opts [~as]
-               (fresh [~@rbindings] (cljs.core.logic/== ~as [~@rbindings]) ~@goals))
-        `(-run ~opts [q#] (fresh ~bindings (cljs.core.logic/== q# ~bindings) ~@goals))))
+        `(solve ~opts [~as]
+                (fresh [~@rbindings]
+                  (== ~as [~@rbindings]) ~@goals))
+        `(solve ~opts [q#]
+                (fresh ~bindings
+                  (== q# ~bindings) ~@goals))))
     `(let [opts# ~opts
-           xs# (cljs.core.logic.protocols/take*
-                (fn []
-                  ((fresh [~x]
-                     ~@goals
-                     (cljs.core.logic/reifyg ~x))
-                   (cljs.core.logic/tabled-s
-                    (:occurs-check opts#)
-                    (merge {:reify-vars true} opts#)))))]
+           xs# (cljs.core.logic/-take*
+                (-inc ((fresh [~x]
+                         ~@goals
+                         (cljs.core.logic/reifyg ~x))
+                       (cljs.core.logic/tabled-s
+                        (:occurs-check opts#)
+                        (merge {:reify-vars true} opts#)))))]
        (if-let [n# (:n opts#)]
          (take n# xs#)
          xs#))))
@@ -112,36 +147,48 @@
 (defmacro run
   "Executes goals until a maximum of n results are found."
   [n bindings & goals]
-  `(-run {:occurs-check true :n ~n :db cljs.core.logic/*logic-dbs*}
-         ~bindings ~@goals))
+  `(doall (solve {:occurs-check true :n ~n :db cljs.core.logic/*logic-dbs*}
+                 ~bindings ~@goals)))
 
 (defmacro run*
   "Executes goals until results are exhausted."
   [bindings & goals]
-  `(-run {:occurs-check true :n false :db cljs.core.logic/*logic-dbs*}
-         ~bindings ~@goals))
+  `(run false ~bindings ~@goals))
 
 (defmacro run-db
-  "Executes goals until a maximum of n results are found. Uses a specified logic database."
+  "Executes goals until a maximum of n results are found. Uses a specified 
+  logic database."
   [n db bindings & goals]
-  `(-run {:occurs-check true :n ~n :db (flatten [~db])} ~bindings ~@goals))
+  `(doall (solve {:occurs-check true :n ~n :db (flatten [~db])}
+                 ~bindings ~@goals)))
 
 (defmacro run-db*
-  "Executes goals until results are exhausted. Uses a specified logic database."
+  "Executes goals until results are exhausted. Uses a specified logic 
+  database."
   [db bindings & goals]
-  `(-run {:occurs-check true :n false :db (flatten [~db])} ~bindings ~@goals))
+  `(run-db false ~db ~bindings ~@goals))
 
 (defmacro run-nc
   "Executes goals until a maximum of n results are found. Does not
    occurs-check."
   [n bindings & goals]
-  `(-run {:occurs-check false :n ~n :db cljs.core.logic/*logic-dbs*}
-         ~bindings ~@goals))
+  `(doall (solve {:occurs-check false :n ~n :db cljs.core.logic/*logic-dbs*}
+                 ~bindings ~@goals)))
 
 (defmacro run-nc*
   "Executes goals until results are exhausted. Does not occurs-check."
-  [& goals]
-  `(run-nc false ~@goals))
+  [bindings & goals]
+  `(run-nc false bindings ~@goals))
+
+(defmacro lazy-run
+  [n bindings & goals]
+  `(solve {:occurs-check true :n ~n :db cljs.core.logic/*logic-dbs*}
+          ~bindings @goals))
+
+(defmacro lazy-run*
+  [n bindings & goals]
+  `(solve {:occurs-check true :n false :db cljs.core.logic/*logic-dbs*}
+          ~bindings @goals))
 
 (defmacro all
   "Like fresh but does does not create logic variables."
@@ -938,39 +985,3 @@
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
 
-(defmacro ==
-  "A goal that attempts to unify terms u and v."
-  [u v]
-  `(fn [a#]
-     (let [has-cs?# (pos? (count (.-cs a#)))]
-       (if-let [ap# (cljs.core.logic/-unify
-                     (if has-cs?#
-                       (cljs.core.logic/Substitutions.
-                        (.-s a#) [] (.-ts a#) (.-cs a#) (.-cq a#) (.-cqs a#)
-                        (.-oc a#) (.-_meta a#))
-                       a#) ~u ~v)]
-         (let [vs# (if has-cs?# (.-vs ap#))
-               changed?# (pos? (count vs#))]
-           (if changed?#
-             ((cljs.core.logic/run-constraints* vs# (.-cs ap#)
-                                                :cljs.core.logic/subst)
-              (cljs.core.logic/Substitutions.
-               (.-s ap#) nil (.-ts ap#) (.-cs ap#) (.-cq ap#) (.-cqs ap#)
-               (.-oc ap#) (.-_meta ap#)))
-             ap#))
-         (cljs.core.logic/fail a#)))))
-
-(defmacro !=
-  "Disequality constraint. Ensures that u and v will never
-   unify. u and v can be complex terms."
-  [u v]
-  `(fn [a#]
-     (let [cs# (cljs.core.logic/disunify a# ~u ~v)]
-       (if-not (nil? cs#)
-         (let [p# (:prefixc cs#)]
-           (when-not (empty? p#)
-             (if (some (fn [[u# v#]]
-                         (nil? (cljs.core.logic/unify a# u# v#))) p#)
-               a#
-               ((cljs.core.logic/cgoal (cljs.core.logic/!=c p#)) a#))))
-         a#))))
