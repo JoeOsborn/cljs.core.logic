@@ -37,6 +37,9 @@
 (defprotocol IUnifyWithMap
   (-unify-with-map [v u s]))
 
+(defprotocol IUnifyWithRecord
+  (-unify-with-record [v u s]))
+
 (defprotocol IReifyTerm
   (-reify-term [v s]))
 
@@ -628,7 +631,7 @@
   (-unify-terms [u v s]
     (cond
       (sequential? u) (-unify-with-seq v u s)
-      (implements? IUnifyWithRecord v) (unify-with-record v u s)
+      (implements? IUnifyWithRecord v) (-unify-with-record v u s)
       :else (if (= u v)
               s
               nil)))
@@ -1056,7 +1059,7 @@
    succeeds on every element of the collection."
   [g coll]
   (fn [a]
-    (let [coll (walk a coll)]
+    (let [coll (-walk a coll)]
       (((fn everyg* [g coll]
           (if (seq coll)
             (all
@@ -1091,7 +1094,8 @@
   such that z is x appended to y"
   [x y z]
   ([() _ y])
-  ([[a . d] _ [a . r]] (appendo d y r)))
+  ([[a . d] _ [a . r]]
+     (appendo d y r)))
 
 (declare rembero)
 
@@ -1105,6 +1109,65 @@
        (permuteo xs ys)
        (rembero x yl ys))))
 
+;; ===========================================================================
+;; Partial Maps
+
+(declare featurec partial-map)
+
+(defprotocol INonStorable)
+
+(defprotocol IUnifyWithPMap
+  (-unify-with-pmap [pmap u s]))
+
+(defrecord PMap []
+  INonStorable
+
+  IUnifyTerms
+  (-unify-terms [u v s]
+    (if (map? v)
+      (-unify-with-pmap u v s)
+      nil))
+
+  IUnifyWithMap
+  (-unify-with-map [v u s]
+    (loop [ks (keys v) s s]
+      (if (seq ks)
+        (let [kf (first ks)
+              uf (get u kf not-found)]
+          (if (identical? vf not-found)
+            (fail s)
+            (let [vf (get u kf)]
+              (if (lvar? uf)
+                (recur (next ks) ((featurec uf vf) s))
+                (if (map? vf)
+                  (let [s (-unify s (partial-map vf) uf)]
+                    (if-not (failed? s)
+                      (recur (next ks) s)
+                      s))
+                  (let [s (-unify s vf uf)]
+                    (if-not (failed? s)
+                      (recur (next ks) s)
+                      s)))))))
+        s)))
+
+  IUnifyWithRecord
+  (-unify-with-record [u v s]
+    (if (map? v)
+      (-unify-with-map u v s)
+      (fail s)))
+
+  IUninitialized
+  (-uninitialized [_] (PMap.)))
+
+(defn partial-map
+  "Given map m, returns partial map that unifies with maps even if it
+   doesn't share all of the keys of that map."
+  [m]
+  (map->PMap m))
+
+(defn ^boolean partial-map? [x]
+  (instance? PMap x))
+
 (defn composeg
   ([] identity)
   ([g0 g1]
@@ -1112,39 +1175,66 @@
        (let [a (g0 a)]
          (and a (g1 a))))))
 
-;; ---------------------------------------------------------------------------
-;; MZero
+(defprotocol IFeature
+  (-feature [x]))
 
-(extend-type nil
-  IBind
-  (-bind [_ g] nil)
-  IMPlus
-  (-mplus [_ f] (f))
-  ITake
-  (-take* [_] '()))
+(extend-protocol IFeature
+  PersistentHashMap
+  (-feature [x] (partial-map x))
 
-;; ---------------------------------------------------------------------------
-;; Unit and Inc
+  PersistentArrayMap
+  (-feature [x] (partial-map x)))
 
-(extend-protocol IBind
-  default
-  (bind [this g]
-    (cond (fn? this) (-inc (-bind (this) g))
-      :else (throw (ex-info "No protocol method" {})))))
+(defprotocol IConstraintStep
+  (-step [this s]))
 
-(extend-protocol -IMPlus
-  default
-  (mplus [this f]
-    (cond (fn? this) (-inc (-mplus (f) this))
-          :else (Choice. this f))))
+(defprotocol IRunnable
+  (-runnable? [_]))
 
-(extend-protocol -ITake
-  default
-  (take* [this]
-    (cond (fn? this)
-          (lazy-seq (-take* (this)))
-          :else this)))
+(defprotocol IConstraintOp
+  (-rator [_])
+  (-rands [_]))
 
+(defprotocol IReifiableConstraint
+  (-reifyc [_ v r a]))
+
+(defprotocol IConstraintWatchedStores
+  (-watched-stores [_]))
+
+(defn -featurec
+  [x fs]
+  (reify
+    IConstraintStep
+    (-step [this s]
+      (reify
+        IFn
+        (-invoke [_ s]
+          ((composeg
+            (== fs x)
+            (remcg this)) s))
+        IRunnable
+        (-runnable? [_]
+          (not (lvar? (-walk s x))))))
+    IConstraintOp
+    (-rator [_] `cljs.core.logic/featurec)
+    (-rands [_] [x])
+    IReifiableConstraint
+    (-reifyc [_ v r a]
+      (let [fs (into {} fs)
+            r  (-reify* r (-walk* a fs))]
+        `(featurec ~(-walk* r x) ~(-walk* r fs))))
+    IConstraintWatchedStores
+    (-watched-stores [this] #{::subst})))
+
+(defn featurec
+  "Ensure that a map contains at least the key-value pairs
+  in the map fs. fs must be partially instantiated - that is,
+  it may contain values which are logic variables to support
+  feature extraction."
+  [x fs]
+  (cgoal (-featurec x (partial-map fs))))
+
+;; ===========================================================================
 ;; Constraint Store
 
 (declare lvar? bindable? add-var)
@@ -1823,8 +1913,6 @@
     -IUnwrapConstraint
     (-unwrap [_] c)))
 
-;; TODO: this stuff needs to be moved into fd - David
-
 (defn get-dom-fd
   [a x]
   (if (lvar? x)
@@ -1841,8 +1929,7 @@
     ::ff (seq (sort (sort-by-member-count a) v))
     v))
 
-;; TODO: handle all Clojure tree types
-(extend-protocol -IForceAnswerTerm
+(extend-protocol IForceAnswerTerm
   nil
   (-force-ans [v x] s#)
 
@@ -1996,26 +2083,26 @@
                   (remcg this)
                   (cgoal (!=c p))) s))
               ((remcg this) s))))
-        -IRunnable
+        IRunnable
         (-runnable? [_]
           (some #(not= (walk s %) %) (recover-vars p)))
-        -IEntailed
+        IEntailed
         (-entailed? [_]
           (empty? p))))
-    -IPrefix
+    IPrefix
     (-prefix [_] p)
-    -IWithPrefix
+    IWithPrefix
     (-with-prefix [_ p] (!=c p))
-    -IReifiableConstraint
+    IReifiableConstraint
     (-reifyc [this v r a]
       (let [p* (-reify a (map (fn [[lhs rhs]] `(~lhs ~rhs)) p) r)]
         (if (empty? p*)
           '()
           `(~'!= ~@p*))))
-    -IConstraintOp
+    IConstraintOp
     (-rator [_] `cljs.core.logic/!=)
     (-rands [_] (seq (recover-vars p)))
-    -IConstraintWatchedStores
+    IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
 
 (defn !=
@@ -2051,96 +2138,6 @@
   ([_ [y . ys] [y . zs]]
      (!= y x)
      (rembero x ys zs)))
-;; ===========================================================================
-;; Partial Maps
-
-(declare featurec partial-map)
-
-(defn unify-with-pmap* [u v s]
-  (loop [ks (keys u) s s]
-    (if (seq ks)
-      (let [kf (first ks)
-            vf (get v kf ::not-found)]
-        (if (= vf ::not-found)
-          nil
-          (let [uf (get u kf)]
-            (if (lvar? vf)
-              (recur (next ks) ((featurec vf uf) s))
-              (if (map? uf)
-                (if-let [s (unify s (partial-map uf) vf)]
-                  (recur (next ks) s))
-                (if-let [s (unify s uf vf)]
-                  (recur (next ks) s)
-                  nil))))))
-      s)))
-
-(declare partial-map?)
-
-(defrecord PMap []
-  -INonStorable
-
-  -IUnifyTerms
-  (unify-terms [u v s]
-    (if (map? v)
-      (unify-with-pmap* u v s)
-      nil))
-
-  -IUnifyWithRecord
-  (unify-with-record [u v s]
-    (if (map? v)
-      (unify-with-pmap* u v s)
-      nil))
-
-  -IUninitialized
-  (-uninitialized [_] (PMap.)))
-
-(defn partial-map
-  "Given map m, returns partial map that unifies with maps even if it
-   doesn't share all of the keys of that map."
-  [m]
-  (map->PMap m))
-
-(defn ^boolean partial-map? [x]
-  (instance? PMap x))
-
-(extend-protocol -IFeature
-  default
-  (-feature [x]
-    (cond (map? x) (partial-map x)
-          :else nil)))
-
-(defn -featurec
-  [x fs]
-  (reify
-    -IConstraintStep
-    (-step [this s]
-      (reify
-        IFn
-        (-invoke [_ s]
-          ((composeg
-            (== fs x)
-            (remcg this)) s))
-        -IRunnable
-        (-runnable? [_]
-          (not (lvar? (walk s x))))))
-    -IConstraintOp
-    (-rator [_] `cljs.core.logic/featurec)
-    (-rands [_] [x])
-    -IReifiableConstraint
-    (-reifyc [_ v r a]
-      (let [fs (into {} fs)
-            r  (-reify* r (walk* a fs))]
-        `(featurec ~(walk* r x) ~(walk* r fs))))
-    -IConstraintWatchedStores
-    (-watched-stores [this] #{::subst})))
-
-(defn featurec
-  "Ensure that a map contains at least the key-value pairs
-  in the map fs. fs must be partially instantiated - that is,
-  it may contain values which are logic variables to support
-  feature extraction."
-  [x fs]
-  (cgoal (-featurec x (partial-map fs))))
 
 ;; ===========================================================================
 ;; defnc
