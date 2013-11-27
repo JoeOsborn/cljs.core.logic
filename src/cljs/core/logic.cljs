@@ -63,6 +63,8 @@
 
 ;; Utilities
 
+(def not-found (js-obj))
+
 (defn assoc-meta [x k v]
   (with-meta x (assoc (meta x) k v)))
 
@@ -375,7 +377,7 @@
     (cond
       (lvar? v) (-unify-with-lvar v u s)          
       (non-storable? v) (throw (js/Error. (str v " is non-storable")))
-      (not (keyword-identical? v ::not-found))
+      (not (identical? v not-found))
       (if (tree-term? v)
         (-ext -s u v)
         (if (-> u clojure.core/meta ::unbound)
@@ -398,7 +400,9 @@
                         :else nil)]
       (if repoint
         (let [[root other] repoint
-              s (assoc s :cs (-migrate (.-cs s) other root))
+              s (Substitutions. (.-s s) (.-vs s) (.-ts s)
+                                (-migrate (.-cs s) other root) (.-cq s)
+                                (.-cqs s) (.-oc s) (._meta s))
               s (if (-> other clojure.core/meta ::unbound)
                   (merge-with-root s other root)
                   s)]
@@ -461,6 +465,9 @@
                   (str name "__" id)
                   (str name))]
        (LVar. id unique name oname (hash name) nil))))
+
+(defn ^boolean lvar? [x]
+  (instance? LVar x))
 
 (defn lvars [n]
   (repeatedly n lvar))
@@ -727,8 +734,6 @@
 
 ;; ---------------------------------------------------------------------------
 ;; Unify IPersistentMap with X
-
-(def not-found (js-obj))
 
 (defn unify-with-map* [v u s]
   (if-not (cljs.core/== (count u) (count v))
@@ -1257,6 +1262,22 @@
   (-constraints-for [cs a x ws])
   (-migrate [cs s root]))
 
+(defprotocol IWithConstraintId
+  (-with-id [c id]))
+
+(defprotocol IConstraintId
+  (-id [c]))
+
+(defn id [c]
+  (if (implements? IConstraintId c)
+    (-id c)
+    (-> c meta ::id)))
+
+(defn with-id [c id]
+  (if (implements? IWithConstraintId c)
+    (-with-id c id)
+    (vary-meta c assoc ::id id)))
+
 ;; ConstraintStore
 ;; -----
 ;; km  - mapping logic vars to constraints ids
@@ -1274,15 +1295,8 @@
       (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
   
   (-updatec [this a c]
-    (let [oc (cm (id c))
-          nkm (if (implements? -IEntailedVar c)
-                (reduce (fn [km x]
-                          (if (-entailed-var? c x)
-                            (dissoc km x)
-                            km))
-                        km (var-rands a oc))
-                km)]
-      (ConstraintStore. nkm (assoc cm (id c) c) cid running)))
+    (let [oc (cm (id c))]
+      (ConstraintStore. km (assoc cm (id c) c) cid running)))
 
   (-remc [this a c]
     (let [vs (var-rands a c)
@@ -1317,8 +1331,8 @@
 
 (defn add-var [cs x c]
   (when-not (lvar? x)
-    (throw (js/Error. (str "constraint store assoc expected logic var key: "
-                           x))))
+    (throw (js/Error.
+            (str "constraint store assoc expected logic var key: " x))))
   (let [cm (.-cm cs)
         km (.-km cs)
         cid (.-cid cs)
@@ -1329,7 +1343,7 @@
 (defn make-cs []
   (ConstraintStore. {} {} 0 #{}))
 
-(declare empty-s choice lvar lvar? pair lcons run-constraints*)
+(declare choice lvar lvar? lcons run-constraints*)
 
 (defn unify [s u v]
   (if (identical? u v)
@@ -1345,25 +1359,21 @@
 (defn build [s u]
   (-build-term u s))
 
-(def not-found (js-obj))
-
-(defn ^boolean lvar? [x]
-  (instance? LVar x))
-
 (defn add-attr [s x attr attrv]
   (let [x (-root-var s x)
         v (-root-val s x)]
     (if (subst-val? v)
       (-update-var s x (assoc-meta v attr attrv))
       (let [v (if (lvar? v) ::unbound v)]
-        (ext-no-check s x (with-meta (subst-val v) {attr attrv}))))))
+        (-ext-no-check s x (with-meta (subst-val v) {attr attrv}))))))
 
 (defn rem-attr [s x attr]
   (let [x (-root-var s x)
         v (-root-val s x)]
     (if (subst-val? v)
       (let [new-meta (dissoc (meta v) attr)]
-        (if (and (zero? (count new-meta)) (not= (.-v v) ::unbound))
+        (if (and (zero? (count new-meta))
+                 (not (keyword-identical? (.-v v) ::unbound)))
           (-update-var s x (.-v v))
           (-update-var s x (with-meta v new-meta))))
       s)))
@@ -1374,15 +1384,13 @@
       (-> v meta attr))))
 
 (defn sync-eset [s v seenset f]
-  (if (not= seenset ::no-prop)
-    (reduce
-     (fn [s y]
-       (let [y (-root-var s y)]
-         (if-not (contains? seenset y)
-           (f s y)
-           s)))
-     s
-     (.-eset v))
+  (if (not (keyword-identical? seenset ::no-prop))
+    (reduce (fn [s y]
+              (let [y (-root-var s y)]
+                (if-not (contains? seenset y)
+                  (f s y)
+                  s)))
+            s (.-eset v))
     s))
 
 (defn add-dom
@@ -1469,7 +1477,9 @@
   (let [xv    (-root-val s x)
         rootv (-root-val s root)
         eset  (set/union (.-eset rootv) (.-eset xv))
-        doms (loop [xd (seq (.-doms xv)) rd (.-doms rootv) r {}]
+        doms (loop [^not-native xd (seq (.-doms xv))
+                    ^not-native rd (.-doms rootv)
+                    ^not-native r {}]
                (if xd
                  (let [[xk xv] (first xd)]
                    (if-let [[_ rv] (find rd xk)]
@@ -1770,7 +1780,7 @@
     (assoc a :cs (-runc (.-cs a) c false))))
 
 (defn ^boolean ientailed? [c]
-  (implements? -IEntailed c))
+  (implements? IEntailed c))
 
 (defn ^boolean entailed? [c c' a]
   (let [id (id c)]
@@ -2239,7 +2249,10 @@
 
 (declare treec)
 
-(extend-protocol -IConstrainTree
+(defprotocol IConstrainTree
+  (-constrain-tree [t fc s]))
+
+(extend-protocol IConstrainTree
   LCons
   (-constrain-tree [t fc s]
     (loop [t t s s]
