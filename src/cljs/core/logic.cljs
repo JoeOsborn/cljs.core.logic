@@ -9,7 +9,7 @@
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc]]))
+                            matchu tabled let-dom fnc defnc ==]]))
 
 
 (def ^:dynamic *logic-dbs* [])
@@ -1393,25 +1393,28 @@
             s (.-eset v))
     s))
 
+(defprotocol IMergeDomains
+  (-merge-doms [a b]))
+
 (defn add-dom
-  ([s x dom domv]
+  ([^not-native s ^not-native x ^not-native dom ^not-native domv]
      (let [x (-root-var s x)]
        (add-dom s x dom domv nil)))
-  ([s x dom domv seenset]
+  ([^not-native s ^not-native x ^not-native dom ^not-native domv seenset]
      (let [v (-root-val s x)
            s (if (subst-val? v)
                (-update-var s x (assoc-dom v dom domv))
                (let [v (if (lvar? v) ::unbound v)]
-                 (ext-no-check s x (subst-val v {dom domv}))))]
+                 (-ext-no-check s x (subst-val v {dom domv}))))]
        (sync-eset s v seenset
                   (fn [s y]
                     (add-dom s y dom domv (conj (or seenset #{}) x)))))))
 
 (defn update-dom
-  ([s x dom f]
+  ([^not-native s ^not-native x ^not-native dom f]
      (let [x (-root-var s x)]
        (update-dom s x dom f nil)))
-  ([s x dom f seenset]
+  ([^not-native s ^not-native x ^not-native dom f seenset]
      (let [v (-root-val s x)
            v (if (lvar? v)
                (subst-val ::unbound)
@@ -1430,7 +1433,8 @@
      (let [v (-root-val s x)
            s (if (subst-val? v)
                (let [new-doms (dissoc (.-doms v) dom)]
-                 (if (and (zero? (count new-doms)) (not= (.-v v) ::unbound))
+                 (if (and (zero? (count new-doms))
+                          (not (keyword-identical? (.-v v) ::unbound)))
                    (-update-var s x (.-v v))
                    (-update-var s x (assoc v :doms new-doms))))
                s)]
@@ -1454,11 +1458,11 @@
 
 (defn merge-doms [s x doms]
   (let [xdoms (.-doms (-root-val s x))]
-    (loop [doms (seq doms) s s]
+    (loop [^not-native doms (seq doms) ^not-native s s]
       (if doms
         (let [[dom domv] (first doms)]
-          (let [xdomv (get xdoms dom ::not-found)
-                ndomv (if (keyword-identical? xdomv ::not-found)
+          (let [xdomv (get xdoms dom not-found)
+                ndomv (if (identical? xdomv not-found)
                         domv
                         (-merge-doms domv xdomv))]
             (when ndomv
@@ -1467,7 +1471,7 @@
         s))))
 
 (defn update-eset [s doms eset]
-  (loop [eset (seq eset) s s]
+  (loop [^not-native eset (seq eset) ^not-native s s]
     (if eset
       (when-let [s (merge-doms s (-root-var s (first eset)) doms)]
         (recur (next eset) s))
@@ -1494,7 +1498,7 @@
                         (merge (meta xv) (meta rootv))))]
     (when nv
       (-> s
-          (ext-no-check root nv)
+          (-ext-no-check root nv)
           (update-eset doms eset)))))
 
 ;; ==========================================================================
@@ -1511,24 +1515,14 @@
         xv (to-subst-val (-root-val s x))
         yv (to-subst-val (-root-val s y))]
     (-> s
-        (-update-var x (assoc xv :eset (conj (or (.-eset xv) #{}) y)))
-        (-update-var y (assoc yv :eset (conj (or (.-eset yv) #{}) x))))))
+        (-update-var x (SubstValue. (.-v xv) (.-doms xv)
+                                    (conj (or (.-eset xv) #{}) y)))
+        (-update-var y (SubstValue. (.-v yv) (.-doms yv)
+                                    (conj (or (.-eset yv) #{}) x))))))
 
 (defn ext-run-csg [u v]
   (fn [a]
     (-ext-run-cs a u v)))
-
-(defn ==
-  "A goal that attempts to unify terms u and v."
-  [u v]
-  (fn [a]
-    (let [has-cs? (pos? (count (.-cs a)))]
-      (let [ap (unify (if has-cs? (assoc a :vs []) a) u v)
-            vs (if has-cs? (:vs ap))
-            changed? (pos? (count vs))]
-        (if changed?
-          ((run-constraints* vs (.-cs ap) ::subst) (assoc ap :vs nil))
-          ap)))))
 
 (declare reifyg)
 
@@ -1547,7 +1541,6 @@
       (choice (first aseq)
               (fn [] (to-stream (next aseq)))))))
 
-
 ;; ===========================================================================
 ;; Tabling
 
@@ -1565,6 +1558,10 @@
 ;; anss - cached answer set, for quickly checking whether an answer term
 ;;        is already in the cache
 
+(defprotocol IAnswerCache
+  (-add [this x])
+  (-cached? [this x]))
+
 (deftype AnswerCache [ansl anss _meta]
   Object
   (toString [this]
@@ -1577,21 +1574,9 @@
   (-with-meta [_ new-meta]
     (AnswerCache. ansl anss new-meta))
 
-  ILookup
-  (-lookup [this k]
-    (-lookup this k nil))
-  (-lookup [this k not-found]
-    (case k
-      :ansl ansl
-      :anss anss
-      not-found))
-
-  -IAnswerCache
-  (-add [this x]
-    (AnswerCache. (conj ansl x) (conj anss x) _meta))
-  (-cached? [_ x]
-    (let [anss anss]
-      (contains? anss x)))
+  IAnswerCache
+  (-add [this x] (AnswerCache. (conj ansl x) (conj anss x) _meta))
+  (-cached? [_ x] (contains? anss x))
 
   IPrintWithWriter
   (-pr-writer [x writer opts]
@@ -1600,9 +1585,12 @@
 (defn answer-cache []
   (AnswerCache. '() #{} nil))
 
+(defprotocol ISuspendedStream
+  (-ready? [this]))
+
 (defrecord SuspendedStream [cache ansv* f]
-  -ISuspendedStream
-  (ready? [this]
+  ISuspendedStream
+  (-ready? [this]
     (not (identical? (.-ansl @cache) ansv*))))
 
 (defn make-suspended-stream [cache ansv* f]
@@ -1623,92 +1611,77 @@
    stream, otherwise call mplus on the result of the thunk and the remainder
    of the waiting stream. Pass this result to the success contination."
   [w success-cont failure-cont]
-  (loop [w w a []]
+  (loop [^not-native w w ^not-native a []]
     (cond
-     (nil? w) (failure-cont)
+      (nil? w) (failure-cont)
 
-     (ready? (first w))
-     (success-cont
-      (fn []
-        (let [ss (first w)
-              f  (.-f ss)
-              w  (into a (next w))]
-          (if (empty? w)
-            (f)
-            (-mplus (f) (fn [] w))))))
+      (-ready? (first w))
+      (-success-cont
+       (fn []
+         (let [ss (first w)
+               f  (.-f ss)
+               w  (into a (next w))]
+           (if (empty? w)
+             (f)
+             (-mplus (f) (fn [] w))))))
 
      :else (recur (next w) (conj a (first w))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Extend Substitutions to support tabling
 
-;; CONSIDER: subunify, reify-term-tabled, extending all the necessary types to
-;; them
+(defprotocol ITabled
+  (-reify-tabled [s v])
+  (-reuse [s argv cache start end])
+  (-subunify [s arg ans]))
 
 (extend-type Substitutions
-  -ITabled
-
-  ;; returns a substitution that maps fresh vars to
-  ;; new ones. similar to Prolog's copy_term/2. this is to avoid
-  ;; prematurely grounding vars.
+  ITabled
   (-reify-tabled [this v]
-    (let [v (walk this v)]
+    (let [v (-walk this v)]
       (cond
-       (lvar? v) (ext-no-check this v (lvar (count (.-s this))))
-       (coll? v) (-reify-tabled
-                  (-reify-tabled this (first v))
-                  (next v))
-       :else this)))
+        (lvar? v) (-ext-no-check this v (lvar (count (.-s this))))
+        (coll? v) (-reify-tabled
+                   (-reify-tabled this (first v))
+                   (next v))
+        :else this)))
 
-  ;; returns the term v with all fresh vars replaced with copies.
-  ;; this is to avoid prematurely grounding vars.
-  (reify-tabled [this v]
-    (let [v (walk* this v)]
-      (walk* (-reify-tabled empty-s v) v)))
-
-  ;; argv are the actual parameters passed to a goal. cache
-  ;; is the cache from the table for reified argv. on initial
-  ;; call start and end are nil - so internally they will be
-  ;; initialized to the contents of the cache & 0 respectively
-  (reuse [this argv cache start end]
+  (-reuse [this argv cache start end]
     (let [start (or start (.-ansl @cache))
           end   (or end 0)]
       (letfn [(reuse-loop [ansv*]
-                (if (= (count ansv*) end)
-                  ;; we've run out of answers terms to reuse in the cache
+                (if (cljs.core/== (count ansv*) end)
                   [(make-suspended-stream cache start
-                                          (fn [] (reuse this argv cache
-                                                        (.-ansl @cache)
-                                                        (count start))))]
-                  ;; we have answer terms to reuse in the cache
+                                          (fn [] (-reuse this argv cache
+                                                         (.-ansl @cache)
+                                                         (count start))))]
                   (let [ans (first ansv*)]
-                    ;; FIXME: sets are unordered! - David
-                    (Choice. (subunify this argv (reify-tabled this ans))
+                    (Choice. (-subunify this argv (-reify-tabled this ans))
                              (fn [] (reuse-loop (rest ansv*)))))))]
         (reuse-loop start))))
 
-  ;; unify an argument with an answer from a cache
-  (subunify [this arg ans]
-    (let [arg (walk this arg)]
+  (-subunify [this arg ans]
+    (let [arg (-walk this arg)]
       (cond
-       (= arg ans) this
-       (lvar? arg) (ext-no-check this arg ans)
-       (coll? arg) (subunify
-                    (subunify this (next arg) (next ans))
-                    (first arg) (first ans))
-       :else this))))
+        (= arg ans) this
+        (lvar? arg) (-ext-no-check this arg ans)
+        (coll? arg) (-subunify (-subunify this (next arg) (next ans))
+                               (first arg) (first ans))
+        :else this))))
+
+(defn reify-tabled [s v]
+  (let [v (-walk* s v)]
+    (-walk* (-reify-tabled empty-s v) v)))
 
 ;; ---------------------------------------------------------------------------
 ;; Waiting Stream
 
 (extend-type PersistentVector
-  -IBind
-  (bind [this g]
+  IBind
+  (-bind [this g]
     (waiting-stream-check
      this
-     ;; success continuation
      (fn [f] (-bind f g))
-     ;; failure continuation
      (fn []
        (into []
              (map (fn [ss]
@@ -1716,21 +1689,19 @@
                                            (fn [] (-bind ((.-f ss)) g))))
                   this)))))
 
-  -IMPlus
-  (mplus [this f]
+  IMPlus
+  (-mplus [this f]
     (waiting-stream-check this
-                          ;; success continuation
                           (fn [fp] (-mplus fp f))
-                          ;; failure continuation
                           (fn []
                             (let [a-inf (f)]
                               (if (waiting-stream? a-inf)
                                 (into a-inf this)
                                 (-mplus a-inf (fn [] this)))))))
 
-  -ITake
-  (take* [this]
-    (waiting-stream-check this (fn [f] (take* f)) (fn [] ()))))
+  ITake
+  (-take* [this]
+    (waiting-stream-check this (fn [f] (-take* f)) (fn [] ()))))
 
 (defn master
   "Take the argument to the goal and check that we don't
@@ -1759,32 +1730,37 @@
 (defn addcg [c]
   (fn [a]
     (let [a (reduce (fn [a x]
-                      (ext-no-check a x (subst-val ::unbound)))
+                      (-ext-no-check a x (subst-val ::unbound)))
                     a (unbound-rands a c))]
-      (assoc a :cs (-addc (.-cs a) a c)))))
+      (Substitutions. (.-s a) (.-vs a) (.-ts a) (-addc (.-cs a) a c) (.-cq a)
+                      (.-cqs a) (.-oc a) (.-_meta a)))))
 
 (defn updatecg [c]
   (fn [a]
-    (assoc a :cs (-updatec (.-cs a) a c))))
+    (Substitutions. (.-s a) (.-vs a) (.-ts a) (-updatec (.-cs a) a c) (.-cq a)
+                    (.-cqs a) (.-oc a) (.-_meta a))))
 
 (defn remcg [c]
   (fn [a]
-    (assoc a :cs (-remc (.-cs a) a c))))
+    (Substitutions. (.-s a) (.-vs a) (.-ts a) (-remc (.-cs a) a c) (.-cq a)
+                    (.-cqs a) (.-oc a) (.-_meta a))))
 
 (defn runcg [c]
   (fn [a]
-    (assoc a :cs (-runc (.-cs a) c true))))
+    (Substitutions. (.-s a) (.-vs a) (.-ts a) (-runc (.-cs a) c true) (.-cq a)
+                    (.-cqs a) (.-oc a) (.-_meta a))))
 
 (defn stopcg [c]
   (fn [a]
-    (assoc a :cs (-runc (.-cs a) c false))))
+    (Substitutions. (.-s a) (.-vs a) (.-ts a) (-runc (.-cs a) c false)
+                    (.-cq a) (.-cqs a) (.-oc a) (.-_meta a))))
 
 (defn ^boolean ientailed? [c]
   (implements? IEntailed c))
 
 (defn ^boolean entailed? [c c' a]
   (let [id (id c)]
-    (and (or ((-> a :cs :cm) id)
+    (and (or ((-> a .-cs .-cm) id)
              (nil? id))
          (-entailed? c'))))
 
@@ -1798,37 +1774,35 @@
           a)
         ((remcg c) a)))))
 
-;; TODO NOW: try an implementation that allows constraints
-;; to run roughly in the order they normally would. reverse
-;; xcs in run-constraints, (into cq (reverse xcs)), cq should
-;; be persistent list.
-
-;; TRIED: but causes overflow errors for crypt1, and if we switch to BigInt
-;; for crypt1 out of memory errors, needs more investigation
-
 (defn fix-constraints
   "A goal to run the constraints in cq until it is empty. Of
    course running a constraint may grow cq so this function
    finds the fixpoint."
   [a]
-  (loop [a a]
+  (loop [^not-native a a]
     (when a
       (let [cq (.-cq a)]
         (if (zero? (count cq))
-          (assoc a :cq nil)
+          (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a) nil (.-cqs a)
+                          (.-oc a) (.-_meta a))
           (let [c (first cq)]
-            (recur
-             ((run-constraint c)
-              (-> a
-                  (assoc :cq (subvec (.-cq a) 1))
-                  (assoc :cqs (disj (.-cqs a) (id c))))))))))))
+            (recur ((run-constraint c)
+                    (-> a
+                        (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
+                                        (subvec (.-cq a) 1) (.-cqs a) (.-oc a)
+                                        (.-_meta a))
+                        (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
+                                        (.-cq a) (disj (.-cqs a) (id c))
+                                        (.-oc a) (.-_meta a)))))))))))
 
 (defn run-constraints [xcs]
   (fn [a]
     (let [cq (.-cq a)
           a  (reduce (fn [a c]
                        (-queue a c))
-                     (assoc a :cq (or cq [])) xcs)]
+                     (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
+                                     (or cq []) (.-cqs a) (.-oc a)
+                                     (.-_meta a)) xcs)]
       (if cq
         a
         (fix-constraints a)))))
@@ -1845,8 +1819,6 @@
             (run-constraints* (next xs) cs ws)) a)
           ((run-constraints* (next xs) cs ws) a))))))
 
-;; TODO: we've hard coded finite domains here
-
 (defn verify-all-bound [a constrained]
   (letfn [(verify-all-bound* [a constrained]
             (when constrained
@@ -1854,9 +1826,8 @@
                 (if (and (lvar? x)
                          (and (lvar? (walk a x))
                               (nil? (get-dom a x ::fd))))
-                  (throw (ex-info
-                          (str "Constrained variable " x " without domain")
-                          {}))
+                  (throw (js/Error.
+                          (str "Constrained variable " x " without domain")))
                   (recur a (next constrained))))))]
     (verify-all-bound* a (seq constrained))))
 
@@ -1871,8 +1842,6 @@
                         (enforceable? c)))
                     (get km v)))
             vs)))
-
-;; TODO: we've hard coded force-ans here
 
 (declare force-ans)
 
@@ -1899,11 +1868,11 @@
   (all
    (enforce-constraints x)
    (fn [a]
-     (let [v (walk* a x)
+     (let [v (-walk* a x)
            r (-reify* (with-meta empty-s (meta a)) v)]
        (if (zero? (count r))
          (choice v empty-f)
-         (let [v (walk* r v)]
+         (let [v (-walk* r v)]
            (reify-constraints v r a)))))))
 
 
@@ -1939,6 +1908,9 @@
     ::ff (seq (sort (sort-by-member-count a) v))
     v))
 
+(defprotocol IForceAnswerTerm
+  (-force-ans [v x]))
+
 (extend-protocol IForceAnswerTerm
   nil
   (-force-ans [v x] s#)
@@ -1956,30 +1928,43 @@
                            a)))
                       s#))]
             (loop (seq v)))
-          (map? v)
-          (letfn [(loop [ys]
-                    (if ys
-                      (all
-                       (force-ans (val (first ys)))
-                       (loop (next ys)))
-                      s#))]
-            (loop (seq v)))
+          
           :else (if (lvar? x)
                   (ext-run-csg x v)
                   s#)))
+  PersistentHashMap
+  (-force-ans [v x]
+    (letfn [(loop [ys]
+              (if ys
+                (all
+                 (force-ans (val (first ys)))
+                 (loop (next ys)))
+                s#))]
+      (loop (seq v))))
+
+  PersistentArrayMap
+  (-force-ans [v x]
+    (letfn [(loop [ys]
+              (if ys
+                (all
+                 (force-ans (val (first ys)))
+                 (loop (next ys)))
+                s#))]
+      (loop (seq v))))
+  
   LCons
   (-force-ans [v x]
     (letfn [(loop [ys]
               (all
-               (force-ans (lfirst ys))
-               (if (lcons? (lnext ys))
-                 (loop (lnext ys))
+               (force-ans (-lfirst ys))
+               (if (lcons? (-lnext ys))
+                 (loop (-lnext ys))
                  s#)))]
       (loop v))))
 
 (defn force-ans [x]
   (fn [a]
-    ((let [v (walk a x)]
+    ((let [v (-walk a x)]
        (if (lvar? v)
          (-force-ans (get-dom-fd a x) v)
          (let [x (-root-var a x)]
@@ -1994,20 +1979,41 @@
 ;; ===========================================================================
 ;; CLP(Tree)
 
+(defprotocol IDisunifyTerms
+  (-disunify-terms [u v s cs]))
+
+(defprotocol IDisunifyWithNil
+  (-disunify-with-nil [v u s cs]))
+
+(defprotocol IDisunifyWithObject
+  (-disunify-with-object [v u s cs]))
+
+(defprotocol IDisunifyWithLSeq
+  (-disunify-with-lseq [v u s cs]))
+
+(defprotocol IDisunifyWithLVar
+  (-disunify-with-lvar [v u s cs]))
+
+(defprotocol IDisunifyWithSequential
+  (-disunify-with-seq [v u s cs]))
+
+(defprotocol IDisunifyWithMap
+  (-disunify-with-map [v u s cs]))
+
 (defn disunify
   ([s u v] (disunify s u v {:prefixc {}}))
   ([s u v cs]
      (if (identical? u v)
        cs
-       (let [u (walk s u)
-             v (walk s v)]
+       (let [u (-walk s u)
+             v (-walk s v)]
          (if (or (identical? u v) (= u v))
            cs
            (if (and (not (lvar? u)) (lvar? v))
              (-disunify-terms v u s cs)
              (-disunify-terms u v s cs)))))))
 
-(extend-protocol -IDisunifyTerms
+(extend-protocol IDisunifyTerms
   nil
   (-disunify-terms [u v s cs]
     (if-not (nil? v) nil cs))
@@ -2015,38 +2021,38 @@
   LVar
   (-disunify-terms [u v s {pc :prefixc :as cs}]
     (assoc cs :prefixc (assoc pc u v)))
-
+  
   default
   (-disunify-terms [u v s cs]
     (cond (sequential? u)
-          (if (sequential? v)
-            (loop [u (seq u) v (seq v) cs cs]
-              (if u
-                (if v
-                  (let [uv (first u)
-                        vv (first v)
-                        cs (disunify s uv vv cs)]
-                    (if cs
-                      (recur (next u) (next v) cs)
-                      nil))
-                  nil)
-                (if (nil? v)
-                  cs
+      (if (sequential? v)
+        (loop [u (seq u) v (seq v) cs cs]
+          (if u
+            (if v
+              (let [uv (first u)
+                    vv (first v)
+                    cs (disunify s uv vv cs)]
+                (if cs
+                  (recur (next u) (next v) cs)
+                  nil))
+              nil)
+            (if (nil? v)
+              cs
+              nil)))
+        nil)
+      (map? u)
+      (if (and (map? v) (= (count u) (count v)))
+        (loop [ks (seq (keys u)) cs cs]
+          (if ks
+            (let [kf (first ks)
+                  vf (get v kf ::not-found)]
+              (when-not (= vf ::not-found)
+                (if-let [cs (disunify s (get u kf) vf cs)]
+                  (recur (next ks) cs)
                   nil)))
-            nil)
-          (map? u)
-          (if (and (map? v) (= (count u) (count v)))
-            (loop [ks (seq (keys u)) cs cs]
-              (if ks
-                (let [kf (first ks)
-                      vf (get v kf ::not-found)]
-                  (when-not (= vf ::not-found)
-                    (if-let [cs (disunify s (get u kf) vf cs)]
-                      (recur (next ks) cs)
-                      nil)))
-                cs))
-            nil)
-          :else (if-not (= u v) nil cs))))
+            cs))
+        nil)
+      :else (if-not (= u v) nil cs))))
 
 (defn recover-vars-from-term [x]
   (let [r (atom #{})]
