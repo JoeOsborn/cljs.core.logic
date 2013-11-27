@@ -959,3 +959,18 @@
                (.-oc ap#) (.-_meta ap#)))
              ap#))
          (cljs.core.logic/fail a#)))))
+
+(defmacro !=
+  "Disequality constraint. Ensures that u and v will never
+   unify. u and v can be complex terms."
+  [u v]
+  `(fn [a#]
+     (let [cs# (cljs.core.logic/disunify a# ~u ~v)]
+       (if-not (nil? cs#)
+         (let [p# (:prefixc cs#)]
+           (when-not (empty? p#)
+             (if (some (fn [[u# v#]]
+                         (nil? (cljs.core.logic/unify a# u# v#))) p#)
+               a#
+               ((cljs.core.logic/cgoal (cljs.core.logic/!=c p#)) a#))))
+         a#))))

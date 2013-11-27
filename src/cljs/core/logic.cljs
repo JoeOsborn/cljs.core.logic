@@ -9,7 +9,7 @@
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc ==]]))
+                            matchu tabled let-dom fnc defnc == !=]]))
 
 
 (def ^:dynamic *logic-dbs* [])
@@ -141,6 +141,110 @@
   ([x doms] (SubstValue. x doms nil))
   ([x doms _meta] (with-meta (SubstValue. x doms nil) _meta))
   ([x doms eset _meta] (with-meta (SubstValue. x doms eset) _meta)))
+
+;; ===========================================================================
+;; Constraint Store
+
+(declare lvar? bindable? add-var)
+
+(defn var-rands [a c]
+  (->> (-rands c)
+       (map #(-root-var a %))
+       (filter lvar?)
+       (into [])))
+
+(defn unbound-rands [a c]
+  (->> (var-rands a c)
+       (filter #(lvar? (-root-val a %)))))
+
+(defprotocol IConstraintStore
+  (-addc [cs a c])
+  (-updatec [cs a c])
+  (-remc [cs a c])
+  (-runc [cs c state])
+  (-constraints-for [cs a x ws])
+  (-migrate [cs s root]))
+
+(defprotocol IWithConstraintId
+  (-with-id [c id]))
+
+(defprotocol IConstraintId
+  (-id [c]))
+
+(defn id [c]
+  (if (implements? IConstraintId c)
+    (-id c)
+    (-> c meta ::id)))
+
+(defn with-id [c id]
+  (if (implements? IWithConstraintId c)
+    (-with-id c id)
+    (vary-meta c assoc ::id id)))
+
+;; ConstraintStore
+;; -----
+;; km  - mapping logic vars to constraints ids
+;; cm  - mapping constraint ids to to actual constraints
+;; cid - the current constraint id, an integer, incremented
+;;       everytime we add a constraint to the store
+;; running - set of running constraint ids
+
+(deftype ConstraintStore [km cm cid running]
+  IConstraintStore
+  (-addc [this a c]
+    (let [vars (var-rands a c)
+          c (-with-id c cid)
+          cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
+      (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
+  
+  (-updatec [this a c]
+    (let [oc (cm (id c))]
+      (ConstraintStore. km (assoc cm (id c) c) cid running)))
+
+  (-remc [this a c]
+    (let [vs (var-rands a c)
+          ocid (id c)
+          nkm (reduce (fn [km v]
+                        (let [vcs (disj (get km v) ocid)]
+                          (if (empty? vcs)
+                            (dissoc km v)
+                            (assoc km v vcs))))
+                      km vs)
+          ncm (dissoc cm ocid)]
+      (ConstraintStore. nkm ncm cid running)))
+
+  (-runc [this c state]
+    (if state
+      (ConstraintStore. km cm cid (conj running (id c)))
+      (ConstraintStore. km cm cid (disj running (id c)))))
+
+  (-constraints-for [this a x ws]
+    (when-let [ids (get km (-root-var a x))]
+      (filter #((-watched-stores %) ws)
+              (map cm (remove running ids)))))
+
+  (-migrate [this x root]
+    (let [xcs    (km x)
+          rootcs (km root #{})
+          nkm    (assoc (dissoc km x) root (into rootcs xcs))]
+      (ConstraintStore. nkm cm cid running)))
+
+  ICounted
+  (-count [this] (count cm)))
+
+(defn add-var [cs x c]
+  (when-not (lvar? x)
+    (throw (js/Error.
+            (str "constraint store assoc expected logic var key: " x))))
+  (let [cm (.-cm cs)
+        km (.-km cs)
+        cid (.-cid cs)
+        nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
+        ncm (assoc cm cid c)]
+    (ConstraintStore. nkm ncm cid (.-running cs))))
+
+(defn make-cs []
+  (ConstraintStore. {} {} 0 #{}))
 
 ;; ==========================================================================
 ;; Substitutions
@@ -310,11 +414,11 @@
   (-queue [this c]
     (let [id (id c)]
       (if-not (cqs id)
-        (Substitutions. s vs ts cs (conj (or cq []) c) (conj cqs id) v _meta)
+        (Substitutions. s vs ts cs (conj (or cq []) c) (conj cqs id) oc _meta)
         this)))
 
   (-update-var [this x v]
-    (Substitutions. (conj s (pair x v)) vs ts cs cq cqs  v _meta)) 
+    (Substitutions. (conj s (pair x v)) vs ts cs cq cqs oc _meta)) 
 
   IBind
   (-bind [this g] (g this))
@@ -324,6 +428,8 @@
   
   ITake
   (-take* [this] this))
+
+(declare make-cs)
 
 (defn make-s
   ([] (make-s #{}))
@@ -474,6 +580,8 @@
 
 ;; ==========================================================================
 ;; LCons
+
+(defprotocol ITreeTerm)
 
 (defprotocol LConsSeq
   (-lfirst [this])
@@ -1121,6 +1229,9 @@
 
 (defprotocol INonStorable)
 
+(defprotocol IUninitialized
+  (-uninitialized [_]))
+
 (defprotocol IUnifyWithPMap
   (-unify-with-pmap [pmap u s]))
 
@@ -1238,110 +1349,6 @@
   feature extraction."
   [x fs]
   (cgoal (-featurec x (partial-map fs))))
-
-;; ===========================================================================
-;; Constraint Store
-
-(declare lvar? bindable? add-var)
-
-(defn var-rands [a c]
-  (->> (-rands c)
-       (map #(-root-var a %))
-       (filter lvar?)
-       (into [])))
-
-(defn unbound-rands [a c]
-  (->> (var-rands a c)
-       (filter #(lvar? (-root-val a %)))))
-
-(defprotocol IConstraintStore
-  (-addc [cs a c])
-  (-updatec [cs a c])
-  (-remc [cs a c])
-  (-runc [cs c state])
-  (-constraints-for [cs a x ws])
-  (-migrate [cs s root]))
-
-(defprotocol IWithConstraintId
-  (-with-id [c id]))
-
-(defprotocol IConstraintId
-  (-id [c]))
-
-(defn id [c]
-  (if (implements? IConstraintId c)
-    (-id c)
-    (-> c meta ::id)))
-
-(defn with-id [c id]
-  (if (implements? IWithConstraintId c)
-    (-with-id c id)
-    (vary-meta c assoc ::id id)))
-
-;; ConstraintStore
-;; -----
-;; km  - mapping logic vars to constraints ids
-;; cm  - mapping constraint ids to to actual constraints
-;; cid - the current constraint id, an integer, incremented
-;;       everytime we add a constraint to the store
-;; running - set of running constraint ids
-
-(deftype ConstraintStore [km cm cid running]
-  IConstraintStore
-  (-addc [this a c]
-    (let [vars (var-rands a c)
-          c (-with-id c cid)
-          cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
-      (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
-  
-  (-updatec [this a c]
-    (let [oc (cm (id c))]
-      (ConstraintStore. km (assoc cm (id c) c) cid running)))
-
-  (-remc [this a c]
-    (let [vs (var-rands a c)
-          ocid (id c)
-          nkm (reduce (fn [km v]
-                        (let [vcs (disj (get km v) ocid)]
-                          (if (empty? vcs)
-                            (dissoc km v)
-                            (assoc km v vcs))))
-                      km vs)
-          ncm (dissoc cm ocid)]
-      (ConstraintStore. nkm ncm cid running)))
-
-  (-runc [this c state]
-    (if state
-      (ConstraintStore. km cm cid (conj running (id c)))
-      (ConstraintStore. km cm cid (disj running (id c)))))
-
-  (-constraints-for [this a x ws]
-    (when-let [ids (get km (-root-var a x))]
-      (filter #((-watched-stores %) ws)
-              (map cm (remove running ids)))))
-
-  (-migrate [this x root]
-    (let [xcs    (km x)
-          rootcs (km root #{})
-          nkm    (assoc (dissoc km x) root (into rootcs xcs))]
-      (ConstraintStore. nkm cm cid running)))
-
-  ICounted
-  (-count [this] (count cm)))
-
-(defn add-var [cs x c]
-  (when-not (lvar? x)
-    (throw (js/Error.
-            (str "constraint store assoc expected logic var key: " x))))
-  (let [cm (.-cm cs)
-        km (.-km cs)
-        cid (.-cid cs)
-        nkm (update-in km [x] (fnil (fn [s] (conj s cid)) #{}))
-        ncm (assoc cm cid c)]
-    (ConstraintStore. nkm ncm cid (.-running cs))))
-
-(defn make-cs []
-  (ConstraintStore. {} {} 0 #{}))
 
 (declare choice lvar lvar? lcons run-constraints*)
 
@@ -1755,6 +1762,9 @@
     (Substitutions. (.-s a) (.-vs a) (.-ts a) (-runc (.-cs a) c false)
                     (.-cq a) (.-cqs a) (.-oc a) (.-_meta a))))
 
+(defprotocol IEntailed
+  (-entailed? [c]))
+
 (defn ^boolean ientailed? [c]
   (implements? IEntailed c))
 
@@ -1787,13 +1797,10 @@
                           (.-oc a) (.-_meta a))
           (let [c (first cq)]
             (recur ((run-constraint c)
-                    (-> a
-                        (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
-                                        (subvec (.-cq a) 1) (.-cqs a) (.-oc a)
-                                        (.-_meta a))
-                        (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
-                                        (.-cq a) (disj (.-cqs a) (id c))
-                                        (.-oc a) (.-_meta a)))))))))))
+                    (Substitutions. (.-s a) (.-vs a) (.-ts a) (.-cs a)
+                                    (subvec (.-cq a) 1)
+                                    (disj (.-cqs a) (id c)) (.-oc a)
+                                    (.-_meta a))))))))))
 
 (defn run-constraints [xcs]
   (fn [a]
@@ -1875,6 +1882,8 @@
          (let [v (-walk* r v)]
            (reify-constraints v r a)))))))
 
+(defprotocol IUnwrapConstraint
+  (-unwrap [_]))
 
 (defn cgoal [c]
   (reify
@@ -1889,7 +1898,7 @@
                 ((addcg c) a)
                 a)))
           ((addcg c) a))))
-    -IUnwrapConstraint
+    IUnwrapConstraint
     (-unwrap [_] c)))
 
 (defn get-dom-fd
@@ -2013,6 +2022,20 @@
              (-disunify-terms v u s cs)
              (-disunify-terms u v s cs)))))))
 
+(defn disunify-with-map
+  [v u s cs]
+  (if (and (map? v) (cljs.core/== (count u) (count v)))
+    (loop [ks (seq (keys u)) cs cs]
+      (if ks
+        (let [kf (first ks)
+              vf (get v kf not-found)]
+          (when-not (= vf not-found)
+            (if-let [cs (disunify s (get u kf) vf cs)]
+              (recur (next ks) cs)
+              nil)))
+        cs))
+    nil))
+
 (extend-protocol IDisunifyTerms
   nil
   (-disunify-terms [u v s cs]
@@ -2021,16 +2044,25 @@
   LVar
   (-disunify-terms [u v s {pc :prefixc :as cs}]
     (assoc cs :prefixc (assoc pc u v)))
+
+  PersistentArrayMap
+  (-disunify-terms [u v s cs]
+    (disunify-with-map v u s cs))
+  
+  PersistentHashMap
+  (-disunify-terms [u v s cs]
+    (disunify-with-map v u s cs))
   
   default
   (-disunify-terms [u v s cs]
-    (cond (sequential? u)
+    (cond
+      (sequential? u)
       (if (sequential? v)
-        (loop [u (seq u) v (seq v) cs cs]
+        (loop [^not-native u (seq u) ^not-native v (seq v) ^not-native cs cs]
           (if u
             (if v
-              (let [uv (first u)
-                    vv (first v)
+              (let [uv (-first u)
+                    vv (-first v)
                     cs (disunify s uv vv cs)]
                 (if cs
                   (recur (next u) (next v) cs)
@@ -2039,33 +2071,22 @@
             (if (nil? v)
               cs
               nil)))
-        nil)
-      (map? u)
-      (if (and (map? v) (= (count u) (count v)))
-        (loop [ks (seq (keys u)) cs cs]
-          (if ks
-            (let [kf (first ks)
-                  vf (get v kf ::not-found)]
-              (when-not (= vf ::not-found)
-                (if-let [cs (disunify s (get u kf) vf cs)]
-                  (recur (next ks) cs)
-                  nil)))
-            cs))
-        nil)
-      :else (if-not (= u v) nil cs))))
+        nil)            
+      :else (if-not (= u v)
+              nil
+              cs))))
 
 (defn recover-vars-from-term [x]
   (let [r (atom #{})]
-    (-walk-term
-     x
-     (fn [x]
-       (if (lvar? x)
-         (do (swap! r conj x) x)
-         x)))
+    (-walk-term x
+                (fn [x]
+                  (if (lvar? x)
+                    (do (swap! r conj x) x)
+                    x)))
     @r))
 
 (defn recover-vars [p]
-  (loop [p (seq p) r #{}]
+  (loop [^not-native p (seq p) ^not-native r #{}]
     (if p
       (let [[u v] (first p)]
         (recur (next p)
@@ -2075,36 +2096,42 @@
 
 (declare normalize-store ground-term?)
 
+(defprotocol ITreeConstraint)
+
+(defprotocol IWithPrefix
+  (-with-prefix [_]))
+
+(defprotocol IPrefix
+  (-prefix [_ p]))
+
 (defn !=c [p]
   (reify
-    -ITreeConstraint
-    -IConstraintStep
+    ITreeConstraint
+    IConstraintStep
     (-step [this s]
       (reify
         IFn
         (-invoke [_ s]
-          (let [p (loop [sp (seq p) p p]                    
+          (let [p (loop [^not-native sp (seq p) ^not-native p p]
                     (if sp
                       (let [[x v] (first sp)
-                            xv (walk* s x)
-                            vv (walk* s v)]
+                            xv (-walk* s x)
+                            vv (-walk* s v)]
                         (cond
                          (= xv vv) (recur (next sp) (dissoc p x))
                          (nil? (unify s xv vv)) nil
                          :else (recur (next sp) (assoc (dissoc p x) xv vv))))
                       p))]
             (if p
-              (when-not (empty? p)                
+              (when-not (empty? p)             
                 ((composeg*
                   (remcg this)
                   (cgoal (!=c p))) s))
               ((remcg this) s))))
         IRunnable
-        (-runnable? [_]
-          (some #(not= (walk s %) %) (recover-vars p)))
+        (-runnable? [_] (some #(not= (-walk s %) %) (recover-vars p)))
         IEntailed
-        (-entailed? [_]
-          (empty? p))))
+        (-entailed? [_] (empty? p))))
     IPrefix
     (-prefix [_] p)
     IWithPrefix
@@ -2116,24 +2143,10 @@
           '()
           `(~'!= ~@p*))))
     IConstraintOp
-    (-rator [_] `cljs.core.logic/!=)
+    (-rator [_] `cljs.core.logic.macros/!=)
     (-rands [_] (seq (recover-vars p)))
     IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
-
-(defn !=
-  "Disequality constraint. Ensures that u and v will never
-   unify. u and v can be complex terms."
-  [u v]
-  (fn [a]
-    (let [cs (disunify a u v)]
-      (if-not (nil? cs)
-        (let [p (:prefixc cs)]
-          (when-not (empty? p)
-            (if (some (fn [[u v]] (nil? (unify a u v))) p)
-              a
-              ((cgoal (!=c p)) a))))
-        a))))
 
 (defne distincto
   "A relation which guarantees no element of l will unify
@@ -2160,16 +2173,16 @@
 
 (defn ^boolean ground-term? [x s]
   (letfn [(-ground-term? [x s]
-            (let [x (walk s x)]
+            (let [x (-walk s x)]
               (if (lvar? x)
-                (throw fk)
+                (throw (js/Error.))
                 (-walk-term x
-                           (fn [x]
-                             (let [x (walk s x)]
-                               (cond
-                                (lvar? x) (throw fk)
-                                (tree-term? x) (-ground-term? x s)
-                                :else x)))))))]
+                            (fn [x]
+                              (let [x (-walk s x)]
+                                (cond
+                                  (lvar? x) (throw (js/Error.))
+                                  (tree-term? x) (-ground-term? x s)
+                                  :else x)))))))]
     (try
       (-ground-term? x s)
       true
@@ -2183,34 +2196,33 @@
   ([x p] (-predc x p p))
   ([x p pform]
      (reify
-       -IConstraintStep
+       IConstraintStep
        (-step [this s]
          (reify
            IFn
            (-invoke [_ s]
-             (let [x (walk s x)]
+             (let [x (-walk s x)]
                (when (p x)
                  ((remcg this) s))))
-           -IRunnable
+           IRunnable
            (-runnable? [_]
-             (not (lvar? (walk s x))))))
-       -IConstraintOp
+             (not (lvar? (-walk s x))))))
+       IConstraintOp
        (-rator [_] (if (seq? pform)
                      `(predc ~pform)
                      `cljs.core.logic/predc))
        (-rands [_] [x])
-       -IReifiableConstraint
+       IReifiableConstraint
        (-reifyc [c v r s]
          (if (and (not= p pform) (fn? pform))
            (pform c v r s)
            pform))
-       -IConstraintWatchedStores
+       IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
 
 (defn predc
   ([x p] (predc x p p))
-  ([x p pform]
-     (cgoal (-predc x p pform))))
+  ([x p pform] (cgoal (-predc x p pform))))
 
 ;; ===========================================================================
 ;; Negation as failure
@@ -2224,23 +2236,23 @@
 (defn -nafc
   ([c args]
      (reify
-       -IConstraintStep
+       IConstraintStep
        (-step [this s]
          (reify
            IFn
            (-invoke [_ s]
              (when-not (tramp ((apply c args) s))
                ((remcg this) s)))
-           -IRunnable
+           IRunnable
            (-runnable? [_]
              (every? #(ground-term? % s) args))))
-       -IConstraintOp
+       IConstraintOp
        (-rator [_] `cljs.core.logic/nafc)
        (-rands [_] (vec (concat [c] args)))
-       -IReifiableConstraint
+       IReifiableConstraint
        (-reifyc [_ v r s]
          `(nafc ~c ~@(-reify s args r)))
-       -IConstraintWatchedStores
+       IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
 
 (defn nafc
@@ -2264,26 +2276,37 @@
     (loop [t t s s]
       (if (lvar? t)
         (fc t s)
-        (when-let [s (fc (lfirst t) s)]
-          (recur (lnext t) s)))))
+        (when-let [s (fc (-lfirst t) s)]
+          (recur (-lnext t) s)))))
+
+  PersistentArrayMap
+  (-constrain-tree [t fc s]
+    (loop [t (seq t) s s]
+      (if t
+        (let [[_ v] (first t)
+              s (fc v s)]
+          (when s
+            (recur (next t) s)))
+        s)))
+
+  PersistentHashMap
+  (-constrain-tree [t fc s]
+    (loop [t (seq t) s s]
+      (if t
+        (let [[_ v] (first t)
+              s (fc v s)]
+          (when s
+            (recur (next t) s)))
+        s)))
 
   default
   (-constrain-tree [t fc s]
-    (cond (sequential? t)
-          (loop [t (seq t) s s]
-            (if t
-              (when-let [s (fc (first t) s)]
-                (recur (next t) s))
-              s))
-          (map? t)
-          (loop [t (seq t) s s]
-            (if t
-              (let [[_ v] (first t)
-                    s (fc v s)]
-                (when s
-                  (recur (next t) s)))
-              s))
-          :else nil)))
+    (when (sequential? t)
+      (loop [^not-native t (-seq t) ^not-native s s]
+        (if t
+          (when-let [s (fc (-first t) s)]
+            (recur (-next t) s))
+          s)))))
 
 (defn constrain-tree [t fc]
   (fn [a]
@@ -2295,7 +2318,7 @@
      (reify
        IConstraintStep
        (-step [this s]
-         (let [xv (walk s x)]
+         (let [xv (-walk s x)]
            (reify
              IFn
              (-invoke [_ s]
@@ -2323,22 +2346,21 @@
      (cgoal (-fixc x f runnable reifier))))
 
 (defn treec [x fc reifier]
-  (fixc x
-        (fn loop [t a reifier]
-          (if (tree-term? t)
-            (composeg*
-             (fc t)
-             (constrain-tree t (fn [t a] ((fixc t loop reifier) a))))
-            (fc t)))
+  (fixc x (fn loop [t a reifier]
+            (if (tree-term? t)
+              (composeg*
+               (fc t)
+               (constrain-tree t (fn [t a] ((fixc t loop reifier) a))))
+              (fc t)))
         reifier))
 
 (defn seqc [v]
   (fixc v
         (fn [t _ _]
           (cond
-           (sequential? t) succeed
+           (sequential? t) s#
            (lcons? t) (seqc (lnext t))
-           :else fail))
+           :else u#))
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))
 
