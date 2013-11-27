@@ -211,7 +211,7 @@
      a#))
 
 (defn trace-lvar [a lvar]
-  `(println (format "%5s = %s" (str '~lvar) (-reify ~a ~lvar))))
+  `(println (str (str '~lvar) " = " (cljs.core.logic/-reify ~a ~lvar))))
 
 (defmacro trace-lvars
   "Goal for tracing the values of logic variables."
@@ -219,7 +219,7 @@
   (let [a (gensym "a")]
     `(fn [~a]
        (println ~title)
-       ~@(map (partial trace-lvar a) lvars)
+       ~@(map #(trace-lvar a %) lvars)
        ~a)))
 
 ;; ===========================================================================
@@ -228,11 +228,11 @@
 ;; ===========================================================================
 ;; project
 
-(defn- project-binding [s]
+(defn project-binding [s]
   (fn [var]
     `(~var (cljs.core.logic/walk* ~s ~var))))
 
-(defn- project-bindings [vars s]
+(defn project-bindings [vars s]
   (reduce concat (map (project-binding s) vars)))
 
 (defmacro project
@@ -248,29 +248,28 @@
   "Check a predicate against the value logic var. Non-relational."
   [v f]
   `(project [~v]
-            (cljs.core.logic/== (~f ~v) true)))
-
-;; TODO: remove v argument - David
+     (== (~f ~v) true)))
 
 (defmacro is
   "Set the value of a var to value of another var with the operation
    applied. Non-relational."
   [u v op]
   `(project [~v]
-            (cljs.core.logic/== ~u (~op ~v))))
+     (== ~u (~op ~v))))
 
 (defmacro ifa*
   ([])
   ([[e & gs] & grest]
-     `(cljs.core.logic.protocols/ifa ~e [~@gs]
-           ~(if (seq grest)
-              `(delay (ifa* ~@grest))
-              nil))))
+     `(cljs.core.logic/-ifa
+       ~e [~@gs]
+       ~(if (seq grest)
+          `(delay (ifa* ~@grest))
+          nil))))
 
 (defmacro ifu*
   ([])
   ([[e & gs] & grest]
-     `(cljs.core.logic.protocols/ifu
+     `(cljs.core.logic/-ifu
        ~e [~@gs]
        ~(if (seq grest)
           `(delay (ifu* ~@grest))
@@ -305,7 +304,7 @@
   variable. Non-relational."
   [v]
   `(fn [a#]
-     (if (lvar? (cljs.core.logic.protocols/walk a# ~v))
+     (if (cljs.core.logic/lvar? (cljs.core.logic/-walk a# ~v))
        a# nil)))
 
 (defmacro nonlvaro
@@ -313,33 +312,31 @@
   logic variable. Non-relational."
   [v]
   `(fn [a#]
-     (if (not (lvar? (cljs.core.logic.protocols/walk a# ~v)))
+     (if (not (cljs.core.logic/lvar? (cljs.core.logic/-walk a# ~v)))
        a# nil)))
 
 ;; ==========================================================================
 ;; Pattern matching
 
-(defn- warn [& msg]
+(defn warn [& msg]
   (binding [*out* *err*]
     (apply println "WARNING:" msg)))
 
 (declare p->term)
 
-(defn- lcons-p? [p]
+(defn lcons-p? [p]
   (and (coll? p)
        (not (nil? (some '#{.} p)))))
 
-(defn- p->llist
+(defn p->llist
   "Take an lcons pattern and convert it into a llist constructor
    expression."
   ([p vars] (p->llist p vars false))
   ([p vars quoted]
-     `(llist
-       ~@(doall
-          (map #(p->term % vars quoted)
-               (remove #(contains? '#{.} %) p))))))
+     `(llist ~@(map #(p->term % vars quoted)
+                    (remove #(contains? '#{.} %) p)))))
 
-(defn- lvar-sym? [s]
+(defn lvar-sym? [s]
   (and (symbol? s)
        (not= s '.)
        (not (contains? *locals* s))))
@@ -362,7 +359,6 @@
       (lcons-p? p) (p->llist p vars quoted)
       (coll? p)
       (cond
-       ;; support simple expressions
        (seq? p)
        (let [[f s] p]
          (cond
@@ -373,13 +369,13 @@
           (clojure.core/= f 'clojure.core/unquote)
           (if quoted
             (update-pvars! s vars)
-            (throw (Exception. "Invalid use of clojure.core/unquote in pattern.")))
+            (throw
+             (Exception. "Invalid use of clojure.core/unquote in pattern.")))
           :else
           (let [ps (map #(p->term % vars quoted) p)]
             (if quoted
               `(list ~@ps)
               ps))))
-       ;; preserve original collection type
        :else
        (let [ps (map #(p->term % vars quoted) p)]
          (cond
@@ -398,14 +394,14 @@
    with relation argument a."
   ([vs t a]
      `(fresh [~@vs]
-        (cljs.core.logic/== ~t ~a)))
+        (== ~t ~a)))
   ([vs t a exprs]
      (if (fresh-expr? exprs)
        `(fresh [~@vs]
-          (cljs.core.logic/== ~t ~a)
+          (== ~t ~a)
           ~exprs)
        `(fresh [~@vs]
-          (cljs.core.logic/== ~t ~a)
+          (== ~t ~a)
           ~@exprs))))
 
 (defn- ex*
@@ -484,12 +480,10 @@
   (binding [*locals* (env-locals as (keys &env))]
     `(~fn-gen [~@as] ~(handle-clauses t as cs))))
 
-(def keyword-identical? identical?)
-
 (defmacro fnm
   {:arglists '([t as tabled? & cs])}
   [t as & cs]
-  (if-let [cs (and (keyword-identical? (first cs) :tabled) (rest cs))]
+  (if-let [cs (and (identical? (first cs) :tabled) (rest cs))]
     `(-fnm tabled ~t ~as ~@cs)
     `(-fnm fn ~t ~as ~@cs)))
 
@@ -524,9 +518,6 @@
 
 ;; ---------------------------------------------------------------------------
 ;; fnu, fna, defnu, defna, matcha, matchu
-
-;; TODO: we need to rethink (de)fna and (de)fnu, the unification comes first
-;; the *question* should come first
 
 (defmacro fna
   "Define an anonymous soft cut goal. See conda."
@@ -563,8 +554,6 @@
 ;; -----------------------------------------------------------------------------
 ;; Syntax
 
-;; TODO: consider the concurrency implications much more closely
-
 (defmacro tabled
   "Macro for defining a tabled goal. Prefer ^:tabled with the
   defne/a/u forms over using this directly."
@@ -597,18 +586,13 @@
                       ~@grest
                       (cljs.core.logic/master argv# cache#)) a#))
                  (let [cache# (get @table# key#)]
-                   (cljs.core.logic.protocols/reuse
-                    a# argv# cache# nil nil)))))))))
+                   (cljs.core.logic/-reuse a# argv# cache# nil nil)))))))))
 
 (defmacro let-dom
   [a vars & body]
-  (let [get-var-dom (fn [a [v b]]
-                      `(~b (cljs.core.logic/get-dom-fd ~a ~v)))]
-    `(let [~@(mapcat (partial get-var-dom a) (partition 2 vars))]
+  (let [get-var-dom (fn [a [v b]] `(~b (cljs.core.logic/get-dom-fd ~a ~v)))]
+    `(let [~@(mapcat #(get-var-dom a %) (partition 2 vars))]
        ~@body)))
-
-;; consider ^:partial type hint for arguments
-;; these argument only need to be partially instantiated
 
 (defmacro fnc
   "Define an anonymous constraint that can be used with the unifier:
@@ -630,27 +614,27 @@
     `(fn ~args
        (letfn [(~name [~@args]
                  (reify
-                   cljs.core.logic.protocols/IConstraintStep
+                   cljs.core.logic/IConstraintStep
                    (~'-step [this# a#]
                      (reify
                        cljs.core/IFn
                        (~'-invoke [_# a#]
                          (let [[~@args :as args#]
-                               (map #(cljs.core.logic/walk* a# %) ~args)
+                               (map #(cljs.core.logic/-walk* a# %) ~args)
                                test# (do ~@body)]
                            (when test#
                              ((cljs.core.logic/remcg this#) a#))))
-                       cljs.core.logic.protocols/IRunnable
+                       cljs.core.logic/IRunnable
                        (~'-runnable? [_#]
                          (cljs.core.logic/ground-term? ~args a#))))
-                   cljs.core.logic.protocols/IConstraintOp
+                   cljs.core.logic/IConstraintOp
                    (~'-rator [_#] '~name)
                    (~'-rands [_#]
                      (filter cljs.core.logic/lvar? (flatten ~args)))
-                   cljs.core.logic.protocols/IReifiableConstraint
+                   cljs.core.logic/IReifiableConstraint
                    (~'-reifyc [_# _# r# a#]
                      (list '~name (map #(cljs.core.logic/-reify r# %) ~args)))
-                   cljs.core.logic.protocols/IConstraintWatchedStores
+                   cljs.core.logic/IConstraintWatchedStores
                    (~'-watched-stores [_#] #{:cljs.core.logic/subst})))]
          (cljs.core.logic/cgoal (~name ~@args))))))
 
@@ -659,7 +643,7 @@
 
 (defmacro extend-to-fd [t]
   `(extend-type ~t
-     cljs.core.logic.protocols/IMemberCount
+     cljs.core.logic.fd/IMemberCount
      (~'-member-count [this#] 1)
 
      cljs.core.logic.fd/IInterval
@@ -667,8 +651,7 @@
      (~'-ub [this#] this#)
 
      cljs.core.logic.fd/ISortedDomain
-     (~'-drop-one [this#]
-       nil)
+     (~'-drop-one [this#] nil)
      (~'-drop-before [this# n#]
        (when (clojure.core/>= this# n#)
          this#))
@@ -825,7 +808,7 @@
                       (cljs.core.logic/walk* subs# (nth query# index#)))
                      (cljs.core.logic.pldb/facts-for dbs# ~kname))]
                (cljs.core.logic/to-stream (map (fn [potential#]
-                                   ((cljs.core.logic/== query# potential#)
+                                   ((== query# potential#)
                                     subs#))
                                  facts#)))))
          {:rel-name ~kname
@@ -834,16 +817,16 @@
 (defmacro = [x y]
   "Goal for testing whether x and y are equal. Non-relational."
   `(fn [a#]
-     (let [wx# (cljs.core.logic.protocols/walk a# ~x)
-           wy# (cljs.core.logic.protocols/walk a# ~y)]
+     (let [wx# (cljs.core.logic/-walk a# ~x)
+           wy# (cljs.core.logic/-walk a# ~y)]
        (if (clojure.core/= wx# wy#)
          a# nil))))
 
 (defmacro > [x y]
   "Goal for testing whether x is greater than y. Non-relational."
   `(fn [a#]
-     (let [wx# (cljs.core.logic.protocols/walk a# ~x)
-           wy# (cljs.core.logic.protocols/walk a# ~y)]
+     (let [wx# (cljs.core.logic/-walk a# ~x)
+           wy# (cljs.core.logic/-walk a# ~y)]
        (if (clojure.core/> wx# wy#)
          a# nil))))
 
@@ -851,16 +834,16 @@
   "Goal for testing whether x is greater than or equal to y.
   Non-relational."
   `(fn [a#]
-     (let [wx# (cljs.core.logic.protocols/walk a# ~x)
-           wy# (cljs.core.logic.protocols/walk a# ~y)]
+     (let [wx# (cljs.core.logic/-walk a# ~x)
+           wy# (cljs.core.logic/-walk a# ~y)]
        (if (clojure.core/>= wx# wy#)
          a# nil))))
 
 (defmacro < [x y]
   "Goal for testing whether x is less than y. Non-relational."
   `(fn [a#]
-     (let [wx# (cljs.core.logic.protocols/walk a# ~x)
-           wy# (cljs.core.logic.protocols/walk a# ~y)]
+     (let [wx# (cljs.core.logic/-walk a# ~x)
+           wy# (cljs.core.logic/-walk a# ~y)]
        (if (clojure.core/< wx# wy#)
          a# nil))))
 
@@ -868,8 +851,8 @@
   "Goal for testing whether x is less than or equal to y.
   Non-relational."
   `(fn [a#]
-     (let [wx# (cljs.core.logic.protocols/walk a# ~x)
-           wy# (cljs.core.logic.protocols/walk a# ~y)]
+     (let [wx# (cljs.core.logic/-walk a# ~x)
+           wy# (cljs.core.logic/-walk a# ~y)]
        (if (clojure.core/<= wx# wy#)
          a# nil))))
 
@@ -878,10 +861,10 @@
   ([env [m :as c] i quoted]
      (cond
       (empty? c) `(fresh []
-                    (cljs.core.logic/== ~(env (dec i)) ~(env i)))
+                    (== ~(env (dec i)) ~(env i)))
       :else (let [m (if quoted `(quote ~m) m)]
-              `(cljs.core.logic/== ~(env (dec i))
-                                   (cljs.core.logic/lcons ~m ~(env i)))))))
+              `(== ~(env (dec i))
+                   (cljs.core.logic/lcons ~m ~(env i)))))))
 
 (defn lsym [n]
   (gensym (str "l" n "_")))
@@ -892,7 +875,7 @@
          (and (symbol? f)
               (identical? (name f) "!dcg")))))
 
-(defn fresh-expr? [clause]
+(defn -fresh-expr? [clause]
   (and (seq? clause)
        (let [f (first clause)]
          (and (symbol? f)
@@ -903,7 +886,7 @@
   ([[c & r :as cs] i]
      (cond
       (nil? (seq cs)) ()
-      (fresh-expr? c) (cons `(fresh ~(second c)
+      (-fresh-expr? c) (cons `(fresh ~(second c)
                                ~@(mark-clauses (drop 2 c) i))
                             (mark-clauses r i))
       (!dcg? c) (cons c (mark-clauses r i))
@@ -914,7 +897,7 @@
 (defn -handle-clauses [env [c & r :as cs]]
   (cond
    (nil? (seq cs)) ()
-   (fresh-expr? c) (cons `(fresh ~(second c)
+   (-fresh-expr? c) (cons `(fresh ~(second c)
                             ~@(-handle-clauses env (drop 2 c)))
                          (-handle-clauses env r))
    (!dcg? c) (cons (second c) (-handle-clauses env r))
@@ -946,7 +929,7 @@
         osym (gensym "o")]
     `(defn ~name [~fsym ~osym]
        (conde
-        ~@(map list (map (partial handle-cclause fsym osym) cclauses))))))
+        ~@(map list (map #(handle-cclause fsym osym %) cclauses))))))
 
 (defmacro def-->e [name args & pcss]
   (let [fsym (gensym "l1_")
@@ -967,11 +950,11 @@
          ~@clauses))))
 
 (defn count-clauses [clauses]
-  (if (fresh-expr? clauses)
+  (if (-fresh-expr? clauses)
     (count-clauses (drop 2 clauses))
     (reduce (fn [s c]
               (cond
-               (fresh-expr? c) (+ s (count-clauses (drop 2 c)))
+               (-fresh-expr? c) (+ s (count-clauses (drop 2 c)))
                (!dcg? c) s
                :else (clojure.core/inc s)))
             0 clauses)))

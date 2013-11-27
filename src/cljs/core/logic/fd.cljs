@@ -32,6 +32,9 @@
   (-intersection [this that])
   (-difference [this that]))
 
+(defprotocol IMemberCount
+  (-member-count [_]))
+
 (declare domain sorted-set->domain
          difference* intersection* disjoint?*
          unify-with-domain* finite-domain?

@@ -9,7 +9,8 @@
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc == !=]]))
+                            matchu tabled let-dom fnc defnc == != lazy-run
+                            lazy-run*]]))
 
 
 (def ^:dynamic *logic-dbs* [])
@@ -88,41 +89,6 @@
   (or (lvar? x)
       (implements? IBindable x)))
 
-;; Pair
-
-(defprotocol IPair
-  (-lhs [this])
-  (-rhs [this]))
-
-(deftype Pair [lhs rhs]
-  ICounted
-  (-count [_] 2)
-  IIndexed
-  (-nth [this i]
-    (condp cljs.core/== i
-      0 lhs
-      1 rhs
-      (throw (js/Error. "Index out of bounds."))))
-  (-nth [_ i not-found]
-    (condp cljs.core/== i
-      0 lhs
-      1 rhs
-      not-found))
-  IPair
-  (-lhs [_] lhs)
-  (-rhs [_] rhs)
-  IEquiv
-  (-equiv [_ o]
-    (and (instance? Pair o)
-         (= lhs (.-lhs o))
-         (= rhs (.-rhs o))))
-  IPrintWithWriter
-  (-pr-writer [x writer opts]
-    (-write writer (str "(" lhs " . " rhs ")"))))
-
-(defn pair [lhs rhs]
-  (Pair. lhs rhs))
-
 ;; =======================================================================
 ;; SubstValue
 ;; v - the actual ground value of the var
@@ -145,7 +111,7 @@
 ;; ===========================================================================
 ;; Constraint Store
 
-(declare lvar? bindable? add-var)
+(declare lvar? bindable? add-var non-storable?)
 
 (defn var-rands [a c]
   (->> (-rands c)
@@ -193,10 +159,10 @@
   IConstraintStore
   (-addc [this a c]
     (let [vars (var-rands a c)
-          c (-with-id c cid)
+          c (with-id c cid)
           cs (reduce (fn [cs v] (add-var cs v c)) this vars)]
       (ConstraintStore. (.-km cs) (.-cm cs) (inc cid) running)))
-  
+
   (-updatec [this a c]
     (let [oc (cm (id c))]
       (ConstraintStore. km (assoc cm (id c) c) cid running)))
@@ -248,6 +214,8 @@
 
 ;; ==========================================================================
 ;; Substitutions
+
+(declare tree-term?)
 
 (defprotocol ISubstitutions
   (-occurs-check [this u v])
@@ -304,12 +272,12 @@
     (let [u (if-not (lvar? v)
               (assoc-meta u ::root true)
               u)]
-      (Substitutions. (conj s (Pair. u v))
+      (Substitutions. (assoc s u v)
                       (if vs (conj vs u)) ts cs cq cqs oc _meta)))
 
   (-walk [this v]
     (if (bindable? v)
-      (loop [lv v me (find s v)]
+      (loop [^not-native lv v ^not-native me (find s v)]
         (if (nil? me)
           lv
           (let [v  (key me)
@@ -328,9 +296,9 @@
     (let [v (-walk this v)]
       (-walk-term v
                   (fn [x]
-                    (let [x (-walk s x)]
+                    (let [x (-walk this x)]
                       (if (tree-term? x)
-                        (-walk* s x)
+                        (-walk* this x)
                         x))))))
 
   (-unify [this u v]
@@ -341,8 +309,8 @@
         (if (and (lvar? u) (= u v))
           this
           (if (and (not (lvar? u)) (lvar? v))
-            (-unify-terms v u s)
-            (-unify-terms u v s))))))
+            (-unify-terms v u this)
+            (-unify-terms u v this))))))
 
   (-reify-lvar-name [this]
     (let [c (count s)]
@@ -353,16 +321,16 @@
   (-reify* [this v]
     (let [v (-walk this v)]
       (-reify-term v this)))
-  
+
   (-reify [this v]
     (let [v (-walk* this v)]
       (-walk* ^not-native
-              (-reify* ^not-native (with-meta empty-s (meta s)) v) v)))
-  
+              (-reify* ^not-native (with-meta empty-s _meta) v) v)))
+
   (-reify [this v r]
-    (let [v (walk* s v)]
-      (walk* ^not-native (-reify* r v) v)))
-  
+    (let [v (-walk* this v)]
+      (-walk* ^not-native (-reify* r v) v)))
+
   ICounted
   (-count [this] (count s))
 
@@ -376,28 +344,28 @@
   ICollection
   (-conj [this pair]
     (Substitutions. (conj s pair) vs ts cs cq cqs oc new-meta))
-    
+
   ISubstitutionsCLP
   (-root-val [this v]
     (if (lvar? v)
-      (loop [lv v [v vp :as me] (find s v)]
+      (loop [^not-native lv v ^not-native [v vp :as me] (find s v)]
         (cond
-         (nil? me) lv
-         (not (lvar? vp)) vp
-         :else (recur vp (find s vp))))
+          (nil? me) lv
+          (not (lvar? vp)) vp
+          :else (recur vp (find s vp))))
       v))
-
+  
   (-root-var [this v]
     (if (lvar? v)
       (if (-> v meta ::root)
         v
         (loop [lv v [v vp :as me] (find s v)]
           (cond (nil? me) lv
-                (not (lvar? vp))
-                (if (subst-val? vp)
-                  (with-meta v (meta vp))
-                  v)
-                :else (recur vp (find s vp)))))
+            (not (lvar? vp))
+            (if (subst-val? vp)
+              (with-meta v (meta vp))
+              v)
+            :else (recur vp (find s vp)))))
       v))
 
   (-ext-run-cs [this x v]
@@ -414,32 +382,33 @@
   (-queue [this c]
     (let [id (id c)]
       (if-not (cqs id)
-        (Substitutions. s vs ts cs (conj (or cq []) c) (conj cqs id) oc _meta)
+        (Substitutions.
+         s vs ts cs (conj (or cq []) c) (conj cqs id) oc _meta)
         this)))
 
   (-update-var [this x v]
-    (Substitutions. (conj s (pair x v)) vs ts cs cq cqs oc _meta)) 
+    (Substitutions. (assoc s x v) vs ts cs cq cqs oc _meta)) 
 
   IBind
   (-bind [this g] (g this))
-  
+
   IMPlus
   (-mplus [this f] (choice this f))
-  
+
   ITake
   (-take* [this] this))
 
 (declare make-cs)
 
 (defn make-s
-  ([] (make-s #{}))
+  ([] (make-s {}))
   ([m] (make-s m (make-cs)))
   ([m cs] (Substitutions. m nil nil cs nil #{} true nil)))
 
 (defn tabled-s
   ([] (tabled-s false))
   ([oc] (tabled-s oc nil))
-  ([oc meta] (Substitutions. #{} nil (atom {}) (make-cs) nil #{} oc meta)))
+  ([oc meta] (Substitutions. {} nil (atom {}) (make-cs) nil #{} oc meta)))
 
 (def ^not-native empty-s (make-s))
 
@@ -447,37 +416,37 @@
   (instance? Substitutions x))
 
 (defn to-s [v]
-  (let [s (reduce (fn [m [k v]] (conj m (pair k v))) #{} v)]
-    (make-s s (make-cs))))
+  (let [s (reduce-kv assoc {} v)]
+    (Substitutions. s nil nil (make-cs) nil #{} true nil)))
 
 ;; ===========================================================================
 ;; Logic Variables
 
-(deftype LVar [id unique name oname hash meta]
+(deftype LVar [id unique name oname ^:mutable __hash meta]
   Object
   (toString [_] (pr-str this))
 
   IHash
-  (-hash [_] hash)
+  (-hash [_] __hash)
 
   IMeta
   (-meta [this] meta)
 
   IWithMeta
   (-with-meta [this new-meta]
-    (LVar. id unique name oname hash new-meta))
+    (LVar. id unique name oname __hash new-meta))
 
   IPrintWithWriter
   (-pr-writer [x writer opts]
     (-write writer (str "<lvar:" name ">")))
-  
+
   IEquiv
   (-equiv [this o]
-    (and (instance LVar o)
+    (and (instance? LVar o)
          (if unique
            (identical? id (.-id o))
            (identical? name (.-name o)))))
-  
+
   IUnifyTerms
   (-unify-terms [u v s]
     (cond
@@ -485,25 +454,25 @@
       (non-storable? v) (throw (js/Error. (str v " is non-storable")))
       (not (identical? v not-found))
       (if (tree-term? v)
-        (-ext -s u v)
+        (-ext s u v)
         (if (-> u clojure.core/meta ::unbound)
           (-ext-no-check s u (assoc (-root-val s u) :v v))
           (-ext-no-check s u v)))
       :else nil))
-  
+
   IUnifyWithNil
   (-unify-with-nil [v u ^not-native s]
     (-ext-no-check s v u))
-  
+
   IUnifyWithObject
   (-unify-with-object [v u ^not-native s]
     (-ext s v u))
-  
+
   IUnifyWithLVar
   (-unify-with-lvar [v u ^not-native s]
     (let [repoint (cond (-> u clojure.core/meta ::unbound) [u v]
-                        (-> v clojure.core/meta ::unbound) [v u]
-                        :else nil)]
+                    (-> v clojure.core/meta ::unbound) [v u]
+                    :else nil)]
       (if repoint
         (let [[root other] repoint
               s (Substitutions. (.-s s) (.-vs s) (.-ts s)
@@ -515,19 +484,19 @@
           (when s
             (-ext-no-check s other root)))
         (-ext-no-check s u v))))
-  
+
   IUnifyWithLSeq
   (-unify-with-lseq [v u ^not-native s]
     (-ext s v u))
-  
+
   IUnifyWithSequential
   (-unify-with-seq [v u ^not-native s]
     (-ext s v u))
-  
+
   IUnifyWithMap
   (-unify-with-map [v u ^not-native s]
     (-ext s v u))
-  
+
   IReifyTerm
   (-reify-term [v ^not-native s]
     (let [rf (-> s clojure.core/meta :reify-vars)]
@@ -536,10 +505,10 @@
         (if rf
           (-ext s v (-reify-lvar-name s))
           (-ext s v (.-oname v))))))
-  
+
   IWalkTerm
   (-walk-term [v f] (f v))
-  
+
   IOccursCheckTerm
   (-occurs-check-term [v x ^not-native s]
     (= (-walk s v) x))
@@ -551,7 +520,7 @@
           lv (lvar 'ignore)]
       (if (contains? m u)
         s
-        (make-s (conj m (Pair. u lv)) cs)))))
+        (make-s (assoc m u lv) cs)))))
 
 (def lvar-sym-counter (array 0))
 
@@ -568,7 +537,7 @@
                   (next-id)
                   name)
            name (if unique
-                  (str name "__" id)
+                  (str name id)
                   (str name))]
        (LVar. id unique name oname (hash name) nil))))
 
@@ -594,10 +563,10 @@
 
 (deftype LCons [a d ^:unsynchronized-mutable cache meta]
   ITreeTerm
-  
+
   IMeta
   (-meta [this] meta)
-  
+
   IWithMeta
   (-with-meta [this new-meta]
     (LCons. a d cache new-meta))
@@ -653,13 +622,13 @@
       (sequential? v) (-unify-with-seq u v s)            
       (lcons? v) (-unify-with-lseq v u s)
       :else nil))
-  
+
   IUnifyWithNil
   (-unify-with-nil [v u s] (fail s))
-  
+
   IUnifyWithObject
   (-unify-with-object [v u s] (fail s))
-  
+
   IUnifyWithLSeq
   (-unify-with-lseq [^not-native v ^not-native u ^not-native s]
     (loop [u u v v s s]
@@ -673,7 +642,7 @@
               (recur (-lnext u) (-lnext v) s)
               s))
           :else (-unify s u v)))))
-  
+
   IUnifyWithSequential
   (-unify-with-seq [u v s]
     (loop [u u v (seq v) s s]
@@ -747,9 +716,7 @@
     (cond
       (sequential? u) (-unify-with-seq v u s)
       (implements? IUnifyWithRecord v) (-unify-with-record v u s)
-      :else (if (= u v)
-              s
-              nil)))
+      :else (-unify-with-object v u s)))
 
   PersistentArrayMap
   (-unify-terms [u v s]
@@ -792,7 +759,6 @@
   default
   (-unify-with-lvar [v u ^not-native s]
     (-ext s u v)))
-
 ;; -----------------------------------------------------------------------------
 ;; Unify LCons with X
 
@@ -803,12 +769,12 @@
   default
   (-unify-with-lseq [v ^not-native u ^not-native s]
     (if (and (sequential? v) (not (nil? v)))
-      (loop [u u ^not-native v (-seq v) s s]
+      (loop [u u ^not-native v (seq v) s s]
         (if-not (nil? v)
           (if (lcons? u)
-            (let [s (-unify s (-lfirst u) (-first v))]
+            (let [s (-unify s (-lfirst u) (first v))]
               (if-not (failed? s)
-                (recur (-lnext u) (-next v) s)
+                (recur (-lnext u) (next v) s)
                 s))
             (-unify s u v))
           (if (lvar? u)
@@ -829,12 +795,12 @@
              (not (nil? v))
              (and (counted? u) (counted? v)
                   (not (cljs.core/== (count u) (count v)))))
-      (loop [^not-native u (-seq u) ^not-native v (-seq v) s s]
+      (loop [^not-native u (seq u) ^not-native v (seq v) s s]
         (if-not (nil? u)
           (if-not (nil? v)
-            (let [s (-unify s (-first u) (-first v))]
+            (let [s (-unify s (first u) (first v))]
               (if-not (failed? s)
-                (recur (-next u) (-next v) s)
+                (recur (next u) (next v) s)
                 s))
             (fail s))
           (if-not (nil? v) (fail s) s)))
@@ -846,8 +812,8 @@
 (defn unify-with-map* [v u s]
   (if-not (cljs.core/== (count u) (count v))
     (fail s)
-    (loop [ks (keys u) s s]
-      (if (seq ks)
+    (loop [^not-native ks (seq (keys u)) ^not-native s s]
+      (if ks
         (let [kf (first ks)
               vf (get v kf not-found)]
           (if (identical? vf not-found)
@@ -896,7 +862,7 @@
   (with-meta
     (loop [^not-native v v
            ^not-native r (-uninitialized v)]
-      (if (-seq v)
+      (if (seq v)
         (let [[vfk vfv] (first v)]
           (recur (next v) (assoc r (-walk-term (f vfk) f)
                                  (-walk-term (f vfv) f))))
@@ -907,9 +873,9 @@
   (with-meta
     (loop [^not-native v v
            ^not-native r (transient {})]
-      (if (-seq v)
-        (let [[vfk vfv] (-first v)]
-          (recur (-next v)
+      (if (seq v)
+        (let [[vfk vfv] (first v)]
+          (recur (next v)
                  (-assoc! r (-walk-term (f vfk) f) (-walk-term (f vfv) f))))
         (persistent! r)))
     (meta v)))
@@ -937,8 +903,8 @@
     (with-meta
       (loop [^not-native v v
              ^not-native r (transient [])]
-        (if (-seq v)
-          (recur (-next v) (-conj! r (-walk-term (f (first v)) f)))
+        (if (seq v)
+          (recur (next v) (-conj! r (-walk-term (f (first v)) f)))
           (persistent! r)))
       (meta v))))
 
@@ -952,10 +918,10 @@
   default
   (-occurs-check-term [v x ^not-native s]
     (if (sequential? v)
-      (loop [^not-native v (-seq v) x x s s]
+      (loop [^not-native v (seq v) x x s s]
         (if-not (nil? v)
-          (or (-occurs-check s x (-first v))
-              (recur (-next v) x s))
+          (or (-occurs-check s x (first v))
+              (recur (next v) x s))
           false))
       false)))
 
@@ -994,7 +960,7 @@
   
   IMPlus
   (-mplus [this fp]
-    (Choice. a (-inc (-mplus (fp) f))))
+    (Choice. a (-inc (mplus (fp) f))))
   
   ITake
   (-take* [this]
@@ -1008,17 +974,14 @@
 
 (deftype Inc [f]
   IFn
-  (-invoke [_] (f))
-  
+  (-invoke [_] (f))  
   IBind
   (-bind [this g]
     (-inc (let [^not-native a (f)]
-            (-bind a g))))
-  
+            (-bind a g))))  
   IMPlus
   (-mplus [this fp]
-    (-inc (mplus (fp) this)))
-  
+    (-inc (mplus (fp) this)))  
   ITake
   (-take* [this] (lazy-seq (take* (f)))))
 
@@ -1031,9 +994,9 @@
   IMPlus
   (-mplus [this fp] fp)
   ITake
-  (-take* [this] '()))
+  (-take* [this] ()))
 
-(defn failed? [x]
+(defn ^boolean failed? [x]
   (instance? Fail x))
 
 ;; ===========================================================================
@@ -1045,7 +1008,7 @@
 
 (defn fail
   "A goal that always fails."
-  [a] nil)
+  [a] (Fail. a))
 
 (def s# succeed)
 
@@ -1229,6 +1192,9 @@
 
 (defprotocol INonStorable)
 
+(defn ^boolean non-storable? [x]
+  (implements? INonStorable x))
+
 (defprotocol IUninitialized
   (-uninitialized [_]))
 
@@ -1240,14 +1206,20 @@
 
   IUnifyTerms
   (-unify-terms [u v s]
-    (if (map? v)
-      (-unify-with-pmap u v s)
-      nil))
+    (-unify-with-pmap u v s))
+
+  IUnifyWithPMap
+  (-unify-with-pmap [v u s]
+    (-unify-with-map v u s))
+
+  IUnifyWithLVar
+  (-unify-with-lvar [v u s]
+    (-ext-no-check s u v))
 
   IUnifyWithMap
   (-unify-with-map [v u s]
-    (loop [ks (keys v) s s]
-      (if (seq ks)
+    (loop [^not-native ks (seq (keys v)) ^not-native s s]
+      (if ks
         (let [kf (first ks)
               uf (get u kf not-found)]
           (if (identical? vf not-found)
@@ -1272,8 +1244,31 @@
       (-unify-with-map u v s)
       (fail s)))
 
+  IWalkTerm
+  (-walk-term [v s]
+    (walk-term-map* v s))
+
   IUninitialized
   (-uninitialized [_] (PMap.)))
+
+(extend-protocol IUnifyWithPMap
+  nil
+  (-unify-with-pmap [v u s] (fail s))
+
+  default
+  (-unify-with-pmap [v u s] (fail s))
+
+  LVar
+  (-unify-with-pmap [v u s]
+    (-ext s v u))
+
+  PersistentArrayMap
+  (-unify-with-pmap [v u s]
+    (-unify-with-map u v s))
+
+  PersistentHashMap
+  (-unify-with-pmap [v u s]
+    (-unify-with-map u v s)))
 
 (defn partial-map
   "Given map m, returns partial map that unifies with maps even if it
@@ -1313,6 +1308,14 @@
 
 (defprotocol IReifiableConstraint
   (-reifyc [_ v r a]))
+
+(defn ^boolean reifiable? [x]
+  (implements? IReifiableConstraint x))
+
+(defprotocol IEnforceableConstraint)
+
+(defn ^boolean enforceable? [x]
+  (implements? IEnforceableConstraint x))
 
 (defprotocol IConstraintWatchedStores
   (-watched-stores [_]))
@@ -1451,11 +1454,11 @@
 (defn get-dom [s x dom]
   (let [v (-root-val s x)]
     (cond
-     (subst-val? v) (let [v' (.-v v)]
-                      (if (not= v' ::unbound)
-                        v'
-                        (-> v :doms dom)))
-     (not (lvar? v)) v)))
+      (subst-val? v) (let [v' (.-v v)]
+                       (if (not= v' ::unbound)
+                         v'
+                         (-> v :doms dom)))
+      (not (lvar? v)) v)))
 
 (def empty-f (fn []))
 
@@ -1632,7 +1635,7 @@
              (f)
              (-mplus (f) (fn [] w))))))
 
-     :else (recur (next w) (conj a (first w))))))
+      :else (recur (next w) (conj a (first w))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Extend Substitutions to support tabling
@@ -1831,7 +1834,7 @@
             (when constrained
               (let [x (first constrained)]
                 (if (and (lvar? x)
-                         (and (lvar? (walk a x))
+                         (and (lvar? (-walk a x))
                               (nil? (get-dom a x ::fd))))
                   (throw (js/Error.
                           (str "Constrained variable " x " without domain")))
@@ -1869,7 +1872,7 @@
                  (into #{}))]
     (if (empty? rcs)
       (choice v empty-f)
-      (choice `(~v :- ~@rcs) empty-f))))
+      (choice (concat `(~v :-) rcs) empty-f))))
 
 (defn reifyg [x]
   (all
@@ -1927,20 +1930,20 @@
   default
   (-force-ans [v x]
     (cond (sequential? v)
-          (letfn [(loop [ys]
-                    (if ys
-                      (all
-                       (force-ans (first ys))
-                       (fn [a]
-                         (if-let [ys (sort-by-strategy (next ys) x a)]
-                           ((loop ys) a)
-                           a)))
-                      s#))]
-            (loop (seq v)))
-          
-          :else (if (lvar? x)
-                  (ext-run-csg x v)
-                  s#)))
+      (letfn [(loop [ys]
+                (if ys
+                  (all
+                   (force-ans (first ys))
+                   (fn [a]
+                     (if-let [ys (sort-by-strategy (next ys) x a)]
+                       ((loop ys) a)
+                       a)))
+                  s#))]
+        (loop (seq v)))
+      
+      :else (if (lvar? x)
+              (ext-run-csg x v)
+              s#)))
   PersistentHashMap
   (-force-ans [v x]
     (letfn [(loop [ys]
@@ -2061,8 +2064,8 @@
         (loop [^not-native u (seq u) ^not-native v (seq v) ^not-native cs cs]
           (if u
             (if v
-              (let [uv (-first u)
-                    vv (-first v)
+              (let [uv (first u)
+                    vv (first v)
                     cs (disunify s uv vv cs)]
                 (if cs
                   (recur (next u) (next v) cs)
@@ -2118,9 +2121,9 @@
                             xv (-walk* s x)
                             vv (-walk* s v)]
                         (cond
-                         (= xv vv) (recur (next sp) (dissoc p x))
-                         (nil? (unify s xv vv)) nil
-                         :else (recur (next sp) (assoc (dissoc p x) xv vv))))
+                          (= xv vv) (recur (next sp) (dissoc p x))
+                          (nil? (unify s xv vv)) nil
+                          :else (recur (next sp) (assoc (dissoc p x) xv vv))))
                       p))]
             (if p
               (when-not (empty? p)             
@@ -2302,10 +2305,10 @@
   default
   (-constrain-tree [t fc s]
     (when (sequential? t)
-      (loop [^not-native t (-seq t) ^not-native s s]
+      (loop [^not-native t (seq t) ^not-native s s]
         (if t
-          (when-let [s (fc (-first t) s)]
-            (recur (-next t) s))
+          (when-let [s (fc (first t) s)]
+            (recur (next t) s))
           s)))))
 
 (defn constrain-tree [t fc]
@@ -2335,7 +2338,7 @@
        (-reifyc [c v r s]
          (if (fn? reifier)
            (reifier c x v r s)
-           (let [x (walk* r x)]
+           (let [x (-walk* r x)]
              `(fixc ~x ~reifier))))
        IConstraintWatchedStores
        (-watched-stores [this] #{::subst}))))
@@ -2358,9 +2361,9 @@
   (fixc v
         (fn [t _ _]
           (cond
-           (sequential? t) s#
-           (lcons? t) (seqc (lnext t))
-           :else u#))
+            (sequential? t) s#
+            (lcons? t) (seqc (lnext t))
+            :else u#))
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))
 
