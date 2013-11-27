@@ -332,8 +332,8 @@
    expression."
   ([p vars] (p->llist p vars false))
   ([p vars quoted]
-     `(llist ~@(map #(p->term % vars quoted)
-                    (remove #(contains? '#{.} %) p)))))
+     `(llist ~@(doall (map #(p->term % vars quoted)
+                           (remove #(contains? '#{.} %) p))))))
 
 (defn lvar-sym? [s]
   (and (symbol? s)
@@ -341,11 +341,9 @@
        (not (contains? *locals* s))))
 
 (defn update-pvars! [x vars]
-  (if (lvar-sym? x)
-    (do
-      (swap! vars conj x)
-      x)
-    x))
+  (when (lvar-sym? x)
+    (swap! vars conj x))
+  x)
 
 (defn- p->term
   "Convert a pattern p into a term suitable for unification. Takes an atom
@@ -365,7 +363,7 @@
           (if (and (seq? s) (not quoted))
             (p->term s vars true)
             p)
-          (clojure.core/= f 'clojure.core/unoquote)
+          (clojure.core/= f 'clojure.core/unquote)
           (if quoted
             (update-pvars! s vars)
             (throw
@@ -377,9 +375,9 @@
               ps))))
        :else
        (let [ps (map #(p->term % vars quoted) p)]
-         (cond
-          (instance? clojure.lang.IMapEntry p) (into [] ps)
-          :else (into (empty p) ps))))
+         (if (instance? clojure.lang.IMapEntry p)
+           (into [] ps)
+           (into (empty p) ps))))
       (symbol? p) (if quoted
                     (list 'quote p)
                     (update-pvars! p vars))
@@ -562,7 +560,7 @@
          (let [argv# ~args]
            (fn [a#]
              (let [key#    (cljs.core.logic/-reify a# argv#)
-                   tables# (:ts a#)
+                   tables# (.-ts a#)
                    tables# (if-not (contains? @tables# ~uuid)
                              (swap! tables#
                                     (fn [tables#]

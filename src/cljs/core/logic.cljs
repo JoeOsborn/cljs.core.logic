@@ -569,6 +569,12 @@
 
 (declare lcons? LCons failed?)
 
+(defn lcons-pr-seq [x]
+  (if (lcons? x)
+    (lazy-seq (cons (-lfirst x)
+                    (lcons-pr-seq (-lnext x))))
+    (list '. x)))
+
 (deftype LCons [a d ^:unsynchronized-mutable cache meta]
   ITreeTerm
 
@@ -585,18 +591,12 @@
 
   IPrintWithWriter
   (-pr-writer [x writer opts]
-    (pr-sequential-writer writer pr-writer "(" " " ")" opts (-pr-seq x)))
-
-  LConsPrint
-  (-pr-seq [x]
-    (cond
-      (lcons? d) (str a " " (-pr-seq d))
-      :else (str a " . " d)))
+    (pr-sequential-writer writer pr-writer "(" " " ")" opts (lcons-pr-seq x)))
 
   Object
   (toString [this]
     (cond
-      (lcons? d) (str "(" a " " (-pr-seq d) ")")
+      (lcons? d) (str "(" a " " (lcons-pr-seq d) ")")
       :else (str "(" a " . " d ")")))
 
   IEquiv
@@ -1057,10 +1057,9 @@
   (-ifa [b gs c]
     (-inc (-ifa (b) gs c)))
 
-  default
+  function
   (-ifa [b gs c]
-    (when (fn? b)
-      (-inc (-ifa (b) gs c)))))
+    (-inc (-ifa (b) gs c))))
 
 (extend-protocol IIfU
   nil
@@ -1086,12 +1085,7 @@
 
   Choice
   (-ifu [b gs c]
-    (reduce -bind (.-a b) gs))
-
-  default
-  (-ifu [b gs c]
-    (when (fn? b)
-      (-inc (-ifu (b) gs c)))))
+    (reduce -bind (.-a b) gs)))
 
 (defn onceo [g] (condu (g)))
 
