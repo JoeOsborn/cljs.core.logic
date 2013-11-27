@@ -113,7 +113,7 @@
 ;; ===========================================================================
 ;; Constraint Store
 
-(declare lvar? bindable? add-var non-storable? choice)
+(declare lvar? bindable? add-var non-storable? choice merge-with-root)
 
 (defn var-rands [a c]
   (->> (-rands c)
@@ -452,15 +452,30 @@
   IUnifyTerms
   (-unify-terms [u v s]
     (cond
-      (lvar? v) (-unify-with-lvar v u s)          
+      (lvar? v)
+      (let [repoint (cond
+                      (-> u clojure.core/meta ::unbound) [u v]
+                      (-> v clojure.core/meta ::unbound) [v u]
+                      :else nil)]
+        (if repoint
+          (let [[root other] repoint
+                s (Substitutions. (.-s s) (.-vs s) (.-ts s)
+                                  (-migrate (.-cs s) other root) (.-cq s)
+                                  (.-cqs s) (.-oc s) (._meta s))
+                s (if (-> other clojure.core/meta ::unbound)
+                    (merge-with-root s other root)
+                    s)]
+            (when s
+              (-ext-no-check s other root)))
+          (-ext-no-check s u v)))
       (non-storable? v) (throw (js/Error. (str v " is non-storable")))
-      (not (identical? v not-found))
+      (not= v not-found)
       (if (tree-term? v)
         (-ext s u v)
         (if (-> u clojure.core/meta ::unbound)
           (-ext-no-check s u (assoc (-root-val s u) :v v))
           (-ext-no-check s u v)))
-      :else nil))
+      :else (fail s)))
 
   IUnifyWithNil
   (-unify-with-nil [v u ^not-native s]
@@ -472,20 +487,7 @@
 
   IUnifyWithLVar
   (-unify-with-lvar [v u ^not-native s]
-    (let [repoint (cond (-> u clojure.core/meta ::unbound) [u v]
-                    (-> v clojure.core/meta ::unbound) [v u]
-                    :else nil)]
-      (if repoint
-        (let [[root other] repoint
-              s (Substitutions. (.-s s) (.-vs s) (.-ts s)
-                                (-migrate (.-cs s) other root) (.-cq s)
-                                (.-cqs s) (.-oc s) (._meta s))
-              s (if (-> other clojure.core/meta ::unbound)
-                  (merge-with-root s other root)
-                  s)]
-          (when s
-            (-ext-no-check s other root)))
-        (-ext-no-check s u v))))
+    (-ext-no-check s u v))
 
   IUnifyWithLSeq
   (-unify-with-lseq [v u ^not-native s]
@@ -946,14 +948,14 @@
 (declare Choice)
 
 (defn mplus [a f]
-  (if (implements? IMPlus a)
+  (if (satisfies? IMPlus a)
     (-mplus ^not-native a f)
     (Choice. a f)))
 
 (defn take* [x]
-  (if (implements? ITake x)
+  (if (satisfies? ITake x)
     (-take* ^not-native x)
-    (list x)))
+    x))
 
 (declare Inc)
 
@@ -1007,30 +1009,25 @@
   nil
   (-take* [_] '())
   
-  default
+  function
   (-take* [this]
-    (if (fn? this)
-      (lazy-seq (take* (this)))
-      this)))
+    (lazy-seq (take* (this)))))
 
 (extend-protocol IMPlus
   nil
   (-mplus [_ f] (f))
   
-  default
+  function
   (-mplus [this f]
-    (if (fn? this)
-      (-inc (mplus (f) this))
-      (Choice. this f))))
+    (-inc (mplus (f) this))))
 
 (extend-protocol IBind
   nil
   (-bind [_ g] nil)
   
-  default
+  function
   (-bind [this g]
-    (if (fn? this)
-      (-inc (-bind (this) g)))))
+    (-inc (-bind (this) g))))
 
 ;; ===========================================================================
 ;; Syntax
