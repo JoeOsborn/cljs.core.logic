@@ -416,7 +416,7 @@
   (instance? Substitutions x))
 
 (defn to-s [v]
-  (let [s (reduce-kv assoc {} v)]
+  (let [s (reduce (fn [m [k v]] (assoc m k v)) {} v)]
     (Substitutions. s nil nil (make-cs) nil #{} true nil)))
 
 ;; ===========================================================================
@@ -1209,26 +1209,27 @@
     (-unify-with-pmap u v s))
 
   IUnifyWithPMap
-  (-unify-with-pmap [v u s]
-    (-unify-with-map v u s))
+  (-unify-with-pmap [u v s]
+    (-unify-with-map u v s))
 
   IUnifyWithLVar
-  (-unify-with-lvar [v u s]
+  (-unify-with-lvar [u v s]
     (-ext-no-check s u v))
 
   IUnifyWithMap
-  (-unify-with-map [v u s]
-    (loop [^not-native ks (seq (keys v)) ^not-native s s]
+  (-unify-with-map [u v s]
+    (loop [^not-native ks (seq (keys u)) ^not-native s s]
       (if ks
         (let [kf (first ks)
               uf (get u kf not-found)]
           (if (identical? vf not-found)
             (fail s)
-            (let [vf (get u kf)]
-              (if (lvar? uf)
-                (recur (next ks) ((featurec uf vf) s))
-                (if (map? vf)
-                  (let [s (-unify s (partial-map vf) uf)]
+            (let [uf (get u kf)
+                  vf (-walk s vf)]
+              (if (lvar? vf)
+                (recur (next ks) ((featurec vf uf) s))
+                (if (map? uf)
+                  (let [s (-unify s (partial-map uf) vf)]
                     (if-not (failed? s)
                       (recur (next ks) s)
                       s))
@@ -1320,6 +1321,8 @@
 (defprotocol IConstraintWatchedStores
   (-watched-stores [_]))
 
+(declare remcg)
+
 (defn -featurec
   [x fs]
   (reify
@@ -1328,20 +1331,25 @@
       (reify
         IFn
         (-invoke [_ s]
-          ((composeg
-            (== fs x)
-            (remcg this)) s))
+          (let [fs (-walk s fs)]
+            ((composeg
+              (== (partial-map fs) x)
+              (remcg this)) s)))
         IRunnable
         (-runnable? [_]
-          (not (lvar? (-walk s x))))))
+          (and (not (lvar? (-walk s x)))
+               (not (lvar? (-walk s fs)))))))
     IConstraintOp
     (-rator [_] `cljs.core.logic/featurec)
     (-rands [_] [x])
     IReifiableConstraint
     (-reifyc [_ v r a]
-      (let [fs (into {} fs)
-            r  (-reify* r (-walk* a fs))]
-        `(featurec ~(-walk* r x) ~(-walk* r fs))))
+      (if-not (lvar? fs)
+        (let [fs (into {} fs)
+              r  (-reify* r (-walk* a fs))]
+          `(featurec ~(-walk* r x) ~(-walk* r fs)))
+        (let [[x fs] (-reify a [x fs] r)]
+          `(featurec ~x ~fs))))
     IConstraintWatchedStores
     (-watched-stores [this] #{::subst})))
 
@@ -1407,10 +1415,10 @@
   (-merge-doms [a b]))
 
 (defn add-dom
-  ([^not-native s ^not-native x ^not-native dom ^not-native domv]
+  ([s x dom domv]
      (let [x (-root-var s x)]
        (add-dom s x dom domv nil)))
-  ([^not-native s ^not-native x ^not-native dom ^not-native domv seenset]
+  ([s x dom domv seenset]
      (let [v (-root-val s x)
            s (if (subst-val? v)
                (-update-var s x (assoc-dom v dom domv))
@@ -1421,10 +1429,10 @@
                     (add-dom s y dom domv (conj (or seenset #{}) x)))))))
 
 (defn update-dom
-  ([^not-native s ^not-native x ^not-native dom f]
+  ([s x dom f]
      (let [x (-root-var s x)]
        (update-dom s x dom f nil)))
-  ([^not-native s ^not-native x ^not-native dom f seenset]
+  ([s x dom f seenset]
      (let [v (-root-val s x)
            v (if (lvar? v)
                (subst-val ::unbound)
@@ -2276,7 +2284,7 @@
 
 (defn constrain-tree-map
   [t fc s]
-  (loop [t (seq t) s s]
+  (loop [^not-native t (seq t) ^not-native s s]
     (if t
       (let [[_ v] (first t)
             s (fc v s)]
