@@ -757,7 +757,7 @@
   "A finite domain constraint. u must be less than v. u and v
    must eventually be given domains if vars."
   [u v]
-  (all
+  (l/all
    (<= u v)
    (!= u v)))
 

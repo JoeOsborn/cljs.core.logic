@@ -46,7 +46,7 @@
                             tail (prep* n store lcons? skip)]
                         (if skip
                           tail
-                          (lcons (prep* f store) tail)))
+                          (l/lcons (prep* f store) tail)))
                       (l/-walk-term expr (replace-lvar store)))
 
         :else expr))))
@@ -67,13 +67,13 @@
 (defn queue-constraint [s c vs]
   (cond
    (vector? vs)
-   (queue s (l/-unwrap (apply c (map #(l/lvar % false) vs))))
+   (l/-queue s (l/-unwrap (apply c (map #(l/lvar % false) vs))))
 
    (set? vs)
-   (reduce (fn [s v] (queue s (l/-unwrap (c (l/lvar v false))))) s vs)
+   (reduce (fn [s v] (l/-queue s (l/-unwrap (c (l/lvar v false))))) s vs)
 
    (symbol? vs)
-   (queue s (l/-unwrap (apply c (map #(l/lvar % false) (list vs)))))
+   (l/-queue s (l/-unwrap (apply c (map #(l/lvar % false) (list vs)))))
 
    :else
    (throw

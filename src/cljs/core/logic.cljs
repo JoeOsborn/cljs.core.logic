@@ -67,7 +67,7 @@
 
 ;; Utilities
 
-(declare lvar?)
+(declare lvar? build subst-val)
 
 (def not-found (js-obj))
 
@@ -78,10 +78,10 @@
   (with-meta x (dissoc (meta x) k)))
 
 (defn assoc-dom [x k v]
-  (assoc x :doms (assoc (.-doms x) k v)))
+  (subst-val (.-v x) (assoc (.-doms x) k v) (.-eset x) (meta x)))
 
 (defn dissoc-dom [x k]
-  (assoc x :doms (dissoc (.-doms x) k)))
+  (subst-val (.-v x) (dissoc (.-doms x) k) (.-eset x) (meta x)))
 
 (def unbound-names
   (let [r (range 100)]
@@ -116,7 +116,8 @@
 ;; ===========================================================================
 ;; Constraint Store
 
-(declare lvar? bindable? add-var non-storable? choice merge-with-root)
+(declare lvar? bindable? add-var non-storable? choice merge-with-root
+         -root-var -root-val)
 
 (defn var-rands [a c]
   (->> (-rands c)
@@ -269,9 +270,8 @@
 
   (-ext [this u v]
     (if (and ^boolean *occurs-check*
-             ^boolean oc
              ^boolean (-occurs-check this u (if (subst-val? v) (.-v v) v)))
-      (fail this)
+      nil
       (-ext-no-check this u v)))
 
   (-ext-no-check [this u v]
@@ -479,7 +479,7 @@
         (if (-> u clojure.core/meta ::unbound)
           (-ext-no-check s u (assoc (-root-val s u) :v v))
           (-ext-no-check s u v)))
-      :else (fail s)))
+      :else (-ext-no-check s u v)))
 
   IUnifyWithNil
   (-unify-with-nil [v u ^not-native s]
@@ -629,13 +629,13 @@
     (cond
       (sequential? v) (-unify-with-seq u v s)            
       (lcons? v) (-unify-with-lseq v u s)
-      :else (fail s)))
+      :else nil))
 
   IUnifyWithNil
-  (-unify-with-nil [v u s] (fail s))
+  (-unify-with-nil [v u s] nil)
 
   IUnifyWithObject
-  (-unify-with-object [v u s] (fail s))
+  (-unify-with-object [v u s] nil)
 
   IUnifyWithLSeq
   (-unify-with-lseq [^not-native v ^not-native u ^not-native s]
@@ -652,23 +652,11 @@
           :else (-unify s u v)))))
 
   IUnifyWithSequential
-  (-unify-with-seq [u v s]
-    (loop [u u v (seq v) s s]
-      (if-not (nil? v)
-        (if (lcons? u)
-          (let [s (-unify s (-lfirst u) (first v))]
-            (if-not (failed? s)
-              (recur (-lnext u) (next v) s)
-              s))
-          (-unify s u v))
-        (if (lvar? u)
-          (if-let [s (-unify s u '())]
-            s
-            (-unify s u nil))
-          (fail s)))))
-
+  (-unify-with-seq [v u s]
+    (-unify-with-lseq u v s))
+  
   IUnifyWithMap
-  (-unify-with-map [v u s] (fail s))  
+  (-unify-with-map [v u s] nil)
 
   IReifyTerm
   (-reify-term [v s]    
@@ -741,18 +729,18 @@
   (-unify-with-nil [v u s] s)
 
   default
-  (-unify-with-nil [v u s] (fail s)))
+  (-unify-with-nil [v u s] nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Unify Object with X
 
 (extend-protocol IUnifyWithObject
   nil
-  (-unify-with-object [v u s] (fail s))
+  (-unify-with-object [v u s] nil)
 
   default
   (-unify-with-object [v u s]
-    (if (= u v) s (fail s))))
+    (if (= u v) s nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Unify LVar with X
@@ -769,7 +757,7 @@
 
 (extend-protocol IUnifyWithLSeq
   nil
-  (-unify-with-lseq [v u s] (fail s))
+  (-unify-with-lseq [v u s] nil)
 
   default
   (-unify-with-lseq [v ^not-native u ^not-native s]
@@ -784,15 +772,15 @@
             (-unify s u v))
           (if (lvar? u)
             (-unify s u '())
-            (fail s))))
-      (fail s))))
+            nil)))
+      nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Unify Sequential with X
 
 (extend-protocol IUnifyWithSequential
   nil
-  (-unify-with-seq [v u s] (fail s))
+  (-unify-with-seq [v u s] nil)
 
   default
   (-unify-with-seq [^not-native v ^not-native u ^not-native s]
@@ -804,34 +792,34 @@
               (if-not (failed? s)
                 (recur (next u) (next v) s)
                 s))
-            (fail s))
-          (if-not (nil? v) (fail s) s)))
-      (fail s))))
+            nil)
+          (if-not (nil? v) nil s)))
+      nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Unify IPersistentMap with X
 
 (defn unify-with-map* [v u s]
   (if-not (cljs.core/== (count u) (count v))
-    (fail s)
+    nil
     (loop [^not-native ks (seq (keys u)) s s]
       (if ks
         (let [kf (first ks)
               vf (get v kf not-found)]
           (if (identical? vf not-found)
-            (fail s)
+            nil
             (let [s (-unify s (get u kf) vf)]
               (if-not (failed? s)
                 (recur (next ks) s)
-                (fail s)))))
+                nil))))
         s))))
 
 (extend-protocol IUnifyWithMap
   nil
-  (-unify-with-map [v u s] (fail s))
+  (-unify-with-map [v u s] nil)
 
   default
-  (-unify-with-map [v u s] (fail s))
+  (-unify-with-map [v u s] nil)
 
   PersistentArrayMap
   (-unify-with-map [v u s]
@@ -987,26 +975,17 @@
   (-take* [this] (lazy-seq (take* (f)))))
 
 ;; ---------------------------------------------------------------------------
-;; Fail
-
-(deftype Fail [a]
-  IBind
-  (-bind [this g] this)
-  IMPlus
-  (-mplus [this fp] fp)
-  ITake
-  (-take* [this] ()))
-
-(defn ^boolean failed? [x]
-  (instance? Fail x))
+;; MZero
 
 (extend-type nil
   IBind
-  (-bind [_ g] nil)
+  (-bind [_ g] this)
   IMPlus
   (-mplus [_ f] (f))
   ITake
   (-take* [_] '()))
+
+(def failed? nil?)
 
 (extend-protocol ITake
   nil
@@ -1041,7 +1020,7 @@
 
 (defn fail
   "A goal that always fails."
-  [a] (Fail. a))
+  [a] nil)
 
 (def s# succeed)
 
@@ -1062,14 +1041,8 @@
     (when c
       (force c)))
 
-  Fail
-  (-ifa [b gs c]
-    (when c
-      (force c)))
-
   Substitutions
   (-ifa [b gs c]
-    ;; (reduce -bind b gs)
     (loop [b b [g0 & goals] gs]
       (if g0
         (when-let [b (g0 b)]
@@ -1095,11 +1068,6 @@
     (when c
       (force c)))
 
-  Fail
-  (-ifu [b gs c]
-    (when c
-      (force c)))
-
   Substitutions
   (-ifu [b gs c]
     (loop [b b [g0 & goals] gs]
@@ -1107,6 +1075,10 @@
         (when-let [b (g0 b)]
           (recur b gr))
         b)))
+
+  function
+  (-ifu [b gs c]
+    (-inc (-ifu (b) gs c)))
   
   Inc
   (-ifu [b gs c]
@@ -1232,51 +1204,48 @@
   (-uninitialized [_]))
 
 (defprotocol IUnifyWithPMap
-  (-unify-with-pmap [pmap u s]))
+  (-unify-with-pmap [v u s]))
 
 (defrecord PMap []
   INonStorable
-
   IUnifyTerms
   (-unify-terms [u v s]
-    (-unify-with-pmap u v s))
+    (if (map? v)
+      (-unify-with-pmap v u s)
+      nil))
 
   IUnifyWithPMap
-  (-unify-with-pmap [u v s]
-    (-unify-with-map u v s))
+  (-unify-with-pmap [v u s] (-unify-with-map v u s))
 
   IUnifyWithLVar
-  (-unify-with-lvar [u v s]
-    (-ext-no-check s u v))
+  (-unify-with-lvar [v u s] (-ext-no-check s u v))
 
   IUnifyWithMap
   (-unify-with-map [u v s]
-    (loop [^not-native ks (seq (keys u)) ^not-native s s]
-      (if ks
+    (loop [ks (keys u) s s]
+      (if (seq ks)
         (let [kf (first ks)
-              uf (get u kf not-found)]
+              vf (get v kf not-found)]
           (if (identical? vf not-found)
-            (fail s)
+            nil
             (let [uf (get u kf)
                   vf (-walk s vf)]
               (if (lvar? vf)
                 (recur (next ks) ((featurec vf uf) s))
                 (if (map? uf)
-                  (let [s (-unify s (partial-map uf) vf)]
-                    (if-not (failed? s)
-                      (recur (next ks) s)
-                      s))
-                  (let [s (-unify s vf uf)]
-                    (if-not (failed? s)
-                      (recur (next ks) s)
-                      s)))))))
+                  (if-let [s (-unify s (partial-map uf) vf)]
+                    (recur (next ks) s)
+                    nil)
+                  (if-let [s (-unify s uf vf)]
+                    (recur (next ks) s)
+                    nil))))))
         s)))
 
   IUnifyWithRecord
   (-unify-with-record [u v s]
     (if (map? v)
-      (-unify-with-map u v s)
-      (fail s)))
+      (-unify-with-map v u s)
+      nil))
 
   IWalkTerm
   (-walk-term [v f]
@@ -1287,22 +1256,19 @@
 
 (extend-protocol IUnifyWithPMap
   nil
-  (-unify-with-pmap [v u s] (fail s))
+  (-unify-with-pmap [v u s] nil)
 
   default
-  (-unify-with-pmap [v u s] (fail s))
+  (-unify-with-pmap [v u s] nil)
 
   LVar
-  (-unify-with-pmap [v u s]
-    (-ext s v u))
+  (-unify-with-pmap [v u s] (-ext s v u))
 
   PersistentArrayMap
-  (-unify-with-pmap [v u s]
-    (-unify-with-map u v s))
+  (-unify-with-pmap [v u s] (-unify-with-map u v s))
 
   PersistentHashMap
-  (-unify-with-pmap [v u s]
-    (-unify-with-map u v s)))
+  (-unify-with-pmap [v u s] (-unify-with-map u v s)))
 
 (defn partial-map
   "Given map m, returns partial map that unifies with maps even if it
@@ -2395,9 +2361,9 @@
   (fixc v
         (fn [t _ _]
           (cond
-            (sequential? t) s#
+            (sequential? t) succeed
             (lcons? t) (seqc (-lnext t))
-            :else u#))
+            :else fail))
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))
 
@@ -2443,5 +2409,14 @@
     (fresh [n]
       (!= 0 n)
       (== q n)))
+
+  (run* [x y]
+    (featurec x {:a {:b 1}})
+    (== x {:a y})
+    (== y {:b 1}))
+  (run* [x y]
+    (featurec x {:foo {:bar y}})
+    (== x {:foo {:bar 1 :woz 2}}))
+
   )
 

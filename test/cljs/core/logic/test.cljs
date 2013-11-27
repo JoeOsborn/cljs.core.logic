@@ -5,9 +5,9 @@
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic.macros
+                   [cljs.core.logic.macros :as l
                     :refer [defne tabled run* fresh run all conde in == !=
-                            defnc]]))
+                            defnc fne conda]]))
 
 (deftest unify-nil-object-1
   (is (l/failed? (l/-unify l/empty-s nil 1))))
@@ -445,7 +445,7 @@
 
 (defn twino [p]
   (fresh [x]
-    (conso x x p)))
+    (l/conso x x p)))
 
 (defn listo [l]
   (conde
@@ -460,11 +460,11 @@
    [(emptyo s) (== '() out)]
    [(pairo s)
     (fresh [a d res-a res-d]
-      (conso a d s)
+      (l/conso a d s)
       (flatteno a res-a)
       (flatteno d res-d)
       (appendo res-a res-d out))]
-   [(conso s '() out)]))
+   [(l/conso s '() out)]))
 
 ;; =============================================================================
 ;; conde
@@ -473,9 +473,9 @@
   (is (=  (into #{}
                 (run* [x]
                   (conde
-                   [(== x 'olive) succeed]
-                   [succeed succeed]
-                   [(== x 'oil) succeed])))
+                   [(== x 'olive) l/s#]
+                   [l/s# l/s#]
+                   [(== x 'oil) l/s#])))
           (into #{}
                 '[olive _0 oil]))))
 
@@ -511,14 +511,14 @@
 (deftest test-conso
   (is (= (run* [q]
            (fresh [a d]
-             (conso a d '())))
+             (l/conso a d '())))
          ())))
 
 (deftest test-conso-1
   (let [a (l/lvar 'a)
         d (l/lvar 'd)]
     (is (= (run* [q]
-             (conso a d q))
+             (l/conso a d q))
            [(l/lcons a d)]))))
 
 (deftest test-conso-2
@@ -529,22 +529,22 @@
 (deftest test-conso-3
   (is (=
        (run* [q]
-         (conso 'a nil q))
+         (l/conso 'a nil q))
        '[(a)])))
 
 (deftest test-conso-4
   (is (= (run* [q]
-           (conso 'a '(d) q))
+           (l/conso 'a '(d) q))
          '[(a d)])))
 
 (deftest test-conso-empty-list
   (is (= (run* [q]
-           (conso 'a q '(a)))
+           (l/conso 'a q '(a)))
          '[()])))
 
 (deftest test-conso-5
   (is (= (run* [q]
-           (conso q '(b c) '(a b c)))
+           (l/conso q '(b c) '(a b c)))
          '[a])))
 
 
@@ -553,7 +553,7 @@
 
 (deftest test-firsto
   (is (= (run* [q]
-           (firsto q '(1 2)))
+           (l/firsto q '(1 2)))
          (list (l/lcons '(1 2) (l/lvar 'x))))))
 
 ;; =============================================================================
@@ -599,14 +599,14 @@
   (is (= (run* [q]
            (all
             (== q [(lvar)])
-            (membero ['foo (lvar)] q)
-            (membero [(lvar) 'bar] q)))
+            (l/membero ['foo (lvar)] q)
+            (l/membero [(lvar) 'bar] q)))
          '([[foo bar]]))))
 
 (deftest membero-2
   (is (= (into #{}
                (run* [q]
-                 (membero q [1 2 3])))
+                 (l/membero q [1 2 3])))
          #{1 2 3})))
 
 (deftest membero-3
@@ -799,29 +799,29 @@
 (deftest test-copy-term-1
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term a b)
+             (l/copy-term a b)
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term `(~a) `(~b))
+             (l/copy-term `(~a) `(~b))
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term [a] [b])
+             (l/copy-term [a] [b])
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b c]
-             (copy-term [a] c)
+             (l/copy-term [a] c)
              (== [b] c)
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b c d]
              (== c 1)
-             (copy-term [a c] [b d])
+             (l/copy-term [a c] [b d])
              (== q [a b d])))
          '([_0 _1 1]))))
 
@@ -1355,7 +1355,7 @@
   [x l]
   ([_ [x . tail]])
   ([_ [head . tail]]
-     (membero x tail)))
+     (l/membero x tail)))
 
 (defn locals-membero [x l]
   (matche [l]
@@ -1434,7 +1434,7 @@
 (deftest test-82-nil-lcons-tail
   (is (= (run 1 [q]
            (fresh [a b c]
-             (conso a b c)
+             (l/conso a b c)
              (== b nil)
              (== `(~a) c)))
          '(_0))))
@@ -1442,8 +1442,8 @@
 (deftest test-85-alias
   (is (= (run* [q]
            (fresh [x y]
-             (predc y even? `even?)
-             (predc x odd? `odd)
+             (l/predc y even? `even?)
+             (l/predc x odd? `odd)
              (== x y)
              (== x 1)
              (== q [x y])))
@@ -1454,7 +1454,7 @@
            (== r [a b])
            (in a b x (fd/domain 1 2))
            (fd/< a b)
-           (firsto r x))
+           (l/firsto r x))
          '([[1 2] 1 2 1]))))
 
 (deftest test-90-<-diverge
@@ -1486,10 +1486,10 @@
 
 (deftest test-111-conda-regression
   (is (= (run* [x]
-           (conda
-            [succeed
-             (project [x] succeed)
-             (project [x] succeed)]))
+           (l/conda
+            [l/s#
+             (l/project [x] l/s#)
+             (l/project [x] l/s#)]))
          '(_0))))
 
 (deftest test-115-singleton-doms
@@ -1505,7 +1505,7 @@
     [(fresh [?via ?vias]
        (project [start graph]
          (== ?vias  ((:successors graph) start)))
-       (membero ?via ?vias)
+       (l/membero ?via ?vias)
        (patho-112 graph ?via end))])))
 
 (defn solve-goals [graph curr end goals]
@@ -1563,13 +1563,13 @@
 (defne lefto
   "x appears to the left of y in collection l."
   [x y l]
-  ([_ _ [x . tail]] (membero y tail))
+  ([_ _ [x . tail]] (l/membero y tail))
   ([_ _ [_ . tail]] (lefto x y tail)))
 
 (defn rule-1 [answers]
   (fresh [c1 r1 c2 r2]
-    (membero [:landon (lvar) c1 r1] answers)
-    (membero [:jason (lvar) c2 r2] answers)
+    (l/membero [:landon (lvar) c1 r1] answers)
+    (l/membero [:jason (lvar) c2 r2] answers)
     (conde
      [(== r1 7.5)
       (== c2 :mozzarella)]
@@ -1577,14 +1577,14 @@
       (== c1 :mozzarella)])))
 
 (defn rule-2 [answers]
-  (membero [(lvar) :fortune :blue-cheese (lvar)] answers))
+  (l/membero [(lvar) :fortune :blue-cheese (lvar)] answers))
 
 (defn rule-3 [answers]
   (fresh [s1 s2]
     (== [(lvar) :vogue (lvar) (lvar)] s1)
     (== [(lvar) (lvar) :muenster (lvar)] s2)
-    (membero s1 answers)
-    (membero s2 answers)
+    (l/membero s1 answers)
+    (l/membero s2 answers)
     (!= s1 s2)))
 
 (defn rule-4 [answers]
@@ -1597,20 +1597,20 @@
 
 (defn rule-6 [answers]
   (fresh [r1 r2]
-    (membero [(lvar) :cosmopolitan (lvar) r1] answers)
-    (membero [(lvar) (lvar) :mascarpone r2] answers)
+    (l/membero [(lvar) :cosmopolitan (lvar) r1] answers)
+    (l/membero [(lvar) (lvar) :mascarpone r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-9 [answers]
   (fresh [r1 r2]
-    (membero [(lvar) :time (lvar) r1] answers)
-    (membero [:landon (lvar) (lvar) r2] answers)
+    (l/membero [(lvar) :time (lvar) r1] answers)
+    (l/membero [:landon (lvar) (lvar) r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-0 [answers]
   (fresh [s]
     (== [:amaya (lvar) (lvar) (lvar)] s)
-    (membero s answers)))
+    (l/membero s answers)))
 
 (deftest test-71-simple-unifier-reify-vars
   (is (= (u/unify '[(?x) (?x) (1)])
@@ -1622,27 +1622,27 @@
 
 (deftest test-108-recursive-features
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:bar 1}}))
          '([{:foo {:bar 1}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:bar 1}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '([{:foo {:bar 1}} 1])))
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:bar 1 :woz 2}}))
          '([{:foo {:bar 1 :woz 2}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:bar 1 :woz 2}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '([{:foo {:bar 1 :woz 2}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:baz 1}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '()))
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:baz 1}}))
          '())))
 
@@ -1708,19 +1708,19 @@
 
 (deftest test-logic-132-recursive-featurec
   (is (= (run* [x y]
-           (featurec x {:a {:b 1}})
+           (l/featurec x {:a {:b 1}})
            (== y {:b 1})
            (== x {:a y}))
          '([{:a {:b 1}} {:b 1}])))
   (is (= (run* [x y]
-           (featurec x {:a {:b 1}})
+           (l/featurec x {:a {:b 1}})
            (== x {:a y})
            (== y {:b 1}))
          '([{:a {:b 1}} {:b 1}])))
   (is (= (run* [x y]
            (== x {:a y})
            (== y {:b 1})
-           (featurec x {:a {:b 1}}))
+           (l/featurec x {:a {:b 1}}))
          '([{:a {:b 1}} {:b 1}]))))
 
 ;; (deftest test-137-oom
@@ -2057,7 +2057,7 @@
 (deftest test-process-dom-1
   (let [x (l/lvar 'x)
         s ((fd/process-dom x 1 1) l/empty-s)]
-    (is (= (walk s x) 1))))
+    (is (= (l/-walk s x) 1))))
 
 (deftest test-process-dom-2
   (let [x (l/lvar 'x)
@@ -2081,30 +2081,30 @@
   (let [u (l/lvar 'u)
         w (l/lvar 'w)
         c (fd/==c u w)
-        c' (-step c l/empty-s)]
-    (is (= (var-rands l/empty-s c)
+        c' (l/-step c l/empty-s)]
+    (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c)
+    (is (= (l/-rator c)
            `cljs.core.logic.fd/==))
-    (is (not (-runnable? c')))
-    (is (not (-entailed? c')))))
+    (is (not (l/-runnable? c')))
+    (is (not (l/-entailed? c')))))
 
 (deftest test-make-fdc-prim-2
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        c' (-step c l/empty-s)]
+        c' (l/-step c l/empty-s)]
     (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c)
+    (is (= (l/-rator c)
            `cljs.core.logic.fd/+))
     (is (not (l/-runnable? c')))
     (is (not (l/-entailed? c')))))
 
 (deftest test-entailed-1
   (let [c (fd/+c 1 2 3)
-        c' (-step c l/empty-s)]
+        c' (l/-step c l/empty-s)]
     (is (true? (l/-entailed? c')))))
 
 (deftest test-make-fdc-1
@@ -2112,10 +2112,10 @@
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        c' (-step c l/empty-s)]
+        c' (l/-step c l/empty-s)]
     (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c) 'cljs.core.logic.fd/+))
+    (is (= (l/-rator c) 'cljs.core.logic.fd/+))
     (is (not (l/-runnable? c')))
     (is (not (l/-entailed? c')))))
 
@@ -2124,11 +2124,11 @@
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        cs (addc (make-cs) l/empty-s c)
+        cs (l/-addc (l/make-cs) l/empty-s c)
         sc (first (l/-constraints-for cs l/empty-s u :cljs.core.logic/fd))]
-    (is (= (id sc) 0))
-    (is (= (count (:km cs)) 2))
-    (is (= (count (:cm cs)) 1))))
+    (is (= (l/id sc) 0))
+    (is (= (count (.-km cs)) 2))
+    (is (= (count (.-cm cs)) 1))))
 
 (deftest test-addc-2
   (let [u (l/lvar 'u)
@@ -2137,15 +2137,15 @@
         c0 (fd/+c u v w)
         x (l/lvar 'x)
         c1 (fd/+c w v x)
-        cs  (-> (make-cs)
-                (addc l/empty-s c0)
-                (addc l/empty-s c1))
-        sc0 (get (:cm cs) 0)
-        sc1 (get (:cm cs) 1)]
-    (is (= (id sc0) 0))
-    (is (= (id sc1) 1))
-    (is (= (count (:km cs)) 3))
-    (is (= (count (:cm cs)) 2))))
+        cs  (-> (l/make-cs)
+                (l/-addc l/empty-s c0)
+                (l/-addc l/empty-s c1))
+        sc0 (get (.-cm cs) 0)
+        sc1 (get (.-cm cs) 1)]
+    (is (= (l/id sc0) 0))
+    (is (= (l/id sc1) 1))
+    (is (= (count (.-km cs)) 3))
+    (is (= (count (.-cm cs)) 2))))
 
 (deftest test-addcg
   (let [u (l/lvar 'u)
@@ -2153,8 +2153,8 @@
         w (l/lvar 'w)
         c (fd/+c u v w)
         s ((l/addcg c) l/empty-s)]
-    (is (= (count (:km (:cs s))) 2))
-    (is (= (count (:cm (:cs s))) 1))))
+    (is (= (count (.-km (.-cs s))) 2))
+    (is (= (count (.-cm (.-cs s))) 1))))
 
 (deftest test-purge-c
   (let [u (l/lvar 'u)
@@ -2331,3 +2331,8 @@
     (is (= (l/-root-var s y) x))))
 
 
+(deftest test-145-partial-map
+  (is (= (run* [x y]
+           (== y {:baz "woz"})
+           (== (l/partial-map {:foo x}) {:foo y}))
+         '([{:baz "woz"} {:baz "woz"}]))))
