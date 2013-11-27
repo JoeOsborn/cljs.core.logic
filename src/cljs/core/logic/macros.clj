@@ -87,7 +87,7 @@
          (let [p# (:prefixc cs#)]
            (when-not (empty? p#)
              (if (some (fn [[u# v#]]
-                         (nil? (cljs.core.logic/unify a# u# v#))) p#)
+                         (nil? (cljs.core.logic/-unify a# u# v#))) p#)
                a#
                ((cljs.core.logic/cgoal (cljs.core.logic/!=c p#)) a#))))
          a#))))
@@ -366,7 +366,7 @@
           (if (and (seq? s) (not quoted))
             (p->term s vars true)
             p)
-          (clojure.core/= f 'clojure.core/unquote)
+          (clojure.core/= f 'clojure.core/unoquote)
           (if quoted
             (update-pvars! s vars)
             (throw

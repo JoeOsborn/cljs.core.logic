@@ -457,12 +457,12 @@
       (let [repoint (cond
                       (-> u clojure.core/meta ::unbound) [u v]
                       (-> v clojure.core/meta ::unbound) [v u]
-                      :else nil)]
+                      :else (fail s))]
         (if repoint
           (let [[root other] repoint
                 s (Substitutions. (.-s s) (.-vs s) (.-ts s)
                                   (-migrate (.-cs s) other root) (.-cq s)
-                                  (.-cqs s) (.-oc s) (._meta s))
+                                  (.-cqs s) (.-oc s) (.-_meta s))
                 s (if (-> other clojure.core/meta ::unbound)
                     (merge-with-root s other root)
                     s)]
@@ -812,7 +812,6 @@
   (if-not (cljs.core/== (count u) (count v))
     (fail s)
     (loop [^not-native ks (seq (keys u)) s s]
-      (println ks s)
       (if ks
         (let [kf (first ks)
               vf (get v kf not-found)]
