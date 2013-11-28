@@ -1,26 +1,26 @@
 (ns cljs.core.logic.pldb.tests
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto
-             :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for take* root-var root-val -prefix
-                     -with-prefix tree-constraint? with-id remc
-                     -constrain-tree ext-run-cs]]
-            [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
-                     walk* conso s# u# != copy-term rembero membero member1o
+  (:require [cljs.core.logic :as l
+             :refer [empty-s lcons lvar to-s -reify-lvar-name fail succeed
+                     -walk* conso s# u# copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
-                     featurec everyg composeg solutions pair ext-run-csg
+                     featurec everyg composeg solutions ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? nom distribute rem-attr
-                     get-attr distincto]]
+                     !=c nafc treec -reify tree-term? distribute rem-attr
+                     get-attr distincto cgoal lvar? remcg constrain-tree -ext
+                     subst-val? -unify -occurs-check -reify*
+                     -walk -ifa -step -rator -addc -entailed? -runnable? id
+                     -constraints-for take* -root-var -root-val -prefix
+                     -with-prefix tree-constraint? with-id -remc
+                     -constrain-tree -ext-run-cs -ext-no-check -walk-term]]
             [cljs.core.logic.pldb :as pldb]
             [cljs.core.logic.fd :as fd :refer [interval dom]]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [umi uai llist composeg* bind* mplus* -inc == !=
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
@@ -58,7 +58,7 @@
            (fresh [x y]
              (likes x y)
              (fun y)
-             (l/== q [x y])))
+             (== q [x y])))
          '()))))
 
 (deftest test-facts1
@@ -68,7 +68,7 @@
            (fresh [x y]
              (likes x y)
              (fun y)
-             (l/== q [x y])))
+             (== q [x y])))
          '([Ricky Lucy])))))
 
 (def facts1-retracted
@@ -81,7 +81,7 @@
                  (run* [q]
                    (fresh [x y]
                      (likes x y)
-                     (l/== q [x y]))))
+                     (== q [x y]))))
            (into #{} '([John Martha] [Ricky Lucy]))))))
 
 (db-rel rel1 ^:index a)
@@ -94,7 +94,7 @@
          (run* [q]
            (fresh [a]
              (rel1 [q a])
-             (l/== a 2)))
+             (== a 2)))
          '(1)))))
 
 (db-rel rel2 ^:index e ^:index a ^:index v)
@@ -124,7 +124,7 @@
                    (fresh [e a v]
                      (rel2 e :a1 :v1)
                      (rel2 e a v)
-                     (l/== [e a v] out)))))))
+                     (== [e a v] out)))))))
   (is (= #{}
          (with-db facts2-retracted1
            (into #{}
@@ -132,7 +132,7 @@
                    (fresh [e a v]
                      (rel2 e :a1 :v1)
                      (rel2 e a v)
-                     (l/== [e a v] out)))))))
+                     (== [e a v] out)))))))
   (is (= #{[:e1 :a1 :v1]}
          (with-db facts2-retracted2
            (into #{}
@@ -140,7 +140,7 @@
                    (fresh [e a v]
                      (rel2 e :a1 :v1)
                      (rel2 e a v)
-                     (l/== [e a v] out)))))))
+                     (== [e a v] out)))))))
   (is (= #{}
          (with-db facts2-retracted-all
            (into #{}
@@ -148,7 +148,7 @@
                    (fresh [e a v]
                      (rel2 e :a1 :v1)
                      (rel2 e a v)
-                     (l/== [e a v] out))))))))
+                     (== [e a v] out))))))))
 
 
 ;; ----------------------------------------

@@ -89,6 +89,8 @@
 (defn ^boolean record? [x]
   (implements? IRecord x))
 
+(defprotocol IBindable)
+
 (defn ^boolean bindable? [x]
   (or (lvar? x)
       (implements? IBindable x)))
@@ -2117,6 +2119,9 @@
 (declare normalize-store ground-term?)
 
 (defprotocol ITreeConstraint)
+
+(defn ^boolean tree-constraint? [x]
+  (implements? ITreeConstraint x))
 
 (defprotocol IWithPrefix
   (-with-prefix [_ p]))
