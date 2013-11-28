@@ -449,21 +449,21 @@
 
 (defn listo [l]
   (conde
-   [(emptyo l) l/s#]
+   [(l/emptyo l) l/s#]
    [(pairo l)
     (fresh [d]
-      (resto l d)
+      (l/resto l d)
       (listo d))]))
 
 (defn flatteno [s out]
   (conde
-   [(emptyo s) (== '() out)]
+   [(l/emptyo s) (== '() out)]
    [(pairo s)
     (fresh [a d res-a res-d]
       (l/conso a d s)
       (flatteno a res-a)
       (flatteno d res-d)
-      (appendo res-a res-d out))]
+      (l/appendo res-a res-d out))]
    [(l/conso s '() out)]))
 
 ;; =============================================================================
@@ -561,22 +561,22 @@
 
 (deftest test-resto
   (is (= (run* [q]
-           (resto q '(1 2)))
+           (l/resto q '(1 2)))
          '[(_0 1 2)])))
 
 (deftest test-resto-2
   (is (= (run* [q]
-           (resto q [1 2]))
+           (l/resto q [1 2]))
          '[(_0 1 2)])))
 
 (deftest test-resto-3
   (is (= (run* [q]
-           (resto [1 2] q))
+           (l/resto [1 2] q))
          '[(2)])))
 
 (deftest test-resto-4
   (is (= (run* [q]
-           (resto [1 2 3 4 5 6 7 8] q))
+           (l/resto [1 2 3 4 5 6 7 8] q))
          '[(2 3 4 5 6 7 8)])))
 
 ;; =============================================================================
@@ -598,9 +598,9 @@
 (deftest membero-1
   (is (= (run* [q]
            (all
-            (== q [(lvar)])
-            (l/membero ['foo (lvar)] q)
-            (l/membero [(lvar) 'bar] q)))
+            (== q [(l/lvar)])
+            (l/membero ['foo (l/lvar)] q)
+            (l/membero [(l/lvar) 'bar] q)))
          '([[foo bar]]))))
 
 (deftest membero-2
@@ -614,7 +614,7 @@
   ;; old membero, defined without disequality constraints, would have
   ;; returned (1 1 1 1 1).
   (is (= (run* [q]
-           (member1o q [1 1 1 1 1]))
+           (l/member1o q [1 1 1 1 1]))
          '(1))))
 
 ;; -----------------------------------------------------------------------------
@@ -622,7 +622,7 @@
 
 (deftest rembero-1
   (is (= (run 1 [q]
-           (rembero 'b '(a b c b d) q))
+           (l/rembero 'b '(a b c b d) q))
          '((a c b d)))))
 
 ;; -----------------------------------------------------------------------------
@@ -1294,7 +1294,10 @@
          ())))
 
 (deftest test-unify-fail-2
-  (is (= (run* [p] (fresh [a b] (== b '(1)) (== '(0) (l/lcons a b)) (== p [a b])))
+  (is (= (run* [p] (fresh [a b]
+                     (== b '(1))
+                     (== '(0) (l/lcons a b))
+                     (== p [a b])))
          ())))
 
 (deftest test-unify-fail-3
@@ -1434,14 +1437,14 @@
            (fresh [a b c]
              (l/conso a b c)
              (== b nil)
-             (== `(~a) c)))
+             (== `(~a) q)))
          '(_0))))
 
 (deftest test-85-alias
   (is (= (run* [q]
            (fresh [x y]
-             (l/predc y even? `even?)
-             (l/predc x odd? `odd)
+             (l/predc y even? 'even?)
+             (l/predc x odd? 'odd)
              (== x y)
              (== x 1)
              (== q [x y])))
@@ -1562,8 +1565,8 @@
 
 (defn rule-1 [answers]
   (fresh [c1 r1 c2 r2]
-    (l/membero [:landon (lvar) c1 r1] answers)
-    (l/membero [:jason (lvar) c2 r2] answers)
+    (l/membero [:landon (l/lvar) c1 r1] answers)
+    (l/membero [:jason (l/lvar) c2 r2] answers)
     (conde
      [(== r1 7.5)
       (== c2 :mozzarella)]
@@ -1571,39 +1574,39 @@
       (== c1 :mozzarella)])))
 
 (defn rule-2 [answers]
-  (l/membero [(lvar) :fortune :blue-cheese (lvar)] answers))
+  (l/membero [(l/lvar) :fortune :blue-cheese (l/lvar)] answers))
 
 (defn rule-3 [answers]
   (fresh [s1 s2]
-    (== [(lvar) :vogue (lvar) (lvar)] s1)
-    (== [(lvar) (lvar) :muenster (lvar)] s2)
+    (== [(l/lvar) :vogue (l/lvar) (l/lvar)] s1)
+    (== [(l/lvar) (l/lvar) :muenster (l/lvar)] s2)
     (l/membero s1 answers)
     (l/membero s2 answers)
     (!= s1 s2)))
 
 (defn rule-4 [answers]
-  (permuteo [[(lvar) :fortune (lvar) (lvar)]
-             [:landon (lvar) (lvar) (lvar)]
-             [(lvar) (lvar) (lvar) 5]
-             [(lvar) (lvar) :mascarpone (lvar)]
-             [(lvar) :vogue (lvar) (lvar)]]
+  (permuteo [[(l/lvar) :fortune (l/lvar) (l/lvar)]
+             [:landon (l/lvar) (l/lvar) (l/lvar)]
+             [(l/lvar) (l/lvar) (l/lvar) 5]
+             [(l/lvar) (l/lvar) :mascarpone (l/lvar)]
+             [(l/lvar) :vogue (l/lvar) (l/lvar)]]
             answers))
 
 (defn rule-6 [answers]
   (fresh [r1 r2]
-    (l/membero [(lvar) :cosmopolitan (lvar) r1] answers)
-    (l/membero [(lvar) (lvar) :mascarpone r2] answers)
+    (l/membero [(l/lvar) :cosmopolitan (l/lvar) r1] answers)
+    (l/membero [(l/lvar) (l/lvar) :mascarpone r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-9 [answers]
   (fresh [r1 r2]
-    (l/membero [(lvar) :time (lvar) r1] answers)
-    (l/membero [:landon (lvar) (lvar) r2] answers)
+    (l/membero [(l/lvar) :time (l/lvar) r1] answers)
+    (l/membero [:landon (l/lvar) (l/lvar) r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-0 [answers]
   (fresh [s]
-    (== [:amaya (lvar) (lvar) (lvar)] s)
+    (== [:amaya (l/lvar) (l/lvar) (l/lvar)] s)
     (l/membero s answers)))
 
 (deftest test-71-simple-unifier-reify-vars
@@ -2183,7 +2186,7 @@
     (is (= 10 (fd/-ub mi)))))
 
 (deftest test-run-constraints*
-  (is (= (run-constraints* [] [] l/subst) s#)))
+  (is (= (l/run-constraints* [] [] l/subst) l/s#)))
 
 (deftest test-drop-one-1
   (is (= (:s (fd/-drop-one (fd/domain 1 2 3)))

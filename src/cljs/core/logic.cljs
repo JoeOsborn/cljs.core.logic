@@ -299,7 +299,6 @@
 
   (-walk* [this v]
     (let [v (-walk this v)]
-      (println v)
       (-walk-term v
                   (fn [x]
                     (let [x (-walk this x)]
@@ -1887,7 +1886,7 @@
                  (into #{}))]
     (if (empty? rcs)
       (choice v empty-f)
-      (choice (concat `(~v :-) rcs) empty-f))))
+      (choice `(~v :- ~@rcs) empty-f))))
 
 (defn reifyg [x]
   (all
