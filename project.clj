@@ -1,4 +1,4 @@
-(defproject foundation/cljs.core.logic "0.1.0-SNAPSHOT"
+(defproject cljs.core.logic "0.1.0-SNAPSHOT"
   :description ""
   :url ""
   :license {:name ""

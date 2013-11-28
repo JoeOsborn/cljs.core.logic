@@ -109,13 +109,6 @@
              (== q x)))
          '(2))))
 
-
-
-
-
-
-
-
 (deftest test-list-sorted
   (is (true? (fd/list-sorted? < [1 2 3])))
   (is (true? (fd/list-sorted? < [1 3 5])))

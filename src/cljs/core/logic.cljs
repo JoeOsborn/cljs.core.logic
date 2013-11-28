@@ -3,14 +3,10 @@
   (:require [clojure.set :as set]
             [clojure.string :as string]
             [cljs.reader :as reader])
-  (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
-                            conde fresh -run run run* run-db run-db* run-nc
-                            run-nc* all is pred project trace-lvars trace-s
-                            log ifa* ifu* conda condu lvaro nonlvaro fnm
-                            defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc == != lazy-run
-                            lazy-run*]]))
+  (:require-macros [cljs.core.logic.macros :as m
+                    :refer [composeg* bind* mplus* -inc
+                            conde fresh run run*  all is project trace-lvars
+                            condu defne let-dom == !=]]))
 
 (def ^:dynamic *logic-dbs* [])
 
@@ -618,7 +614,7 @@
   IHash
   (-hash [this]
     (if (cljs.core/== cache -1)
-      (set! (.-cache this) (uai (umi (int 31) (hash d)) (hash a)))
+      (set! (.-cache this) (m/uai (m/umi (int 31) (hash d)) (hash a)))
       cache))
 
   IUnifyTerms
@@ -2389,59 +2385,6 @@
             :else fail))
         (fn [_ v _ r a]
           `(seqc ~(-reify a v r)))))
-
-(comment
-  (run* [answer]
-    (== answer 5))
-  (run* [v1 v2]
-    (== {:a v1 :b 2}
-        {:a 1 :b v2}))
-  (run* [x y]
-    (== x y))
-  (run* [q]
-    (== q 1)
-    (== q 2))
-  (run* [george]
-    (conde
-     [(== george :born)]
-     [(== george :unborn)]))
-  `(+ 1 ~(do 2))
-  (run* [q]
-    (== q [1 2]))
-
-  (run* [q]
-    (fresh [x y]
-      (== q [x y])
-      (!= y "Java")))
-
-  (run* [q] (!= q "Java"))
-
-  (run* [q]
-    (fresh [x y]
-      (== [:pizza "Java"] [x y])
-      (== q [x y])
-      (!= y "Java")))
-
-  (run* [q]
-    (fresh [x y]
-      (== [:pizza "Scala"] [x y])
-      (== q [x y])
-      (!= y "Java")))
-  
-  (run* [q]
-    (fresh [n]
-      (!= 0 n)
-      (== q n)))
-
-  (run* [x y]
-    (featurec x {:a {:b 1}})
-    (== x {:a y})
-    (== y {:b 1}))
-  (run* [x y]
-    (featurec x {:foo {:bar y}})
-    (== x {:foo {:bar 1 :woz 2}}))
-
-  )
 
 
 
