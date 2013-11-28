@@ -1437,7 +1437,7 @@
            (fresh [a b c]
              (l/conso a b c)
              (== b nil)
-             (== `(~a) q)))
+             (== a q)))
          '(_0))))
 
 (deftest test-85-alias
@@ -2334,3 +2334,4 @@
            (== y {:baz "woz"})
            (== (l/partial-map {:foo x}) {:foo y}))
          '([{:baz "woz"} {:baz "woz"}]))))
+

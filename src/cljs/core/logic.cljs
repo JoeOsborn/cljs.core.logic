@@ -2119,10 +2119,10 @@
 (defprotocol ITreeConstraint)
 
 (defprotocol IWithPrefix
-  (-with-prefix [_]))
+  (-with-prefix [_ p]))
 
 (defprotocol IPrefix
-  (-prefix [_ p]))
+  (-prefix [_]))
 
 (defn !=c [p]
   (reify
