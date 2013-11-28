@@ -12,7 +12,6 @@
                             matchu tabled let-dom fnc defnc == != lazy-run
                             lazy-run*]]))
 
-
 (def ^:dynamic *logic-dbs* [])
 
 (def ^:dynamic *occurs-check* true)
@@ -346,10 +345,6 @@
   IWithMeta
   (-with-meta [this new-meta]
     (Substitutions. s vs ts cs cq cqs oc new-meta))
-
-  ICollection
-  (-conj [this pair]
-    (Substitutions. (conj s pair) vs ts cs cq cqs oc new-meta))
 
   ISubstitutionsCLP
   (-root-val [this v]
@@ -1436,7 +1431,8 @@
                  (if (and (zero? (count new-doms))
                           (not (keyword-identical? (.-v v) ::unbound)))
                    (-update-var s x (.-v v))
-                   (-update-var s x (assoc v :doms new-doms))))
+                   (-update-var s x (subst-val (.-v v) new-doms
+                                               (.-eset v) (meta v)))))
                s)]
        (sync-eset s v seenset
                   (fn [s y] (rem-dom s y dom (conj (or seenset #{}) x)))))))
@@ -1616,7 +1612,7 @@
       (nil? w) (failure-cont)
 
       (-ready? (first w))
-      (-success-cont
+      (success-cont
        (fn []
          (let [ss (first w)
                f  (.-f ss)
@@ -1634,6 +1630,10 @@
   (-reify-tabled [s v])
   (-reuse [s argv cache start end])
   (-subunify [s arg ans]))
+
+(defn reify-tabled [s v]
+  (let [v (-walk* s v)]
+    (-walk* (-reify-tabled empty-s v) v)))
 
 (extend-type Substitutions
   ITabled
@@ -1656,7 +1656,7 @@
                                                          (.-ansl @cache)
                                                          (count start))))]
                   (let [ans (first ansv*)]
-                    (Choice. (-subunify this argv (-reify-tabled this ans))
+                    (Choice. (-subunify this argv (reify-tabled this ans))
                              (fn [] (reuse-loop (rest ansv*)))))))]
         (reuse-loop start))))
 
@@ -1668,10 +1668,6 @@
         (coll? arg) (-subunify (-subunify this (next arg) (next ans))
                                (first arg) (first ans))
         :else this))))
-
-(defn reify-tabled [s v]
-  (let [v (-walk* s v)]
-    (-walk* (-reify-tabled empty-s v) v)))
 
 ;; ---------------------------------------------------------------------------
 ;; Waiting Stream
@@ -2413,4 +2409,61 @@
     (== x {:foo {:bar 1 :woz 2}}))
 
   )
+
+(def patho-112
+  (tabled
+   [graph start end]
+   (conde
+    [(== start end)]
+    [(fresh [?via ?vias]
+       (project [start graph]
+         (== ?vias  ((:successors graph) start)))
+       (membero ?via ?vias)
+       (patho-112 graph ?via end))])))
+
+(defn solve-goals [graph curr end goals]
+  (all
+   (project [goals]
+     (conde [(== true
+                 (empty? goals))
+             (== curr end)]
+            [(== false (empty? goals))
+             (fresh [goal tail via]
+               (== goal (first goals))
+               (== tail (rest goals))
+               (project [goal]
+                 (goal graph curr via)
+                 (solve-goals graph via end tail)))]))))
+
+(def foo :foo)
+(def bar :bar)
+(def baz :baz)
+(def quux :quux)
+
+(defn to-node [node]
+  (cond
+   (= node foo)
+   (seq (list bar))
+   (= node bar)
+   (seq (list baz))
+   (= node baz)
+   (seq (list quux))))
+
+(def graph {:successors to-node})
+
+
+(defn test-1 []
+  (run* [?result]
+    (fresh [?start ?end]
+      (== ?start foo)
+      (== ?end quux)
+      (solve-goals
+       graph ?start ?end
+       (seq (list patho-112
+                  (fn [graph current next]
+                    (all
+                     (== ?result current)
+                     ;; (trace-lvars "current" current)
+                     (== current next)))
+                  patho-112))))))
 
