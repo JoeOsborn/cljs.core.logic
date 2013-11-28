@@ -1,5 +1,5 @@
 (ns cljs.core.logic.macros
-  (:refer-clojure :exclude [== = < > <= >=])
+  (:refer-clojure :exclude [== = < > <= >= time])
   (:require [cljs.compiler :as comp]
             [cljs.core :as core]
             [cljs.env :as env]
@@ -138,7 +138,8 @@
                          (cljs.core.logic/reifyg ~x))
                        (cljs.core.logic/tabled-s
                         (:occurs-check opts#)
-                        (merge {:reify-vars true} opts#)))))]
+                        (merge {:reify-vars true} opts#))
+                       )))]
        (if-let [n# (:n opts#)]
          (take n# xs#)
          xs#))))
@@ -965,3 +966,21 @@
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
 
+;; Benchmarking and high resolution JavaScript timer
+
+(defmacro time
+  [expr]
+  `(let [start# (js/performance.now)
+         ret# ~expr]     
+     (prn (str "Elapsed time: "
+               (.toFixed (- (js/performance.now) start#) 6)
+               " msecs"))
+     ret#))
+
+(defmacro bench
+  [expr n]
+  `(let [start# (js/performance.now)
+         ret# (dotimes [_# ~n] ~expr)]
+     (prn (str "Elapsed time: "
+               (.toFixed (- (js/performance.now) start#) 6)
+               " msecs"))))
