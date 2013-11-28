@@ -1,8 +1,8 @@
 (ns cljs.core.logic.pldb
   (:refer-clojure :exclude [indexed? ==])
-  (:require [cljs.core.logic :as l :refer [==]])
+  (:require [cljs.core.logic :as l])
   (:require-macros [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
+                    :refer [umi uai llist composeg* bind* mplus* -inc == !=
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all is pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
@@ -37,7 +37,7 @@
   (some l/lvar? (tree-seq coll? seq x)))
 
 (defn ground? [s term]
-  (not (contains-lvar? (l/walk* s term))))
+  (not (contains-lvar? (l/-walk* s term))))
 
 (defn index-for-query [s q indexes]
   (let [indexable (map #(ground? s %)  q)
@@ -100,72 +100,3 @@
 
 (defn db-retractions [base-db & retractions]
   (reduce #(apply db-retraction %1 %2) base-db retractions))
-
-(comment
-  (db-rel orbits orbital body)
-  (db-rel stars star)
-  (def facts
-    (db [orbits :mercury :sun]
-        [orbits :venus :sun]
-        [orbits :earth :sun]
-        [orbits :mars :sun]
-        [orbits :jupiter :sun]
-        [orbits :saturn :sun]
-        [orbits :uranus :sun]
-        [orbits :neptune :sun]
-        [stars :sun]
-        [stars :alpha-centauri]
-        [orbits :Bb :alpha-centauri]
-        [orbits :moon :earth]))
-  (with-db facts
-    (doall (run* [q]
-             (fresh [orbital body]
-               (orbits orbital body)
-               (== q orbital)))))
-  (defn planeto
-    [body]
-    (fresh [star]
-      (stars star)
-      (orbits body star)))
-
-  (with-db facts
-    (run* [q]
-      (planeto :earth)))
-
-  (with-db facts
-    (run* [q]
-      (planeto :earth)
-      (== q true)))
-
-  (with-db facts
-    (run* [q]
-      (planeto :sun)
-      (== q true)))
-
-  (with-db facts
-    (run* [q]
-      (fresh [orbital]
-        (planeto orbital)
-        (== q orbital))))
-
-  (with-db facts
-    (run* [q]
-      (planeto :Bb)))
-
-  (defn satelliteo
-    [body]
-    (fresh [p]
-      (orbits body p)
-      (planeto p)))
-
-  (with-db facts
-    (run* [q]
-      (satelliteo :sun)))
-
-  (with-db facts
-    (run* [q]
-      (satelliteo :earth)))
-
-  (with-db facts
-    (run* [q]
-      (satelliteo :moon))))

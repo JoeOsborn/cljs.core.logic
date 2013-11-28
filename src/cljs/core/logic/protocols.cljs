@@ -22,7 +22,7 @@
 (defprotocol INonStorable)
 
 (defn ^boolean non-storable? [x]
-  (satisfies? INonStorable x))
+  (implements? INonStorable x))
 
 ;; Utility Protocols
 
@@ -137,12 +137,12 @@
   (-id [c]))
 
 (defn id [c]
-  (if (satisfies? IConstraintId c)
+  (if (implements? IConstraintId c)
     (-id c)
     (-> c meta ::id)))
 
 (defn with-id [c id]
-  (if (satisfies? IWithConstraintId c)
+  (if (implements? IWithConstraintId c)
     (-with-id c id)
     (vary-meta c assoc ::id id)))
 
@@ -157,12 +157,12 @@
   (-reifyc [c v r a]))
 
 (defn ^boolean reifiable? [x]
-  (satisfies? IReifiableConstraint x))
+  (implements? IReifiableConstraint x))
 
 (defprotocol IEnforceableConstraint)
 
 (defn ^boolean enforceable? [x]
-  (satisfies? IEnforceableConstraint x))
+  (implements? IEnforceableConstraint x))
 
 ;; cgoal
 
@@ -188,7 +188,7 @@
 (defprotocol ITreeConstraint)
 
 (defn ^boolean tree-constraint? [x]
-  (satisfies? ITreeConstraint x))
+  (implements? ITreeConstraint x))
 
 (defprotocol IPrefix
   (-prefix [c]))

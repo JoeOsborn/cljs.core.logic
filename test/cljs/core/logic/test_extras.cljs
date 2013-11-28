@@ -1,31 +1,22 @@
 (ns cljs.core.logic.test_extras
   (:refer-clojure :exclude [==])
-  (:require [cemerick.cljs.test :as t]
-            [cljs.core.logic.protocols :as proto
-             :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for take* root-var root-val -prefix
-                     -with-prefix tree-constraint? with-id remc
-                     -constrain-tree ext-run-cs]]
-            [cljs.core.logic :as l
-             :refer [== empty-s lcons lvar to-s reify-lvar-name fail succeed
-                     walk* conso s# u# != copy-term rembero membero member1o
+  (:require [cljs.core.logic :as l
+             :refer [empty-s lcons lvar to-s -reify-lvar-name fail succeed
+                     -walk* conso s# u# != copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
-                     featurec everyg composeg solutions pair ext-run-csg
+                     featurec everyg composeg solutions ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
                      !=c nafc treec -reify tree-term? distribute rem-attr
-                     get-attr distincto]]
+                     get-attr distincto -root-var -root-val]]
             [cljs.core.logic.fd :as fd]
-            [cljs.core.logic.unifier :as u])
+            [cljs.core.logic.unifier :as u]
+            [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
-                            conde fresh -run run run* run-db run-db* run-nc
-                            run-nc* all pred project trace-lvars trace-s
-                            log ifa* ifu* conda condu lvaro nonlvaro fnm
-                            defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc in extend-to-fd
-                            eq]]))
+                   [cljs.core.logic.macros :as l
+                    :refer [defne tabled run* fresh run all conde in == !=
+                            defnc fne conda condu fnc run-nc llist eq
+                            project matche]]))
 
 (deftest test-ckanren-1
   (is (= (into #{}
@@ -130,8 +121,8 @@
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         n* (sorted-set 1 3 5)
-        c (proto/with-id (fd/-distinctc x #{y} (conj n* 7)) 1)]
-    (is (= (id c) 1))))
+        c (l/with-id (fd/-distinctc x #{y} (conj n* 7)) 1)]
+    (is (= (l/id c) 1))))
 
 
 (deftest test-distinct
@@ -236,43 +227,43 @@
         y (l/lvar 'y)
         z (l/lvar 'z)
         c (fd/+c x y z)
-        cs (addc (make-cs) empty-s c)
-        cp (get (:cm cs) 0)
-        cs (remc cs empty-s cp)]
-    (is (= (:km cs) {}))
-    (is (= (:cm cs) {}))))
+        cs (l/-addc (l/make-cs) l/empty-s c)
+        cp (get (.-cm cs) 0)
+        cs (l/-remc cs l/empty-s cp)]
+    (is (= (.-km cs) {}))
+    (is (= (.-cm cs) {}))))
 
 (deftest test-treec-id-1 []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        c (with-id (!= x y) 0)]
-    (is (zero? (id c)))))
+        c (l/with-id (!= x y) 0)]
+    (is (zero? (l/id c)))))
 
 (deftest test-tree-constraint? []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        c (!=c (list (pair x 1) (pair y 2)))
-        cs (addc (make-cs) empty-s c)
+        c (!=c (list [x 1] [y 2]))
+        cs (l/-addc (l/make-cs) l/empty-s c)
         ]
-    (is (= (into #{} (keys (:km cs)))
+    (is (= (into #{} (keys (.-km cs)))
            #{x y}))
-    (is (tree-constraint? ((:cm cs) 0)))
+    (is (l/tree-constraint? ((.-cm cs) 0)))
     ))
 
-(deftest test-prefix-protocols []
+(deftest test-prefix-lcols []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        c (!=c (list (pair x 1) (pair y 2)))
-        c (-with-prefix c (list (pair x 1)))]
-    (is (= (-prefix c)
-           (list (pair x 1))))))
+        c (!=c (list [x 1] [y 2]))
+        c (l/-with-prefix c (list [x 1]))]
+    (is (= (l/-prefix c)
+           (list [x 1])))))
 
 
 (deftest test-!=-1 []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         s ((!= x y) empty-s)]
-    (is (= (-prefix ((:cm (:cs s)) 0)) {x y}))))
+    (is (= (l/-prefix ((.-cm (.-cs s)) 0)) {x y}))))
 
 (deftest test-!=-2 []
   (let [x (l/lvar 'x)
@@ -287,8 +278,8 @@
         s ((== x 1) empty-s)
         s ((== y 2) s)
         s ((!= x y) s)]
-    (is (empty? (:cm (:cs s))))
-    (is (empty? (:km (:cs s))))))
+    (is (empty? (.-cm (.-cs s))))
+    (is (empty? (.-km (.-cs s))))))
 
 (deftest test-!=-5 []
   (let [x (l/lvar 'x)
@@ -296,14 +287,14 @@
         s ((== x 1) empty-s)
         s ((!= x y) s)
         s ((== y 2) s)]
-    (is (empty? (:cm (:cs s))))
-    (is (empty? (:km (:cs s))))))
+    (is (empty? (.-cm (.-cs s))))
+    (is (empty? (.-km (.-cs s))))))
 
 (deftest test-!=-6 []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         s ((!= x 1) empty-s)]
-    (is (= (-prefix ((:cm (:cs s)) 0)) {x 1}))))
+    (is (= (l/-prefix ((.-cm (.-cs s)) 0)) {x 1}))))
 
 (deftest test-multi-constraints-1 []
   (is (= (run* [q]
@@ -406,7 +397,7 @@
 (deftest test-eq-vars-1 []
   (let [x0 (l/lvar 'x)
         x1 (with-meta x0 {:foo 'bar})
-        s  (l/unify empty-s x0 x1)]
+        s  (l/-unify empty-s x0 x1)]
     (is (= s empty-s))))
 
 (deftest test-logic-81-fd []
@@ -467,11 +458,13 @@
 
 (deftest test-predc-custom-reify-1
   (is (= (run* [q]
-           (predc q number? (fn [c v r a] `(~'num ~(walk* r (walk* a q))))))
+           (predc q number? (fn [c v r a]
+                              `(~'num ~(-walk* r (-walk* a q))))))
          '((_0 :- (num _0)))))
   (is (= (run* [q]
            (fresh [x y]
-             (predc x number? (fn [c v r a] `(~'num ~(walk* r (walk* a x)))))
+             (predc x number? (fn [c v r a]
+                                `(~'num ~(-walk* r (-walk* a x)))))
              (== [x y] q)))
          '(([_0 _1] :- (num _0)))))
   (is (= (run* [q]
@@ -635,71 +628,71 @@
              (== x {:foo 1})))
          '(1))))
 
-(deftest test-naf-1
-  (is (= (into #{}
-               (run* [q]
-                 (membero q '(a b c))
-                 (nafc == q 'b)))
-         '#{a c}))
-  (is (= (into #{}
-               (run* [q]
-                 (nafc == q 'b)
-                 (membero q '(a b c))))
-         '#{a c})))
+;; (deftest test-naf-1
+;;   (is (= (into #{}
+;;                (run* [q]
+;;                  (membero q '(a b c))
+;;                  (nafc == q 'b)))
+;;          '#{a c}))
+;;   (is (= (into #{}
+;;                (run* [q]
+;;                  (nafc == q 'b)
+;;                  (membero q '(a b c))))
+;;          '#{a c})))
 
-(deftest test-naf-2
-  (is (= (into #{}
-               (run* [x y]
-                 (in x y (fd/interval 1 5))
-                 (fd/< x y)
-                 (nafc fd/+ x y 5)))
-         (into #{}
-               (for [x (range 1 6)
-                     y (range 1 6)
-                     :when (and (< x y)
-                                (not (= (+ x y) 5)))]
-                 [x y]))))
-  (is (= (into #{}
-               (run* [x y]
-                 (nafc fd/+ x y 5)
-                 (fd/< x y)
-                 (in x y (fd/interval 1 5))))
-         (into #{}
-               (for [x (range 1 6)
-                     y (range 1 6)
-                     :when (and (< x y)
-                                (not (= (+ x y) 5)))]
-                 [x y])))))
+;; (deftest test-naf-2
+;;   (is (= (into #{}
+;;                (run* [x y]
+;;                  (in x y (fd/interval 1 5))
+;;                  (fd/< x y)
+;;                  (nafc fd/+ x y 5)))
+;;          (into #{}
+;;                (for [x (range 1 6)
+;;                      y (range 1 6)
+;;                      :when (and (< x y)
+;;                                 (not (= (+ x y) 5)))]
+;;                  [x y]))))
+;;   (is (= (into #{}
+;;                (run* [x y]
+;;                  (nafc fd/+ x y 5)
+;;                  (fd/< x y)
+;;                  (in x y (fd/interval 1 5))))
+;;          (into #{}
+;;                (for [x (range 1 6)
+;;                      y (range 1 6)
+;;                      :when (and (< x y)
+;;                                 (not (= (+ x y) 5)))]
+;;                  [x y])))))
 
-(deftest test-naf-3
-  (is (= (into #{}
-               (run* [q]
-                 (fresh [x]
-                   (membero q [:a x :c])
-                   (nafc == q :b))))
-         #{:a :c ['_0 :- ['cljs.core.logic/nafc == '_0 :b]]})))
+;; (deftest test-naf-3
+;;   (is (= (into #{}
+;;                (run* [q]
+;;                  (fresh [x]
+;;                    (membero q [:a x :c])
+;;                    (nafc == q :b))))
+;;          #{:a :c ['_0 :- ['cljs.core.logic/nafc == '_0 :b]]})))
 
-(deftest test-naf-4
-  (is (= (run* [q]
-           (fresh [x]
-             (== x {:bar 1})
-             (nafc featurec x {:foo 1})))
-         '(_0)))
-  (is (= (run* [q]
-           (fresh [x]
-             (== x {:foo 1})
-             (nafc featurec x {:foo 1})))
-         '())))
+;; (deftest test-naf-4
+;;   (is (= (run* [q]
+;;            (fresh [x]
+;;              (== x {:bar 1})
+;;              (nafc featurec x {:foo 1})))
+;;          '(_0)))
+;;   (is (= (run* [q]
+;;            (fresh [x]
+;;              (== x {:foo 1})
+;;              (nafc featurec x {:foo 1})))
+;;          '())))
 
-(deftest test-naf-5
-  (is (= (run* [q]
-           (membero q '(:a :b :c :d))
-           (nafc membero q '(:a :b :c)))
-         '(:d)))
-  (is (= (run* [q]
-           (nafc membero q '(:a :b :c))
-           (membero q '(:a :b :c :d)))
-         '(:d))))
+;; (deftest test-naf-5
+;;   (is (= (run* [q]
+;;            (membero q '(:a :b :c :d))
+;;            (nafc membero q '(:a :b :c)))
+;;          '(:d)))
+;;   (is (= (run* [q]
+;;            (nafc membero q '(:a :b :c))
+;;            (membero q '(:a :b :c :d)))
+;;          '(:d))))
 
 (defn is-number? [x]
   (if-not (tree-term? x)
@@ -837,7 +830,7 @@
         y (l/lvar 'y)
         z (l/lvar 'z)
         s (-> empty-s
-              (l/unify x y)
+              (l/-unify x y)
               (entangle x z)
               (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
@@ -847,7 +840,7 @@
         y (l/lvar 'y)
         z (l/lvar 'z)
         s (-> empty-s
-              (l/unify y x)
+              (l/-unify y x)
               (entangle x z)
               (l/add-dom z :cljs.core.logic/fd (fd/domain 1 2 3)))]
     (is (= (l/get-dom s x :cljs.core.logic/fd) (fd/domain 1 2 3)))))
@@ -902,7 +895,7 @@
 
 (deftest test-attrs-2 []
   (let [x (l/lvar 'x)
-        s (proto/ext-no-check empty-s x 1)
+        s (l/-ext-no-check empty-s x 1)
         s (add-attr s x :foo 'bar)
         s (add-attr s x :baz 'woz)]
     (is (= (get-attr s x :foo) 'bar))
@@ -910,38 +903,38 @@
 
 (deftest test-attrs-2 []
   (let [x (l/lvar 'x)
-        s (proto/ext-no-check empty-s x 1)
-        s (add-attr s x :foo 'bar)
-        s (add-attr s x :baz 'woz)
-        s (rem-attr s x :foo)]
-    (is (= (get-attr s x :foo) nil))))
+        s (l/-ext-no-check empty-s x 1)
+        s (l/add-attr s x :foo 'bar)
+        s (l/add-attr s x :baz 'woz)
+        s (l/rem-attr s x :foo)]
+    (is (= (l/get-attr s x :foo) nil))))
 
 (deftest test-root-1 []
   (let [x (l/lvar 'x)
-        s (proto/ext-no-check empty-s x 1)]
-    (= (root-var s x) x)
-    (= (root-val s x) 1)))
+        s (l/-ext-no-check empty-s x 1)]
+    (= (-root-var s x) x)
+    (= (-root-val s x) 1)))
 
 (deftest test-root-2 []
   (let [x (l/lvar 'x)
         s (add-attr empty-s x :foo 'bar)]
-    (is (l/subst-val? (root-val s x)))))
+    (is (l/subst-val? (l/-root-val s x)))))
 
 (deftest test-root-3 []
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         s (-> empty-s
-              (proto/ext-no-check x 1)
-              (proto/ext-no-check y x))]
-    (is (= (root-var s y) x))))
+              (l/-ext-no-check x 1)
+              (l/-ext-no-check y x))]
+    (is (= (-root-var s y) x))))
 
 (deftest test-ext-run-cs-1 []
   (let [x (l/lvar 'x)
-        s (proto/ext-no-check empty-s x (l/subst-val l/unbound))
+        s (l/-ext-no-check empty-s x (l/subst-val l/unbound))
         s (add-attr s x :cljs.core.logic/fd (fd/domain 1 2 3))
-        s (ext-run-cs s x 1)]
-    (is (= (root-val s x) 1))
-    (is (= (walk s x) 1))))
+        s (l/-ext-run-cs s x 1)]
+    (is (= (l/-root-val s x) 1))
+    (is (= (l/-walk s x) 1))))
 
 (deftest test-update-dom-1 []
   (let [x (l/lvar 'x)
