@@ -299,6 +299,7 @@
 
   (-walk* [this v]
     (let [v (-walk this v)]
+      (println v)
       (-walk-term v
                   (fn [x]
                     (let [x (-walk this x)]
@@ -310,7 +311,7 @@
     (if (identical? u v)
       this
       (let [u (-walk this u)
-            v (-walk this v)]
+            v (-walk this v)]        
         (if (and (lvar? u) (= u v))
           this
           (if (and (not (lvar? u)) (lvar? v))
@@ -697,6 +698,28 @@
 ;; ==========================================================================
 ;; Unification
 
+(defn unify-with-pmap*
+  [u v s]
+  (if (map? v)
+    (loop [ks (keys u) s s]
+      (if (seq ks)
+        (let [kf (first ks)
+              vf (get v kf not-found)]
+          (if (identical? vf not-found)
+            nil
+            (let [uf (get u kf)
+                  vf (-walk s vf)]
+              (if (lvar? vf)
+                (recur (next ks) ((featurec vf uf) s))
+                (if (map? uf)
+                  (if-let [s (-unify s (partial-map uf) vf)]
+                    (recur (next ks) s)
+                    nil)
+                  (if-let [s (-unify s uf vf)]
+                    (recur (next ks) s)
+                    nil))))))
+        s))))
+
 (extend-protocol IUnifyTerms
   nil
   (-unify-terms [u v s]
@@ -704,9 +727,10 @@
 
   default
   (-unify-terms [u v s]
-    (if (sequential? u)
-      (-unify-with-seq v u s)
-      (-unify-with-object v u s)))
+    (cond
+      (sequential? u) (-unify-with-seq v u s)
+      (record? u) (unify-with-pmap* v u s)
+      :else (-unify-with-object v u s)))
 
   PersistentArrayMap
   (-unify-terms [u v s]
@@ -883,7 +907,7 @@
       :else (f v)))
 
   PersistentHashMap
-  (-walk-term [v f] (walk-term-map* v f))
+  (-walk-term [v f]  (walk-term-map* v f))
 
   PersistentArrayMap
   (-walk-term [v f] (walk-term-map* v f))
@@ -924,7 +948,7 @@
 
   default
   (-build-term [u s]
-    (if (sequential? u)
+    (if (coll? u)
       (reduce build s u)
       s)))
 
@@ -1279,6 +1303,11 @@
   (-feature [x]))
 
 (extend-protocol IFeature
+  default
+  (-feature [x]
+    (when (record? x)
+      (partial-map x)))
+  
   PersistentHashMap
   (-feature [x] (partial-map x))
 
@@ -2410,60 +2439,5 @@
 
   )
 
-(def patho-112
-  (tabled
-   [graph start end]
-   (conde
-    [(== start end)]
-    [(fresh [?via ?vias]
-       (project [start graph]
-         (== ?vias  ((:successors graph) start)))
-       (membero ?via ?vias)
-       (patho-112 graph ?via end))])))
 
-(defn solve-goals [graph curr end goals]
-  (all
-   (project [goals]
-     (conde [(== true
-                 (empty? goals))
-             (== curr end)]
-            [(== false (empty? goals))
-             (fresh [goal tail via]
-               (== goal (first goals))
-               (== tail (rest goals))
-               (project [goal]
-                 (goal graph curr via)
-                 (solve-goals graph via end tail)))]))))
-
-(def foo :foo)
-(def bar :bar)
-(def baz :baz)
-(def quux :quux)
-
-(defn to-node [node]
-  (cond
-   (= node foo)
-   (seq (list bar))
-   (= node bar)
-   (seq (list baz))
-   (= node baz)
-   (seq (list quux))))
-
-(def graph {:successors to-node})
-
-
-(defn test-1 []
-  (run* [?result]
-    (fresh [?start ?end]
-      (== ?start foo)
-      (== ?end quux)
-      (solve-goals
-       graph ?start ?end
-       (seq (list patho-112
-                  (fn [graph current next]
-                    (all
-                     (== ?result current)
-                     ;; (trace-lvars "current" current)
-                     (== current next)))
-                  patho-112))))))
 

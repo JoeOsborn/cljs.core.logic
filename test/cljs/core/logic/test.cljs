@@ -7,7 +7,7 @@
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
                    [cljs.core.logic.macros :as l
                     :refer [defne tabled run* fresh run all conde in == !=
-                            defnc fne conda condu]]))
+                            defnc fne conda condu fnc]]))
 
 (deftest unify-nil-object-1
   (is (l/failed? (l/-unify l/empty-s nil 1))))
@@ -1547,7 +1547,7 @@
                               (fn [graph current next]
                                 (all
                                  (== ?result current)
-                                 (l/trace-lvars "current" current)
+                                 ;; (l/trace-lvars "current" current)
                                  (== current next)))
                               patho-112))))))
 
