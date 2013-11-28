@@ -1,368 +1,351 @@
 (ns cljs.core.logic.test
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto
-             :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for take* root-var root-val -prefix
-                     -with-prefix tree-constraint? -constrain-tree
-                     with-id remc]]
-            [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s reify-lvar-name fail succeed
-                     walk* conso s# u# != copy-term rembero membero member1o
-                     emptyo resto firsto appendo reifyg partial-map predc 
-                     featurec everyg composeg solutions pair ext-run-csg
-                     run-constraints* addcg make-cs var-rands force-ans
-                     verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? permuteo ==]]
-            [cljs.core.logic.fd :as fd :refer [interval]]
+  (:require [cljs.core.logic :as l]
+            [cljs.core.logic.fd :as fd]
             [cljs.core.logic.unifier :as u]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic.macros
-                    :refer [umi uai llist composeg* bind* mplus* -inc
-                            conde fresh -run run run* run-db run-db* run-nc
-                            run-nc* all pred project trace-lvars trace-s
-                            log ifa* ifu* conda condu lvaro nonlvaro fnm
-                            defnm fne defne matche fna fnu defna defnu matcha
-                            matchu tabled let-dom fnc defnc
-                            in extend-to-fd eq]]))
+                   [cljs.core.logic.macros :as l
+                    :refer [defne tabled run* fresh run all conde in == !=
+                            defnc fne conda condu fnc]]))
 
 (deftest unify-nil-object-1
-  (is (= (l/unify empty-s nil 1) nil)))
+  (is (l/failed? (l/-unify l/empty-s nil 1))))
 
 (deftest unify-nil-lvar-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x nil)]
-    (is (= (l/unify empty-s nil x) os))))
+        os (l/-ext-no-check l/empty-s x nil)]
+    (is (= (l/-unify l/empty-s nil x) os))))
 
 (deftest unify-nil-lseq-1
   (let [x (l/lvar 'x)]
-    (is (= (l/unify empty-s nil (lcons 1 x)) nil))))
+    (is (l/failed? (l/-unify l/empty-s nil (l/lcons 1 x))))))
 
 (deftest unify-nil-map-1
   (let [x (l/lvar 'x)]
-    (is (= (l/unify empty-s nil {}) nil))))
+    (is (l/failed? (l/-unify l/empty-s nil {})))))
 
 (deftest unify-object-nil-1
-  (is (= (l/unify empty-s 1 nil))))
+  (is (l/failed? (l/-unify l/empty-s 1 nil))))
 
 (deftest unify-object-object-1
-  (is (= (l/unify empty-s 1 1) empty-s)))
+  (is (= (l/-unify l/empty-s 1 1) l/empty-s)))
 
 (deftest unify-object-object-2
-  (is (= (l/unify empty-s :foo :foo) empty-s)))
+  (is (= (l/-unify l/empty-s :foo :foo) l/empty-s)))
 
 (deftest unify-object-object-3
-  (is (= (l/unify empty-s 'foo 'foo) empty-s)))
+  (is (= (l/-unify l/empty-s 'foo 'foo) l/empty-s)))
 
 (deftest unify-object-object-4
-  (is (= (l/unify empty-s "foo" "foo") empty-s)))
+  (is (= (l/-unify l/empty-s "foo" "foo") l/empty-s)))
 
 (deftest unify-object-object-5
-  (is (= (l/unify empty-s 1 2) nil)))
+  (is (l/failed? (l/-unify l/empty-s 1 2))))
 
 (deftest unify-object-object-6
-  (is (= (l/unify empty-s 2 1) nil)))
+  (is (l/failed? (l/-unify l/empty-s 2 1))))
 
 (deftest unify-object-object-7
-  (is (= (l/unify empty-s :foo :bar) nil)))
+  (is (l/failed? (l/-unify l/empty-s :foo :bar))))
 
 (deftest unify-object-object-8
-  (is (= (l/unify empty-s 'foo 'bar) nil)))
+  (is (l/failed? (l/-unify l/empty-s 'foo 'bar))))
 
 (deftest unify-object-object-9
-  (is (= (l/unify empty-s "foo" "bar") nil)))
+  (is (l/failed? (l/-unify l/empty-s "foo" "bar"))))
 
 (deftest unify-object-lvar-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x 1)]
-    (is (= (l/unify empty-s 1 x) os))))
+        os (l/-ext-no-check l/empty-s x 1)]
+    (is (= (l/-unify l/empty-s 1 x) os))))
 
 (deftest unify-object-lcons-1
   (let [x (l/lvar 'x)]
-    (is (= (l/unify empty-s 1 (lcons 1 'x)) nil))))
+    (is (l/failed? (l/-unify l/empty-s 1 (l/lcons 1 'x))))))
 
 (deftest unify-object-seq-1
-  (is (= (l/unify empty-s 1 '()) nil)))
+  (is (l/failed? (l/-unify l/empty-s 1 '()))))
 
 (deftest unify-object-seq-2
-  (is (= (l/unify empty-s 1 '[]) nil)))
+  (is (l/failed? (l/-unify l/empty-s 1 '[]))))
 
 (deftest unify-object-map-1
-  (is (= (l/unify empty-s 1 {}) nil)))
+  (is (l/failed? (l/-unify l/empty-s 1 {}))))
 
 (deftest unify-lvar-object-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x 1)]
-    (is (= (l/unify empty-s x 1) os))))
+        os (l/-ext-no-check l/empty-s x 1)]
+    (is (= (l/-unify l/empty-s x 1) os))))
 
 (deftest unify-lvar-lvar-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        os (proto/ext-no-check empty-s x y)]
-    (is (= (l/unify empty-s x y) os))))
+        os (l/-ext-no-check l/empty-s x y)]
+    (is (= (l/-unify l/empty-s x y) os))))
 
 (deftest unify-lvar-lcons-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        l (lcons 1 y)
-        os (proto/ext-no-check empty-s x l)]
-    (is (= (l/unify empty-s x l) os))))
+        l (l/lcons 1 y)
+        os (l/-ext-no-check l/empty-s x l)]
+    (is (= (l/-unify l/empty-s x l) os))))
 
 (deftest unify-lvar-seq-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x [])]
-    (is (= (l/unify empty-s x []) os))))
+        os (l/-ext-no-check l/empty-s x [])]
+    (is (= (l/-unify l/empty-s x []) os))))
 
 (deftest unify-lvar-seq-2
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x [1 2 3])]
-    (is (= (l/unify empty-s x [1 2 3]) os))))
+        os (l/-ext-no-check l/empty-s x [1 2 3])]
+    (is (= (l/-unify l/empty-s x [1 2 3]) os))))
 
 (deftest unify-lvar-seq-3
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x '())]
-    (is (= (l/unify empty-s x '()) os))))
+        os (l/-ext-no-check l/empty-s x '())]
+    (is (= (l/-unify l/empty-s x '()) os))))
 
 (deftest unify-lvar-seq-4
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x '(1 2 3))]
-    (is (= (l/unify empty-s x '(1 2 3)) os))))
+        os (l/-ext-no-check l/empty-s x '(1 2 3))]
+    (is (= (l/-unify l/empty-s x '(1 2 3)) os))))
 
 (deftest unify-lvar-map-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x {})]
-    (is (= (l/unify empty-s x {}) os))))
+        os (l/-ext-no-check l/empty-s x {})]
+    (is (= (l/-unify l/empty-s x {}) os))))
 
 (deftest unify-lvar-map-2
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x {1 2 3 4})]
-    (is (= (l/unify empty-s x {1 2 3 4}) os))))
+        os (l/-ext-no-check l/empty-s x {1 2 3 4})]
+    (is (= (l/-unify l/empty-s x {1 2 3 4}) os))))
 
 ;; -----------------------------------------------------------------------------
-;; lcons
+;; l/lcons
 
 (deftest unify-lcons-object-1
   (let [x (l/lvar 'x)]
-    (is (= (l/unify empty-s (lcons 1 x) 1) nil))))
+    (is (= (l/-unify l/empty-s (l/lcons 1 x) 1) nil))))
 
 (deftest unify-lcons-lvar-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        l (lcons 1 y)
-        os (proto/ext-no-check empty-s x l)]
-    (is (= (l/unify empty-s l x) os))))
+        l (l/lcons 1 y)
+        os (l/-ext-no-check l/empty-s x l)]
+    (is (= (l/-unify l/empty-s l x) os))))
 
 (deftest unify-lcons-lcons-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc1 (lcons 1 x)
-        lc2 (lcons 1 y)
-        os (proto/ext-no-check empty-s x y)]
-    (is (= (l/unify empty-s lc1 lc2) os))))
+        lc1 (l/lcons 1 x)
+        lc2 (l/lcons 1 y)
+        os (l/-ext-no-check l/empty-s x y)]
+    (is (= (l/-unify l/empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-2
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
         z (l/lvar 'z)
-        lc1 (lcons 1 (lcons 2 x))
-        lc2 (lcons 1 (lcons z y))
-        os (-> empty-s
-               (proto/ext-no-check x y)
-               (proto/ext-no-check z 2))]
-    (is (= (l/unify empty-s lc1 lc2) os))))
+        lc1 (l/lcons 1 (l/lcons 2 x))
+        lc2 (l/lcons 1 (l/lcons z y))
+        os (-> l/empty-s
+               (l/-ext-no-check x y)
+               (l/-ext-no-check z 2))]
+    (is (= (l/-unify l/empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-3
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc1 (lcons 1 (lcons 2 x))
-        lc2 (lcons 1 (lcons 2 (lcons 3 y)))
-        os (proto/ext-no-check empty-s x (lcons 3 y))]
-    (is (= (l/unify empty-s lc1 lc2) os))))
+        lc1 (l/lcons 1 (l/lcons 2 x))
+        lc2 (l/lcons 1 (l/lcons 2 (l/lcons 3 y)))
+        os (l/-ext-no-check l/empty-s x (l/lcons 3 y))]
+    (is (= (l/-unify l/empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-lcons-4
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc1 (lcons 1 (lcons 2 x))
-        lc2 (lcons 1 (lcons 3 (lcons 4 y)))]
-    (is (= (l/unify empty-s lc1 lc2) nil))))
+        lc1 (l/lcons 1 (l/lcons 2 x))
+        lc2 (l/lcons 1 (l/lcons 3 (l/lcons 4 y)))]
+    (is (= (l/-unify l/empty-s lc1 lc2) nil))))
 
 (deftest unify-lcons-lcons-5
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc2 (lcons 1 (lcons 2 x))
-        lc1 (lcons 1 (lcons 3 (lcons 4 y)))]
-    (is (= (l/unify empty-s lc1 lc2) nil))))
+        lc2 (l/lcons 1 (l/lcons 2 x))
+        lc1 (l/lcons 1 (l/lcons 3 (l/lcons 4 y)))]
+    (is (= (l/-unify l/empty-s lc1 lc2) nil))))
 
 (deftest unify-lcons-lcons-6
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc1 (lcons 1 (lcons 2 x))
-        lc2 (lcons 1 (lcons 2 y))
-        os (proto/ext-no-check empty-s x y)]
-    (is (= (l/unify empty-s lc1 lc2) os))))
+        lc1 (l/lcons 1 (l/lcons 2 x))
+        lc2 (l/lcons 1 (l/lcons 2 y))
+        os (l/-ext-no-check l/empty-s x y)]
+    (is (= (l/-unify l/empty-s lc1 lc2) os))))
 
 (deftest unify-lcons-seq-1
   (let [x (l/lvar 'x)
-        lc1 (lcons 1 (lcons 2 x))
+        lc1 (l/lcons 1 (l/lcons 2 x))
         l1 '(1 2 3 4)
-        os (proto/ext-no-check empty-s x '(3 4))]
-    (is (= (l/unify empty-s lc1 l1) os))))
+        os (l/-ext-no-check l/empty-s x '(3 4))]
+    (is (= (l/-unify l/empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-2
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        lc1 (lcons 1 (lcons y (lcons 3 x)))
+        lc1 (l/lcons 1 (l/lcons y (l/lcons 3 x)))
         l1 '(1 2 3 4)
-        os (-> empty-s
-               (proto/ext-no-check x '(4))
-               (proto/ext-no-check y 2))]
-    (is (= (l/unify empty-s lc1 l1) os))))
+        os (-> l/empty-s
+               (l/-ext-no-check x '(4))
+               (l/-ext-no-check y 2))]
+    (is (= (l/-unify l/empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-3
   (let [x (l/lvar 'x)
-        lc1 (lcons 1 (lcons 2 (lcons 3 x)))
+        lc1 (l/lcons 1 (l/lcons 2 (l/lcons 3 x)))
         l1 '(1 2 3)
-        os (proto/ext-no-check empty-s x '())]
-    (is (= (l/unify empty-s lc1 l1) os))))
+        os (l/-ext-no-check l/empty-s x '())]
+    (is (= (l/-unify l/empty-s lc1 l1) os))))
 
 (deftest unify-lcons-seq-4
   (let [x (l/lvar 'x)
-        lc1 (lcons 1 (lcons 3 x))
+        lc1 (l/lcons 1 (l/lcons 3 x))
         l1 '(1 2 3 4)]
-    (is (= (l/unify empty-s lc1 l1) nil))))
+    (is (= (l/-unify l/empty-s lc1 l1) nil))))
 
 (deftest unify-lcons-seq-5
   (let [x (l/lvar 'x)
-        lc1 (lcons 1 (lcons 2 x))
+        lc1 (l/lcons 1 (l/lcons 2 x))
         l1 '(1 3 4 5)]
-    (is (= (l/unify empty-s lc1 l1) nil))))
+    (is (= (l/-unify l/empty-s lc1 l1) nil))))
 
 (deftest unify-lcons-map-1
-  (is (= (l/unify empty-s (lcons 1 (l/lvar 'x)) {}) nil)))
+  (is (= (l/-unify l/empty-s (l/lcons 1 (l/lvar 'x)) {}) nil)))
 
 
 ;; -----------------------------------------------------------------------------
 ;; seq
 
 (deftest unify-seq-object-1
-  (is (= (l/unify empty-s '() 1) nil)))
+  (is (= (l/-unify l/empty-s '() 1) nil)))
 
 (deftest unify-seq-object-2
-  (is (= (l/unify empty-s [] 1) nil)))
+  (is (= (l/-unify l/empty-s [] 1) nil)))
 
 (deftest unify-seq-lvar-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x [])]
-    (is (= (l/unify empty-s [] x) os))))
+        os (l/-ext-no-check l/empty-s x [])]
+    (is (= (l/-unify l/empty-s [] x) os))))
 
 (deftest unify-seq-lcons-1
   (let [x (l/lvar 'x)
-        lc1 (lcons 1 (lcons 2 x))
+        lc1 (l/lcons 1 (l/lcons 2 x))
         l1 '(1 2 3 4)
-        os (proto/ext-no-check empty-s x '(3 4))]
-    (is (= (l/unify empty-s l1 lc1) os))))
+        os (l/-ext-no-check l/empty-s x '(3 4))]
+    (is (= (l/-unify l/empty-s l1 lc1) os))))
 
 (deftest unify-seq-seq-1
-  (is (= (l/unify empty-s [1 2 3] [1 2 3]) empty-s)))
+  (is (= (l/-unify l/empty-s [1 2 3] [1 2 3]) l/empty-s)))
 
 (deftest unify-seq-seq-2
-  (is (= (l/unify empty-s '(1 2 3) [1 2 3]) empty-s)))
+  (is (= (l/-unify l/empty-s '(1 2 3) [1 2 3]) l/empty-s)))
 
 (deftest unify-seq-seq-3
-  (is (= (l/unify empty-s '(1 2 3) '(1 2 3)) empty-s)))
+  (is (= (l/-unify l/empty-s '(1 2 3) '(1 2 3)) l/empty-s)))
 
 (deftest unify-seq-seq-4
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x 2)]
-    (is (= (l/unify empty-s `(1 ~x 3) `(1 2 3)) os))))
+        os (l/-ext-no-check l/empty-s x 2)]
+    (is (= (l/-unify l/empty-s `(1 ~x 3) `(1 2 3)) os))))
 
 (deftest unify-seq-seq-5
-  (is (= (l/unify empty-s [1 2] [1 2 3]) nil)))
+  (is (= (l/-unify l/empty-s [1 2] [1 2 3]) nil)))
 
 (deftest unify-seq-seq-6
-  (is (= (l/unify empty-s '(1 2) [1 2 3]) nil)))
+  (is (= (l/-unify l/empty-s '(1 2) [1 2 3]) nil)))
 
 (deftest unify-seq-seq-7
-  (is (= (l/unify empty-s [1 2 3] [3 2 1]) nil)))
+  (is (= (l/-unify l/empty-s [1 2 3] [3 2 1]) nil)))
 
 (deftest unify-seq-seq-8
-  (is (= (l/unify empty-s '() '()) empty-s)))
+  (is (= (l/-unify l/empty-s '() '()) l/empty-s)))
 
 (deftest unify-seq-seq-9
-  (is (= (l/unify empty-s '() '(1)) nil)))
+  (is (= (l/-unify l/empty-s '() '(1)) nil)))
 
 (deftest unify-seq-seq-10
-  (is (= (l/unify empty-s '(1) '()) nil)))
+  (is (= (l/-unify l/empty-s '(1) '()) nil)))
 
 (deftest unify-seq-seq-11
-  (is (= (l/unify empty-s [[1 2]] [[1 2]]) empty-s)))
+  (is (= (l/-unify l/empty-s [[1 2]] [[1 2]]) l/empty-s)))
 
 (deftest unify-seq-seq-12
-  (is (= (l/unify empty-s [[1 2]] [[2 1]]) nil)))
+  (is (= (l/-unify l/empty-s [[1 2]] [[2 1]]) nil)))
 
 (deftest unify-seq-seq-13
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x 1)]
-    (is (= (l/unify empty-s [[x 2]] [[1 2]]) os))))
+        os (l/-ext-no-check l/empty-s x 1)]
+    (is (= (l/-unify l/empty-s [[x 2]] [[1 2]]) os))))
 
 (deftest unify-seq-seq-14
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x [1 2])]
-    (is (= (l/unify empty-s [x] [[1 2]]) os))))
+        os (l/-ext-no-check l/empty-s x [1 2])]
+    (is (= (l/-unify l/empty-s [x] [[1 2]]) os))))
 
 (deftest unify-seq-seq-15
   (let [x (l/lvar 'x) y (l/lvar 'y)
         u (l/lvar 'u) v (l/lvar 'v)
-        os (-> empty-s
-               (proto/ext-no-check x 'b)
-               (proto/ext-no-check y 'a))]
-    (is (= (l/unify empty-s ['a x] [y 'b]) os))))
+        os (-> l/empty-s
+               (l/-ext-no-check x 'b)
+               (l/-ext-no-check y 'a))]
+    (is (= (l/-unify l/empty-s ['a x] [y 'b]) os))))
 
 (deftest unify-seq-map-1
-  (is (= (l/unify empty-s [] {}) nil)))
+  (is (= (l/-unify l/empty-s [] {}) nil)))
 
 (deftest unify-seq-map-2
-  (is (= (l/unify empty-s '() {}) nil)))
+  (is (= (l/-unify l/empty-s '() {}) nil)))
 
 ;; -----------------------------------------------------------------------------
 ;; map
 
 (deftest unify-map-object-1
-  (is (= (l/unify empty-s {} 1) nil)))
+  (is (= (l/-unify l/empty-s {} 1) nil)))
 
 (deftest unify-map-lvar-1
   (let [x (l/lvar 'x)
-        os (proto/ext-no-check empty-s x {})]
-    (is (= (l/unify empty-s {} x) os))))
+        os (l/-ext-no-check l/empty-s x {})]
+    (is (= (l/-unify l/empty-s {} x) os))))
 
 (deftest unify-map-lcons-1
   (let [x (l/lvar 'x)]
-    (is (= (l/unify empty-s {} (lcons 1 x)) nil))))
+    (is (= (l/-unify l/empty-s {} (l/lcons 1 x)) nil))))
 
 (deftest unify-map-seq-1
-  (is (= (l/unify empty-s {} '()) nil)))
+  (is (= (l/-unify l/empty-s {} '()) nil)))
 
 (deftest unify-map-map-1
-  (is (= (l/unify empty-s {} {}) empty-s)))
+  (is (= (l/-unify l/empty-s {} {}) l/empty-s)))
 
 (deftest unify-map-map-2
-  (is (= (l/unify empty-s {1 2 3 4} {1 2 3 4}) empty-s)))
+  (is (= (l/-unify l/empty-s {1 2 3 4} {1 2 3 4}) l/empty-s)))
 
 (deftest unify-map-map-3
-  (is (= (l/unify empty-s {1 2} {1 2 3 4}) nil)))
+  (is (= (l/-unify l/empty-s {1 2} {1 2 3 4}) nil)))
 
 (deftest unify-map-map-4
   (let [x (l/lvar 'x)
         m1 {1 2 3 4}
         m2 {1 2 3 x}
-        os (proto/ext-no-check empty-s x 4)]
-    (is (= (l/unify empty-s m1 m2) os))))
+        os (l/-ext-no-check l/empty-s x 4)]
+    (is (= (l/-unify l/empty-s m1 m2) os))))
 
 (deftest unify-map-map-5
   (let [x (l/lvar 'x)
         m1 {1 2 3 4}
         m2 {1 4 3 x}]
-    (is (= (l/unify empty-s m1 m2) nil))))
+    (is (= (l/-unify l/empty-s m1 m2) nil))))
 
 (defrecord foo-struct [a b])
 
@@ -370,14 +353,14 @@
   (let [x (l/lvar 'x)
         m1 (->foo-struct 1 2)
         m2 (->foo-struct 1 x)
-        os (proto/ext-no-check empty-s x 2)]
-    (is (= (l/unify empty-s m1 m2) os))))
+        os (l/-ext-no-check l/empty-s x 2)]
+    (is (= (l/-unify l/empty-s m1 m2) os))))
 
 (deftest unify-struct-map-2
   (let [x (l/lvar 'x)
         m1 (->foo-struct 1 2)
         m2 (->foo-struct 1 3)]
-    (is (= (l/unify empty-s m1 m2) nil))))
+    (is (= (l/-unify l/empty-s m1 m2) nil))))
 
 ;; =============================================================================
 ;; walk
@@ -385,14 +368,14 @@
 (deftest test-basic-walk
   (is (= (let [x  (l/lvar 'x)
                y  (l/lvar 'y)
-               ss (to-s [[x 5] [y x]])]
-           (walk ss y))
+               ss (l/to-s [[x 5] [y x]])]
+           (l/-walk ss y))
          5)))
 
 (deftest test-deep-walk
-  (is (= (let [[x y z c b a :as s] (map lvar '[x y z c b a])
-               ss (to-s [[x 5] [y x] [z y] [c z] [b c] [a b]])]
-           (walk ss a))
+  (is (= (let [[x y z c b a :as s] (map l/lvar '[x y z c b a])
+               ss (l/to-s [[x 5] [y x] [z y] [c z] [b c] [a b]])]
+           (l/-walk ss a))
          5)))
 
 ;; =============================================================================
@@ -401,7 +384,7 @@
 (deftest test-reify-lvar-name
   (is (= (let [x  (l/lvar 'x)
                y  (l/lvar 'y)]
-           (reify-lvar-name (to-s [[x 5] [y x]])))
+           (l/-reify-lvar-name (l/to-s [[x 5] [y x]])))
          '_2)))
 
 ;; =============================================================================
@@ -410,7 +393,7 @@
 (deftest test-walk*
   (is (= (let [x  (l/lvar 'x)
                y  (l/lvar 'y)]
-           (walk* (to-s [[x 5] [y x]]) `(~x ~y)))
+           (l/-walk* (l/to-s [[x 5] [y x]]) `(~x ~y)))
          '(5 5))))
 
 ;; =============================================================================
@@ -439,7 +422,7 @@
 
 (deftest test-basic-failure
   (is (= (run* [q]
-           fail
+           l/fail
            (== true q))
          [])))
 
@@ -458,30 +441,30 @@
 
 (defn pairo [p]
   (fresh [a d]
-    (== (lcons a d) p)))
+    (== (l/lcons a d) p)))
 
 (defn twino [p]
   (fresh [x]
-    (conso x x p)))
+    (l/conso x x p)))
 
 (defn listo [l]
   (conde
-   [(emptyo l) s#]
+   [(l/emptyo l) l/s#]
    [(pairo l)
     (fresh [d]
-      (resto l d)
+      (l/resto l d)
       (listo d))]))
 
 (defn flatteno [s out]
   (conde
-   [(emptyo s) (== '() out)]
+   [(l/emptyo s) (== '() out)]
    [(pairo s)
     (fresh [a d res-a res-d]
-      (conso a d s)
+      (l/conso a d s)
       (flatteno a res-a)
       (flatteno d res-d)
-      (appendo res-a res-d out))]
-   [(conso s '() out)]))
+      (l/appendo res-a res-d out))]
+   [(l/conso s '() out)]))
 
 ;; =============================================================================
 ;; conde
@@ -490,9 +473,9 @@
   (is (=  (into #{}
                 (run* [x]
                   (conde
-                   [(== x 'olive) succeed]
-                   [succeed succeed]
-                   [(== x 'oil) succeed])))
+                   [(== x 'olive) l/s#]
+                   [l/s# l/s#]
+                   [(== x 'oil) l/s#])))
           (into #{}
                 '[olive _0 oil]))))
 
@@ -509,15 +492,15 @@
 
 (defn teacupo [x]
   (conde
-   [(== 'tea x) s#]
-   [(== 'cup x) s#]))
+   [(== 'tea x) l/s#]
+   [(== 'cup x) l/s#]))
 
 (deftest test-basic-conde-e-3
   (is (= (into #{}
                (run* [r]
                  (fresh [x y]
                    (conde
-                    [(teacupo x) (== true y) s#]
+                    [(teacupo x) (== true y) l/s#]
                     [(== false x) (== true y)])
                    (== (cons x (cons y ())) r))))
          (into #{} '((false true) (tea true) (cup true))))))
@@ -528,15 +511,15 @@
 (deftest test-conso
   (is (= (run* [q]
            (fresh [a d]
-             (conso a d '())))
+             (l/conso a d '())))
          ())))
 
 (deftest test-conso-1
   (let [a (l/lvar 'a)
         d (l/lvar 'd)]
     (is (= (run* [q]
-             (conso a d q))
-           [(lcons a d)]))))
+             (l/conso a d q))
+           [(l/lcons a d)]))))
 
 (deftest test-conso-2
   (is (= (run* [q]
@@ -546,22 +529,22 @@
 (deftest test-conso-3
   (is (=
        (run* [q]
-         (conso 'a nil q))
+         (l/conso 'a nil q))
        '[(a)])))
 
 (deftest test-conso-4
   (is (= (run* [q]
-           (conso 'a '(d) q))
+           (l/conso 'a '(d) q))
          '[(a d)])))
 
 (deftest test-conso-empty-list
   (is (= (run* [q]
-           (conso 'a q '(a)))
+           (l/conso 'a q '(a)))
          '[()])))
 
 (deftest test-conso-5
   (is (= (run* [q]
-           (conso q '(b c) '(a b c)))
+           (l/conso q '(b c) '(a b c)))
          '[a])))
 
 
@@ -570,30 +553,30 @@
 
 (deftest test-firsto
   (is (= (run* [q]
-           (firsto q '(1 2)))
-         (list (lcons '(1 2) (l/lvar 'x))))))
+           (l/firsto q '(1 2)))
+         (list (l/lcons '(1 2) (l/lvar 'x))))))
 
 ;; =============================================================================
 ;; resto
 
 (deftest test-resto
   (is (= (run* [q]
-           (resto q '(1 2)))
+           (l/resto q '(1 2)))
          '[(_0 1 2)])))
 
 (deftest test-resto-2
   (is (= (run* [q]
-           (resto q [1 2]))
+           (l/resto q [1 2]))
          '[(_0 1 2)])))
 
 (deftest test-resto-3
   (is (= (run* [q]
-           (resto [1 2] q))
+           (l/resto [1 2] q))
          '[(2)])))
 
 (deftest test-resto-4
   (is (= (run* [q]
-           (resto [1 2 3 4 5 6 7 8] q))
+           (l/resto [1 2 3 4 5 6 7 8] q))
          '[(2 3 4 5 6 7 8)])))
 
 ;; =============================================================================
@@ -615,15 +598,15 @@
 (deftest membero-1
   (is (= (run* [q]
            (all
-            (== q [(lvar)])
-            (membero ['foo (lvar)] q)
-            (membero [(lvar) 'bar] q)))
+            (== q [(l/lvar)])
+            (l/membero ['foo (l/lvar)] q)
+            (l/membero [(l/lvar) 'bar] q)))
          '([[foo bar]]))))
 
 (deftest membero-2
   (is (= (into #{}
                (run* [q]
-                 (membero q [1 2 3])))
+                 (l/membero q [1 2 3])))
          #{1 2 3})))
 
 (deftest membero-3
@@ -631,7 +614,7 @@
   ;; old membero, defined without disequality constraints, would have
   ;; returned (1 1 1 1 1).
   (is (= (run* [q]
-           (member1o q [1 1 1 1 1]))
+           (l/member1o q [1 1 1 1 1]))
          '(1))))
 
 ;; -----------------------------------------------------------------------------
@@ -639,7 +622,7 @@
 
 (deftest rembero-1
   (is (= (run 1 [q]
-           (rembero 'b '(a b c b d) q))
+           (l/rembero 'b '(a b c b d) q))
          '((a c b d)))))
 
 ;; -----------------------------------------------------------------------------
@@ -680,18 +663,18 @@
 
 (defn anyo [q]
   (conde
-   [q s#]
+   [q l/s#]
    [(anyo q)]))
 
 (deftest test-anyo-1
   (is (= (run 1 [q]
-           (anyo s#)
+           (anyo l/s#)
            (== true q))
          (list true))))
 
 (deftest test-anyo-2
   (is (= (run 5 [q]
-           (anyo s#)
+           (anyo l/s#)
            (== true q))
          (list true true true true true))))
 
@@ -732,18 +715,18 @@
 (deftest test-conda-1
   (is (= (run* [x]
            (conda
-            [(== 'olive x) s#]
-            [(== 'oil x) s#]
-            [u#]))
+            [(== 'olive x) l/s#]
+            [(== 'oil x) l/s#]
+            [l/u#]))
          '(olive))))
 
 (deftest test-conda-2
   (is (= (run* [x]
            (conda
-            [(== 'virgin x) u#]
-            [(== 'olive x) s#]
-            [(== 'oil x) s#]
-            [u#]))
+            [(== 'virgin x) l/u#]
+            [(== 'olive x) l/s#]
+            [(== 'oil x) l/s#]
+            [l/u#]))
          '())))
 
 (deftest test-conda-3
@@ -753,7 +736,7 @@
              (== 'pea y)
              (conda
               [(== 'split x) (== x y)]
-              [s#]))
+              [l/s#]))
            (== true x))
          '())))
 
@@ -764,14 +747,14 @@
              (== 'pea y)
              (conda
               [(== x y) (== 'split x)]
-              [s#]))
+              [l/s#]))
            (== true x))
          '(true))))
 
 (defn not-pastao [x]
   (conda
-   [(== 'pasta x) u#]
-   [s#]))
+   [(== 'pasta x) l/u#]
+   [l/s#]))
 
 (deftest test-conda-5
   (is (= (run* [x]
@@ -783,22 +766,20 @@
 ;; -----------------------------------------------------------------------------
 ;; condu (committed-choice)
 
-(comment
-  (defn onceo [g]
-    (condu
-     (g s#)))
+(defn onceo [g]
+  (condu (g l/s#)))
 
-  (deftest test-condu-1
-    (is (= (run* [x]
-             (onceo (teacupo x)))
-           '(tea)))))
+(deftest test-condu-1
+  (is (= (run* [x]
+           (onceo (teacupo x)))
+         '(tea))))
 
 (deftest test-condu-2
   (is (= (into #{}
                (run* [r]
                  (conde
-                  [(teacupo r) s#]
-                  [(== false r) s#])))
+                  [(teacupo r) l/s#]
+                  [(== false r) l/s#])))
          (into #{}
                '(false tea cup)))))
 
@@ -806,8 +787,8 @@
   (is (= (into #{}
                (run* [r]
                  (conda
-                  [(teacupo r) s#]
-                  [(== false r) s#])))
+                  [(teacupo r) l/s#]
+                  [(== false r) l/s#])))
          (into #{} '(tea cup)))))
 
 ;; -----------------------------------------------------------------------------
@@ -816,29 +797,29 @@
 (deftest test-copy-term-1
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term a b)
+             (l/copy-term a b)
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term `(~a) `(~b))
+             (l/copy-term `(~a) `(~b))
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b]
-             (copy-term [a] [b])
+             (l/copy-term [a] [b])
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b c]
-             (copy-term [a] c)
+             (l/copy-term [a] c)
              (== [b] c)
              (== q [a b])))
          '([_0 _1])))
   (is (= (run* [q]
            (fresh [a b c d]
              (== c 1)
-             (copy-term [a c] [b d])
+             (l/copy-term [a c] [b d])
              (== q [a b d])))
          '([_0 _1 1]))))
 
@@ -1155,7 +1136,7 @@
 
 (deftest test-unifier-4
   (is (= (u/unify ['(?x . ?y) '(1 . ?z)])
-         (lcons 1 '?z))))
+         (l/lcons 1 '?z))))
 
 (deftest test-unifier-5
   (is (= (u/unify ['(?x 2 . ?y) '(1 2 3 4 5)])
@@ -1192,15 +1173,15 @@
 ;; custom var reification
 
 (deftest test-reify-vars-false
-  (is (-run {:reify-vars false} [q]
+  (is (l/solve {:reify-vars false} [q]
             (fresh [x]
               (== q x)))
       '(x)))
 
 (deftest test-custom-var-reifier-1
   (let [x (l/lvar 'x)]
-    (is (= (-run {:reify-vars (fn [v rs] rs)} [q]
-                 (== q x))
+    (is (= (l/solve {:reify-vars (fn [v rs] rs)} [q]
+             (== q x))
            `(~x)))))
 
 ;; -----------------------------------------------------------------------------
@@ -1309,15 +1290,18 @@
          ())))
 
 (deftest test-unify-fail-1
-  (is (= (run* [p] (fresh [a b] (== b ()) (== '(0 1) (lcons a b)) (== p [a b])))
+  (is (= (run* [p] (fresh [a b] (== b ()) (== '(0 1) (l/lcons a b)) (== p [a b])))
          ())))
 
 (deftest test-unify-fail-2
-  (is (= (run* [p] (fresh [a b] (== b '(1)) (== '(0) (lcons a b)) (== p [a b])))
+  (is (= (run* [p] (fresh [a b]
+                     (== b '(1))
+                     (== '(0) (l/lcons a b))
+                     (== p [a b])))
          ())))
 
 (deftest test-unify-fail-3
-  (is (= (run* [p] (fresh [a b c d] (== () b) (== '(1) d) (== (lcons a b) (lcons c d)) (== p [a b c d])))
+  (is (= (run* [p] (fresh [a b c d] (== () b) (== '(1) d) (== (l/lcons a b) (l/lcons c d)) (== p [a b c d])))
          ())))
 
 (defne pm1 [x y]
@@ -1372,10 +1356,10 @@
   [x l]
   ([_ [x . tail]])
   ([_ [head . tail]]
-     (membero x tail)))
+     (l/membero x tail)))
 
 (defn locals-membero [x l]
-  (matche [l]
+  (l/matche [l]
           ([[x . tail]])
           ([[head . tail]]
              (locals-membero x tail))))
@@ -1417,21 +1401,21 @@
   (is (= [1]
          (run* [q]
            (fresh [x]
-             (== {:a 1 :b 2} (partial-map {:a x}))
+             (== {:a 1 :b 2} (l/partial-map {:a x}))
              (== q x)))))
   (is (= [1]
          (run* [q]
            (fresh [x]
-             (== (partial-map {:a x}) {:a 1 :b 2})
+             (== (l/partial-map {:a x}) {:a 1 :b 2})
              (== q x))))))
 
 (deftest test-73-partial-map-unification
   (is (= (run* [q]
            (fresh [a]
-             (== {:x 1} (partial-map {:a a}))))
+             (== {:x 1} (l/partial-map {:a a}))))
          '()))
   (is (= (run* [q]
-           (== {:a 1} (partial-map {:a q})))
+           (== {:a 1} (l/partial-map {:a q})))
          '(1))))
 
 (deftest test-75-map-sum-maps-lcons
@@ -1445,22 +1429,22 @@
                (run* [q]
                  (fresh [x y]
                    (in x (fd/interval 1 3))
-                   (== q (lcons x y)))))
-         (into #{} [(lcons 1 '_0) (lcons 2 '_0) (lcons 3 '_0)]))))
+                   (== q (l/lcons x y)))))
+         (into #{} [(l/lcons 1 '_0) (l/lcons 2 '_0) (l/lcons 3 '_0)]))))
 
 (deftest test-82-nil-lcons-tail
   (is (= (run 1 [q]
            (fresh [a b c]
-             (conso a b c)
+             (l/conso a b c)
              (== b nil)
-             (== `(~a) c)))
+             (== a q)))
          '(_0))))
 
 (deftest test-85-alias
   (is (= (run* [q]
            (fresh [x y]
-             (predc y even? `even?)
-             (predc x odd? `odd)
+             (l/predc y even? 'even?)
+             (l/predc x odd? 'odd)
              (== x y)
              (== x 1)
              (== q [x y])))
@@ -1471,7 +1455,7 @@
            (== r [a b])
            (in a b x (fd/domain 1 2))
            (fd/< a b)
-           (firsto r x))
+           (l/firsto r x))
          '([[1 2] 1 2 1]))))
 
 (deftest test-90-<-diverge
@@ -1492,7 +1476,7 @@
          (into #{} '([2 2 4 4] [3 2 5 6])))))
 
 (defrecord RecordTest [a b]
-  proto/IUninitialized
+  l/IUninitialized
   (-uninitialized [_]
     (RecordTest. nil nil)))
 
@@ -1503,10 +1487,10 @@
 
 (deftest test-111-conda-regression
   (is (= (run* [x]
-           (conda
-            [succeed
-             (project [x] succeed)
-             (project [x] succeed)]))
+           (l/conda
+            [l/s#
+             (l/project [x] l/s#)
+             (l/project [x] l/s#)]))
          '(_0))))
 
 (deftest test-115-singleton-doms
@@ -1520,25 +1504,22 @@
    (conde
     [(== start end)]
     [(fresh [?via ?vias]
-       (project [start graph]
+       (l/project [start graph]
          (== ?vias  ((:successors graph) start)))
-       (membero ?via ?vias)
+       (l/membero ?via ?vias)
        (patho-112 graph ?via end))])))
 
 (defn solve-goals [graph curr end goals]
   (all
-   (project [goals]
-     ;;when there are no more goals we are done
+   (l/project [goals]
      (conde [(== true
                  (empty? goals))
              (== curr end)]
-            ;;there are still goals left
-            ;;solve the first and recursive call
             [(== false (empty? goals))
              (fresh [goal tail via]
                (== goal (first goals))
                (== tail (rest goals))
-               (project [goal]
+               (l/project [goal]
                  (goal graph curr via)
                  (solve-goals graph via end tail)))]))))
 
@@ -1556,7 +1537,7 @@
    (= node baz)
    (seq (list quux))))
 
-(def graph { :successors to-node})
+(def graph {:successors to-node})
 
 
 (defn test-1 []
@@ -1569,24 +1550,23 @@
                               (fn [graph current next]
                                 (all
                                  (== ?result current)
-                                 ;;(trace-lvars "current" current)
+                                 ;; (l/trace-lvars "current" current)
                                  (== current next)))
                               patho-112))))))
 
 (deftest test-112-tabling
-  (is (= (test-1)
-         '(:foo :bar :baz :quux))))
+  (is (= (test-1) '(:foo :bar :baz :quux))))
 
 (defne lefto
   "x appears to the left of y in collection l."
   [x y l]
-  ([_ _ [x . tail]] (membero y tail))
+  ([_ _ [x . tail]] (l/membero y tail))
   ([_ _ [_ . tail]] (lefto x y tail)))
 
 (defn rule-1 [answers]
   (fresh [c1 r1 c2 r2]
-    (membero [:landon (lvar) c1 r1] answers)
-    (membero [:jason (lvar) c2 r2] answers)
+    (l/membero [:landon (l/lvar) c1 r1] answers)
+    (l/membero [:jason (l/lvar) c2 r2] answers)
     (conde
      [(== r1 7.5)
       (== c2 :mozzarella)]
@@ -1594,40 +1574,40 @@
       (== c1 :mozzarella)])))
 
 (defn rule-2 [answers]
-  (membero [(lvar) :fortune :blue-cheese (lvar)] answers))
+  (l/membero [(l/lvar) :fortune :blue-cheese (l/lvar)] answers))
 
 (defn rule-3 [answers]
   (fresh [s1 s2]
-    (== [(lvar) :vogue (lvar) (lvar)] s1)
-    (== [(lvar) (lvar) :muenster (lvar)] s2)
-    (membero s1 answers)
-    (membero s2 answers)
+    (== [(l/lvar) :vogue (l/lvar) (l/lvar)] s1)
+    (== [(l/lvar) (l/lvar) :muenster (l/lvar)] s2)
+    (l/membero s1 answers)
+    (l/membero s2 answers)
     (!= s1 s2)))
 
 (defn rule-4 [answers]
-  (permuteo [[(lvar) :fortune (lvar) (lvar)]
-             [:landon (lvar) (lvar) (lvar)]
-             [(lvar) (lvar) (lvar) 5]
-             [(lvar) (lvar) :mascarpone (lvar)]
-             [(lvar) :vogue (lvar) (lvar)]]
+  (permuteo [[(l/lvar) :fortune (l/lvar) (l/lvar)]
+             [:landon (l/lvar) (l/lvar) (l/lvar)]
+             [(l/lvar) (l/lvar) (l/lvar) 5]
+             [(l/lvar) (l/lvar) :mascarpone (l/lvar)]
+             [(l/lvar) :vogue (l/lvar) (l/lvar)]]
             answers))
 
 (defn rule-6 [answers]
   (fresh [r1 r2]
-    (membero [(lvar) :cosmopolitan (lvar) r1] answers)
-    (membero [(lvar) (lvar) :mascarpone r2] answers)
+    (l/membero [(l/lvar) :cosmopolitan (l/lvar) r1] answers)
+    (l/membero [(l/lvar) (l/lvar) :mascarpone r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-9 [answers]
   (fresh [r1 r2]
-    (membero [(lvar) :time (lvar) r1] answers)
-    (membero [:landon (lvar) (lvar) r2] answers)
+    (l/membero [(l/lvar) :time (l/lvar) r1] answers)
+    (l/membero [:landon (l/lvar) (l/lvar) r2] answers)
     (lefto r1 r2 [5 6 7 7.5 8.5])))
 
 (defn rule-0 [answers]
   (fresh [s]
-    (== [:amaya (lvar) (lvar) (lvar)] s)
-    (membero s answers)))
+    (== [:amaya (l/lvar) (l/lvar) (l/lvar)] s)
+    (l/membero s answers)))
 
 (deftest test-71-simple-unifier-reify-vars
   (is (= (u/unify '[(?x) (?x) (1)])
@@ -1639,27 +1619,27 @@
 
 (deftest test-108-recursive-features
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:bar 1}}))
          '([{:foo {:bar 1}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:bar 1}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '([{:foo {:bar 1}} 1])))
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:bar 1 :woz 2}}))
          '([{:foo {:bar 1 :woz 2}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:bar 1 :woz 2}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '([{:foo {:bar 1 :woz 2}} 1])))
   (is (= (run* [x y]
            (== x {:foo {:baz 1}})
-           (featurec x {:foo {:bar y}}))
+           (l/featurec x {:foo {:bar y}}))
          '()))
   (is (= (run* [x y]
-           (featurec x {:foo {:bar y}})
+           (l/featurec x {:foo {:bar y}})
            (== x {:foo {:baz 1}}))
          '())))
 
@@ -1725,50 +1705,47 @@
 
 (deftest test-logic-132-recursive-featurec
   (is (= (run* [x y]
-           (featurec x {:a {:b 1}})
+           (l/featurec x {:a {:b 1}})
            (== y {:b 1})
            (== x {:a y}))
          '([{:a {:b 1}} {:b 1}])))
   (is (= (run* [x y]
-           (featurec x {:a {:b 1}})
+           (l/featurec x {:a {:b 1}})
            (== x {:a y})
            (== y {:b 1}))
          '([{:a {:b 1}} {:b 1}])))
   (is (= (run* [x y]
            (== x {:a y})
            (== y {:b 1})
-           (featurec x {:a {:b 1}}))
+           (l/featurec x {:a {:b 1}}))
          '([{:a {:b 1}} {:b 1}]))))
 
-;; (deftest test-137-oom
-;;   (is (= (let [vs (repeatedly 20 l/lvar)]
-;;            (first
-;;             (run 1 [q]
-;;               (== q vs)
-;;               (everyg (fn [v] (in v (fd/interval 1 2))) vs))))
-;;          (take 20 (repeat 1))))
-;;   (is (= (first
-;;           (run 1 [q]
-;;             (fresh [x1 x2 x3 x4 x5 x6 x7 x8 x9
-;;                     x10 x11 x12 x13 x14 x15
-;;                     x16 x17 x18 x19 x20]
-;;               (== q [x1 x2 x3 x4 x5 x6 x7 x8 x9
-;;                      x10 x11 x12 x13 x14 x15
-;;                      x16 x17 x18 x19 x20])
-;;               (in x1 x2 x3 x4 x5 x6 x7 x8 x9
-;;                      x10 x11 x12 x13 x14 x15
-;;                      x16 x17 x18 x19 x20
-;;                      (fd/interval 1 2)))))
-;;          (take 20 (repeat 1)))))
-
-(deftest test-pair []
-  (is (= (pair 1 2)
-         (pair 1 2))))
+(deftest test-137-oom
+  (is (= (let [vs (repeatedly 20 l/lvar)]
+           (first
+            (run 1 [q]
+              (== q vs)
+              (l/everyg (fn [v] (in v (fd/interval 1 2))) vs))))
+         (take 20 (repeat 1))))
+  ;; (is (= (first
+  ;;         (run 1 [q]
+  ;;           (fresh [x1 x2 x3 x4 x5 x6 x7 x8 x9
+  ;;                   x10 x11 x12 x13 x14 x15
+  ;;                   x16 x17 x18 x19 x20]
+  ;;             (== q [x1 x2 x3 x4 x5 x6 x7 x8 x9
+  ;;                    x10 x11 x12 x13 x14 x15
+  ;;                    x16 x17 x18 x19 x20])
+  ;;             (in x1 x2 x3 x4 x5 x6 x7 x8 x9
+  ;;                    x10 x11 x12 x13 x14 x15
+  ;;                    x16 x17 x18 x19 x20
+  ;;                    (fd/interval 1 2)))))
+  ;;        (take 20 (repeat 1))))
+  )
 
 (deftest test-dom-1 []
   (let [x (l/lvar 'x)
-        s ((fd/dom x 1) empty-s)]
-    (is (= (:s s) {x 1}))))
+        s ((fd/dom x 1) l/empty-s)]
+    (is (= (.-s s) {x 1}))))
 
 (deftest test-keep-before-1 []
   (is (= (fd/-keep-before (fd/interval 1 10) 5)
@@ -2077,23 +2054,23 @@
 
 (deftest test-process-dom-1
   (let [x (l/lvar 'x)
-        s ((fd/process-dom x 1 1) empty-s)]
-    (is (= (walk s x) 1))))
+        s ((fd/process-dom x 1 1) l/empty-s)]
+    (is (= (l/-walk s x) 1))))
 
 (deftest test-process-dom-2
   (let [x (l/lvar 'x)
-        s ((fd/process-dom x (fd/interval 1 10) (fd/interval 1 10)) empty-s)]
+        s ((fd/process-dom x (fd/interval 1 10) (fd/interval 1 10)) l/empty-s)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))))
 
 (deftest test-dom-1
   (let [x (l/lvar 'x)
-        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+        s ((fd/dom x (fd/interval 1 10)) l/empty-s)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))))
 
 (deftest test-in-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        f ((in x y (fd/interval 1 10)) empty-s)
+        f ((in x y (fd/interval 1 10)) l/empty-s)
         s (f)]
     (is (= (fd/get-dom s x) (fd/interval 1 10)))
     (is (= (fd/get-dom s y) (fd/interval 1 10)))))
@@ -2102,54 +2079,54 @@
   (let [u (l/lvar 'u)
         w (l/lvar 'w)
         c (fd/==c u w)
-        c' (-step c empty-s)]
-    (is (= (var-rands empty-s c)
+        c' (l/-step c l/empty-s)]
+    (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c)
+    (is (= (l/-rator c)
            `cljs.core.logic.fd/==))
-    (is (not (-runnable? c')))
-    (is (not (-entailed? c')))))
+    (is (not (l/-runnable? c')))
+    (is (not (l/-entailed? c')))))
 
 (deftest test-make-fdc-prim-2
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        c' (-step c empty-s)]
-    (is (= (l/var-rands empty-s c)
+        c' (l/-step c l/empty-s)]
+    (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c)
+    (is (= (l/-rator c)
            `cljs.core.logic.fd/+))
-    (is (not (proto/-runnable? c')))
-    (is (not (proto/-entailed? c')))))
+    (is (not (l/-runnable? c')))
+    (is (not (l/-entailed? c')))))
 
 (deftest test-entailed-1
   (let [c (fd/+c 1 2 3)
-        c' (-step c empty-s)]
-    (is (true? (proto/-entailed? c')))))
+        c' (l/-step c l/empty-s)]
+    (is (true? (l/-entailed? c')))))
 
 (deftest test-make-fdc-1
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        c' (-step c empty-s)]
-    (is (= (l/var-rands empty-s c)
+        c' (l/-step c l/empty-s)]
+    (is (= (l/var-rands l/empty-s c)
            [u w]))
-    (is (= (-rator c) 'cljs.core.logic.fd/+))
-    (is (not (proto/-runnable? c')))
-    (is (not (proto/-entailed? c')))))
+    (is (= (l/-rator c) 'cljs.core.logic.fd/+))
+    (is (not (l/-runnable? c')))
+    (is (not (l/-entailed? c')))))
 
 (deftest test-addc-1
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        cs (addc (make-cs) empty-s c)
-        sc (first (constraints-for cs empty-s u :cljs.core.logic/fd))]
-    (is (= (id sc) 0))
-    (is (= (count (:km cs)) 2))
-    (is (= (count (:cm cs)) 1))))
+        cs (l/-addc (l/make-cs) l/empty-s c)
+        sc (first (l/-constraints-for cs l/empty-s u :cljs.core.logic/fd))]
+    (is (= (l/id sc) 0))
+    (is (= (count (.-km cs)) 2))
+    (is (= (count (.-cm cs)) 1))))
 
 (deftest test-addc-2
   (let [u (l/lvar 'u)
@@ -2158,48 +2135,48 @@
         c0 (fd/+c u v w)
         x (l/lvar 'x)
         c1 (fd/+c w v x)
-        cs  (-> (make-cs)
-                (addc empty-s c0)
-                (addc empty-s c1))
-        sc0 (get (:cm cs) 0)
-        sc1 (get (:cm cs) 1)]
-    (is (= (id sc0) 0))
-    (is (= (id sc1) 1))
-    (is (= (count (:km cs)) 3))
-    (is (= (count (:cm cs)) 2))))
+        cs  (-> (l/make-cs)
+                (l/-addc l/empty-s c0)
+                (l/-addc l/empty-s c1))
+        sc0 (get (.-cm cs) 0)
+        sc1 (get (.-cm cs) 1)]
+    (is (= (l/id sc0) 0))
+    (is (= (l/id sc1) 1))
+    (is (= (count (.-km cs)) 3))
+    (is (= (count (.-cm cs)) 2))))
 
 (deftest test-addcg
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        s ((addcg c) empty-s)]
-    (is (= (count (:km (:cs s))) 2))
-    (is (= (count (:cm (:cs s))) 1))))
+        s ((l/addcg c) l/empty-s)]
+    (is (= (count (.-km (.-cs s))) 2))
+    (is (= (count (.-cm (.-cs s))) 1))))
 
 (deftest test-purge-c
   (let [u (l/lvar 'u)
         v 1
         w (l/lvar 'w)
         c (fd/+c u v w)
-        s ((addcg c) empty-s)
-        c (first (constraints-for (:cs s) s u :cljs.core.logic/fd))
+        s ((l/addcg c) l/empty-s)
+        c (first (l/-constraints-for (.-cs s) s u :cljs.core.logic/fd))
         s (-> s
-              (proto/ext-run-cs u 1)
-              (proto/ext-run-cs w 2))]
-    (is (zero? (count (:km (:cs s)))))
-    (is (zero? (count (:cm (:cs s)))))))
+              (l/-ext-run-cs u 1)
+              (l/-ext-run-cs w 2))]
+    (is (zero? (count (.-km (.-cs s)))))
+    (is (zero? (count (.-cm (.-cs s)))))))
 
 (deftest test-=fd-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        s ((composeg
+        s ((l/composeg
             (fd/dom x (fd/interval 1 6))
-            (fd/dom y (fd/interval 5 10))) empty-s)
+            (fd/dom y (fd/interval 5 10))) l/empty-s)
         s ((fd/== x y) s)
-        cs (:cs s)]
-    (is (= 2 (count (:km (:cs s))))) ;; works
-    (is (= 3 (count (:cm (:cs s)))))
+        cs (.-cs s)]
+    (is (= 2 (count (.-km (.-cs s))))) ;; works
+    (is (= 3 (count (.-cm (.-cs s)))))
     (is (= (fd/get-dom s x) (fd/interval 5 6)))
     (is (= (fd/get-dom s y) (fd/interval 5 6)))))
 
@@ -2209,7 +2186,7 @@
     (is (= 10 (fd/-ub mi)))))
 
 (deftest test-run-constraints*
-  (is (= (run-constraints* [] [] l/subst) s#)))
+  (is (= (l/run-constraints* [] [] l/subst) l/s#)))
 
 (deftest test-drop-one-1
   (is (= (:s (fd/-drop-one (fd/domain 1 2 3)))
@@ -2250,105 +2227,111 @@
          '(1 2 3 4 5 7 8 9 10))))
 
 (deftest test-to-vals-5
-  (is (= (fd/to-vals (fd/multi-interval (fd/interval 1 5) 7 (fd/interval 9 12)))
+  (is (= (fd/to-vals (fd/multi-interval (fd/interval 1 5) 7
+                                        (fd/interval 9 12)))
          '(1 2 3 4 5 7 9 10 11 12))))
 
 (deftest test-map-sum-1
   (let [x (l/lvar 'x)
-        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+        s ((fd/dom x (fd/interval 1 10)) l/empty-s)]
     (is (= (take 10
-                 (solutions s x
-                            ((fd/map-sum (fn [v] (ext-run-csg x v)))
+                 (l/solutions s x
+                            ((fd/map-sum (fn [v] (l/ext-run-csg x v)))
                              (fd/to-vals (fd/interval 1 10)))))
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-1
   (let [x (l/lvar 'x)
-        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+        s ((fd/dom x (fd/interval 1 10)) l/empty-s)]
     (is (= (take 10
-                 (solutions s x
-                            (force-ans x)))
+                 (l/solutions s x (l/force-ans x)))
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-2
   (let [x (l/lvar 'x)
-        s ((fd/dom x (fd/interval 1 10)) empty-s)]
+        s ((fd/dom x (fd/interval 1 10)) l/empty-s)]
     (is (= (take 10
-                 (solutions s x
-                            (force-ans [x])))
+                 (l/solutions s x
+                            (l/force-ans [x])))
            '(1 2 3 4 5 6 7 8 9 10)))))
 
 (deftest test-force-ans-3
   (let [x (l/lvar 'x)
         s ((fd/dom x (fd/multi-interval (fd/interval 1 4) (fd/interval 6 10)))
-           empty-s)]
+           l/empty-s)]
     (is (= (take 10
-                 (solutions s x
-                            (force-ans x)))
+                 (l/solutions s x
+                            (l/force-ans x)))
            '(1 2 3 4 6 7 8 9 10)))))
 
 (deftest test-verify-all-bound-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        s ((composeg
+        s ((l/composeg
             (fd/dom x (fd/interval 1 10))
-            (fd/dom y (fd/interval 1 10))) empty-s)]
-    (is (nil? (verify-all-bound s [x y])))))
+            (fd/dom y (fd/interval 1 10))) l/empty-s)]
+    (is (nil? (l/verify-all-bound s [x y])))))
 
 (deftest test-verify-all-bound-2
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        s ((fd/dom x (fd/interval 1 10)) empty-s)]
-    (is (thrown? js/Error (verify-all-bound s [x y])))))
+        s ((fd/dom x (fd/interval 1 10)) l/empty-s)]
+    (is (thrown? js/Error (l/verify-all-bound s [x y])))))
 
 (deftest test-enforce-constraints-1
   (let [x (l/lvar 'x)
-        s ((fd/dom x (fd/interval 1 3)) empty-s)]
-    (is (= (solutions s x (enforce-constraints x))
+        s ((fd/dom x (fd/interval 1 3)) l/empty-s)]
+    (is (= (l/solutions s x (l/enforce-constraints x))
            '(1 2 3)))))
 
 (deftest test-reifyg-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        s ((composeg
+        s ((l/composeg
             (fd/dom x (fd/interval 1 10))
-            (fd/dom y (fd/interval 1 5))) empty-s)
+            (fd/dom y (fd/interval 1 5))) l/empty-s)
         s ((fd/== x y) s)]
-    (is (= (take* ((reifyg x) s))
+    (is (= (l/take* ((l/reifyg x) s))
            '(1 2 3 4 5)))))
 
 (deftest test-process-interval-smaller-1
   (let [x (l/lvar 'x)
-        s ((composeg
+        s ((l/composeg
             (fd/dom x (fd/interval 1 10))
-            (fd/dom x (fd/interval 2 10))) empty-s)]
+            (fd/dom x (fd/interval 2 10))) l/empty-s)]
     (is (= (fd/get-dom s x)
            (fd/interval 2 10)))))
 
 (deftest test-boundary-interval-1
-  (is (fd/-difference (fd/interval 1 10) 1)
-      (fd/interval 2 10)))
+  (is (= (fd/-difference (fd/interval 1 10) 1)
+         (fd/interval 2 10))))
 
 (deftest test-boundary-interval-1
-  (is (fd/-difference (fd/interval 1 10) 10)
-      (fd/interval 1 9)))
+  (is (= (fd/-difference (fd/interval 1 10) 10)
+         (fd/interval 1 9))))
 
 (deftest test-process-imi-1
   (let [x (l/lvar 'x)
-        s ((composeg
+        s ((l/composeg
             (fd/dom x (fd/interval 2 10))
             (fd/dom x (fd/multi-interval (fd/interval 1 4)
                                          (fd/interval 6 10))))
-           empty-s)]
+           l/empty-s)]
     (is (= (fd/get-dom s x)
            (fd/multi-interval (fd/interval 2 4) (fd/interval 6 10))))))
 
 (deftest test-root-var-1
   (let [x (l/lvar 'x)
         y (l/lvar 'y)
-        s (-> empty-s
-              (proto/ext-no-check x 1)
-              (proto/ext-no-check y x))]
-    (is (= (root-var s y) x))))
+        s (-> l/empty-s
+              (l/-ext-no-check x 1)
+              (l/-ext-no-check y x))]
+    (is (= (l/-root-var s y) x))))
 
+
+(deftest test-145-partial-map
+  (is (= (run* [x y]
+           (== y {:baz "woz"})
+           (== (l/partial-map {:foo x}) {:foo y}))
+         '([{:baz "woz"} {:baz "woz"}]))))
 

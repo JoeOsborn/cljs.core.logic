@@ -1,32 +1,32 @@
 (ns cljs.core.logic.nominal.tests
   (:refer-clojure :exclude [==])
-  (:require [cljs.core.logic.protocols :as proto
-             :refer [walk ifa -step -rator addc -entailed? -runnable? id
-                     constraints-for take* root-var root-val -prefix
-                     -with-prefix tree-constraint? with-id remc
-                     -constrain-tree ext-run-cs]]
-            [cljs.core.logic :as l
-             :refer [empty-s lcons lvar to-s == reify-lvar-name fail succeed
-                     walk* conso s# u# != copy-term rembero membero member1o
+  (:require [cljs.core.logic :as l
+             :refer [empty-s lcons lvar to-s -reify-lvar-name fail succeed
+                     -walk* conso s# u# copy-term rembero membero member1o
                      emptyo resto firsto appendo reifyg partial-map predc
-                     featurec everyg composeg solutions pair ext-run-csg
+                     featurec everyg composeg solutions ext-run-csg
                      run-constraints* addcg make-cs var-rands force-ans
                      verify-all-bound enforce-constraints add-attr entangle
-                     !=c nafc treec -reify tree-term? nom distribute rem-attr
-                     get-attr distincto]]
+                     !=c nafc treec -reify tree-term? distribute rem-attr
+                     get-attr distincto cgoal lvar? remcg constrain-tree -ext
+                     subst-val? -unify -occurs-check -reify*
+                     -walk -ifa -step -rator -addc -entailed? -runnable? id
+                     -constraints-for take* -root-var -root-val -prefix
+                     -with-prefix tree-constraint? with-id -remc
+                     -constrain-tree -ext-run-cs -ext-no-check -walk-term]]
             [cljs.core.logic.fd :as fd :refer [interval dom]]
             [cljs.core.logic.unifier :as u]
             [cljs.core.logic.nominal :as nom :refer [nom?]]
             [cemerick.cljs.test :as t])
   (:require-macros [cemerick.cljs.test :refer [deftest run-tests is testing]]
-                   [cljs.core.logic.macros
+                   [cljs.core.logic.macros :as l
                     :refer [umi uai llist composeg* bind* mplus* -inc
                             conde fresh -run run run* run-db run-db* run-nc
                             run-nc* all pred project trace-lvars trace-s
                             log ifa* ifu* conda condu lvaro nonlvaro fnm
                             defnm fne defne matche fna fnu defna defnu matcha
                             matchu tabled let-dom fnc defnc in extend-to-fd
-                            eq]]
+                            eq == !=]]
                    [cljs.core.logic.nominal.macros :as nom]))
 
 ;; =============================================================================
