@@ -1,5 +1,5 @@
 (ns cljs.core.logic.macros
-  (:refer-clojure :exclude [== = < > <= >=])
+  (:refer-clojure :exclude [== = < > <= >= time])
   (:require [cljs.compiler :as comp]
             [cljs.core :as core]
             [cljs.env :as env]
@@ -965,3 +965,19 @@
        (fresh [~@(butlast (rest lsyms))]
          ~@clauses))))
 
+(defmacro time
+  [expr]
+  `(let [start# (js/performance.now)
+         ret# ~expr]     
+     (prn (str "Elapsed time: "
+               (.toFixed (- (js/performance.now) start#) 6)
+               " msecs"))
+     ret#))
+
+(defmacro bench
+  [expr n]
+  `(let [start# (js/performance.now)
+         ret# (dotimes [_# ~n] ~expr)]
+     (prn (str "Elapsed time: "
+               (.toFixed (- (js/performance.now) start#) 6)
+               " msecs"))))
