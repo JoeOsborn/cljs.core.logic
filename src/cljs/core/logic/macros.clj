@@ -984,3 +984,9 @@
      (prn (str "Elapsed time: "
                (.toFixed (- (js/performance.now) start#) 6)
                " msecs"))))
+
+(defmacro gen-unbound-names
+  []
+  `(core/array ~@(->> (range 100)
+                      (map (fn [_ x] `'~(-> (str _ x) symbol))
+                           (repeat "_")))))

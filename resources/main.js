@@ -3562,16 +3562,16 @@ cljs.core.fn_QMARK_ = function(a) {
 };
 cljs.core.with_meta = function with_meta(b, c) {
   return cljs.core.fn_QMARK_.call(null, b) && !(b ? b.cljs$lang$protocol_mask$partition0$ & 262144 || b.cljs$core$IWithMeta$ || (b.cljs$lang$protocol_mask$partition0$ ? 0 : cljs.core.native_satisfies_QMARK_.call(null, cljs.core.IWithMeta, b)) : cljs.core.native_satisfies_QMARK_.call(null, cljs.core.IWithMeta, b)) ? with_meta.call(null, function() {
-    "undefined" === typeof cljs.core.t51607 && (cljs.core.t51607 = function(b, c, f, g) {
+    "undefined" === typeof cljs.core.t129495 && (cljs.core.t129495 = function(b, c, f, g) {
       this.meta = b;
       this.o = c;
       this.with_meta = f;
-      this.meta51608 = g;
+      this.meta129496 = g;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.t51607.cljs$lang$type = !0, cljs.core.t51607.cljs$lang$ctorStr = "cljs.core/t51607", cljs.core.t51607.cljs$lang$ctorPrWriter = function(b, c, f) {
-      return cljs.core._write.call(null, c, "cljs.core/t51607")
-    }, cljs.core.t51607.prototype.call = function() {
+    }, cljs.core.t129495.cljs$lang$type = !0, cljs.core.t129495.cljs$lang$ctorStr = "cljs.core/t129495", cljs.core.t129495.cljs$lang$ctorPrWriter = function(b, c, f) {
+      return cljs.core._write.call(null, c, "cljs.core/t129495")
+    }, cljs.core.t129495.prototype.call = function() {
       var b = function(b, c) {
         return cljs.core.apply.call(null, b.o, c)
       }, c = function(c, e) {
@@ -3588,9 +3588,9 @@ cljs.core.with_meta = function with_meta(b, c) {
       };
       c.cljs$core$IFn$_invoke$arity$variadic = b;
       return c
-    }(), cljs.core.t51607.prototype.apply = function(b, c) {
+    }(), cljs.core.t129495.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.t51607.prototype.cljs$core$IFn$_invoke$arity$2 = function() {
+    }, cljs.core.t129495.prototype.cljs$core$IFn$_invoke$arity$2 = function() {
       var b = function(b) {
         return cljs.core.apply.call(null, self__.o, b)
       }, c = function(c) {
@@ -3605,14 +3605,14 @@ cljs.core.with_meta = function with_meta(b, c) {
       };
       c.cljs$core$IFn$_invoke$arity$variadic = b;
       return c
-    }(), cljs.core.t51607.prototype.cljs$core$Fn$ = !0, cljs.core.t51607.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta51608
-    }, cljs.core.t51607.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.t51607(this.meta, this.o, this.with_meta, c)
-    }, cljs.core.__GT_t51607 = function(b, c, f, g) {
-      return new cljs.core.t51607(b, c, f, g)
+    }(), cljs.core.t129495.prototype.cljs$core$Fn$ = !0, cljs.core.t129495.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta129496
+    }, cljs.core.t129495.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.t129495(this.meta, this.o, this.with_meta, c)
+    }, cljs.core.__GT_t129495 = function(b, c, f, g) {
+      return new cljs.core.t129495(b, c, f, g)
     });
-    return new cljs.core.t51607(c, b, with_meta, null)
+    return new cljs.core.t129495(c, b, with_meta, null)
   }(), c) : cljs.core._with_meta.call(null, b, c)
 };
 cljs.core.meta = function(a) {
@@ -20631,10 +20631,19 @@ cljs.core.logic.assoc_dom = function(a, b, c) {
 cljs.core.logic.dissoc_dom = function(a, b) {
   return cljs.core.logic.subst_val.call(null, a.v, cljs.core.dissoc.call(null, a.doms, b), a.eset, cljs.core.meta.call(null, a))
 };
-cljs.core.logic.unbound_names = function() {
-  var a = cljs.core.range.call(null, 100);
-  return cljs.core.zipmap.call(null, a, cljs.core.map.call(null, cljs.core.comp.call(null, cljs.core.symbol, cljs.core.str), cljs.core.repeat.call(null, "_"), a))
-}();
+cljs.core.logic.unbound_names = [new cljs.core.Symbol(null, "_0", "_0", -1640528534, null), new cljs.core.Symbol(null, "_1", "_1", -1640528533, null), new cljs.core.Symbol(null, "_2", "_2", -1640528532, null), new cljs.core.Symbol(null, "_3", "_3", -1640528531, null), new cljs.core.Symbol(null, "_4", "_4", -1640528530, null), new cljs.core.Symbol(null, "_5", "_5", -1640528529, null), new cljs.core.Symbol(null, "_6", "_6", -1640528528, null), new cljs.core.Symbol(null, "_7", "_7", -1640528527, null), 
+new cljs.core.Symbol(null, "_8", "_8", -1640528526, null), new cljs.core.Symbol(null, "_9", "_9", -1640528525, null), new cljs.core.Symbol(null, "_10", "_10", -1640438665, null), new cljs.core.Symbol(null, "_11", "_11", -1640438664, null), new cljs.core.Symbol(null, "_12", "_12", -1640438663, null), new cljs.core.Symbol(null, "_13", "_13", -1640438662, null), new cljs.core.Symbol(null, "_14", "_14", -1640438661, null), new cljs.core.Symbol(null, "_15", "_15", -1640438660, null), new cljs.core.Symbol(null, 
+"_16", "_16", -1640438659, null), new cljs.core.Symbol(null, "_17", "_17", -1640438658, null), new cljs.core.Symbol(null, "_18", "_18", -1640438657, null), new cljs.core.Symbol(null, "_19", "_19", -1640438656, null), new cljs.core.Symbol(null, "_20", "_20", -1640438634, null), new cljs.core.Symbol(null, "_21", "_21", -1640438633, null), new cljs.core.Symbol(null, "_22", "_22", -1640438632, null), new cljs.core.Symbol(null, "_23", "_23", -1640438631, null), new cljs.core.Symbol(null, "_24", "_24", 
+-1640438630, null), new cljs.core.Symbol(null, "_25", "_25", -1640438629, null), new cljs.core.Symbol(null, "_26", "_26", -1640438628, null), new cljs.core.Symbol(null, "_27", "_27", -1640438627, null), new cljs.core.Symbol(null, "_28", "_28", -1640438626, null), new cljs.core.Symbol(null, "_29", "_29", -1640438625, null), new cljs.core.Symbol(null, "_30", "_30", -1640438603, null), new cljs.core.Symbol(null, "_31", "_31", -1640438602, null), new cljs.core.Symbol(null, "_32", "_32", -1640438601, 
+null), new cljs.core.Symbol(null, "_33", "_33", -1640438600, null), new cljs.core.Symbol(null, "_34", "_34", -1640438599, null), new cljs.core.Symbol(null, "_35", "_35", -1640438598, null), new cljs.core.Symbol(null, "_36", "_36", -1640438597, null), new cljs.core.Symbol(null, "_37", "_37", -1640438596, null), new cljs.core.Symbol(null, "_38", "_38", -1640438595, null), new cljs.core.Symbol(null, "_39", "_39", -1640438594, null), new cljs.core.Symbol(null, "_40", "_40", -1640438572, null), new cljs.core.Symbol(null, 
+"_41", "_41", -1640438571, null), new cljs.core.Symbol(null, "_42", "_42", -1640438570, null), new cljs.core.Symbol(null, "_43", "_43", -1640438569, null), new cljs.core.Symbol(null, "_44", "_44", -1640438568, null), new cljs.core.Symbol(null, "_45", "_45", -1640438567, null), new cljs.core.Symbol(null, "_46", "_46", -1640438566, null), new cljs.core.Symbol(null, "_47", "_47", -1640438565, null), new cljs.core.Symbol(null, "_48", "_48", -1640438564, null), new cljs.core.Symbol(null, "_49", "_49", 
+-1640438563, null), new cljs.core.Symbol(null, "_50", "_50", -1640438541, null), new cljs.core.Symbol(null, "_51", "_51", -1640438540, null), new cljs.core.Symbol(null, "_52", "_52", -1640438539, null), new cljs.core.Symbol(null, "_53", "_53", -1640438538, null), new cljs.core.Symbol(null, "_54", "_54", -1640438537, null), new cljs.core.Symbol(null, "_55", "_55", -1640438536, null), new cljs.core.Symbol(null, "_56", "_56", -1640438535, null), new cljs.core.Symbol(null, "_57", "_57", -1640438534, 
+null), new cljs.core.Symbol(null, "_58", "_58", -1640438533, null), new cljs.core.Symbol(null, "_59", "_59", -1640438532, null), new cljs.core.Symbol(null, "_60", "_60", -1640438510, null), new cljs.core.Symbol(null, "_61", "_61", -1640438509, null), new cljs.core.Symbol(null, "_62", "_62", -1640438508, null), new cljs.core.Symbol(null, "_63", "_63", -1640438507, null), new cljs.core.Symbol(null, "_64", "_64", -1640438506, null), new cljs.core.Symbol(null, "_65", "_65", -1640438505, null), new cljs.core.Symbol(null, 
+"_66", "_66", -1640438504, null), new cljs.core.Symbol(null, "_67", "_67", -1640438503, null), new cljs.core.Symbol(null, "_68", "_68", -1640438502, null), new cljs.core.Symbol(null, "_69", "_69", -1640438501, null), new cljs.core.Symbol(null, "_70", "_70", -1640438479, null), new cljs.core.Symbol(null, "_71", "_71", -1640438478, null), new cljs.core.Symbol(null, "_72", "_72", -1640438477, null), new cljs.core.Symbol(null, "_73", "_73", -1640438476, null), new cljs.core.Symbol(null, "_74", "_74", 
+-1640438475, null), new cljs.core.Symbol(null, "_75", "_75", -1640438474, null), new cljs.core.Symbol(null, "_76", "_76", -1640438473, null), new cljs.core.Symbol(null, "_77", "_77", -1640438472, null), new cljs.core.Symbol(null, "_78", "_78", -1640438471, null), new cljs.core.Symbol(null, "_79", "_79", -1640438470, null), new cljs.core.Symbol(null, "_80", "_80", -1640438448, null), new cljs.core.Symbol(null, "_81", "_81", -1640438447, null), new cljs.core.Symbol(null, "_82", "_82", -1640438446, 
+null), new cljs.core.Symbol(null, "_83", "_83", -1640438445, null), new cljs.core.Symbol(null, "_84", "_84", -1640438444, null), new cljs.core.Symbol(null, "_85", "_85", -1640438443, null), new cljs.core.Symbol(null, "_86", "_86", -1640438442, null), new cljs.core.Symbol(null, "_87", "_87", -1640438441, null), new cljs.core.Symbol(null, "_88", "_88", -1640438440, null), new cljs.core.Symbol(null, "_89", "_89", -1640438439, null), new cljs.core.Symbol(null, "_90", "_90", -1640438417, null), new cljs.core.Symbol(null, 
+"_91", "_91", -1640438416, null), new cljs.core.Symbol(null, "_92", "_92", -1640438415, null), new cljs.core.Symbol(null, "_93", "_93", -1640438414, null), new cljs.core.Symbol(null, "_94", "_94", -1640438413, null), new cljs.core.Symbol(null, "_95", "_95", -1640438412, null), new cljs.core.Symbol(null, "_96", "_96", -1640438411, null), new cljs.core.Symbol(null, "_97", "_97", -1640438410, null), new cljs.core.Symbol(null, "_98", "_98", -1640438409, null), new cljs.core.Symbol(null, "_99", "_99", 
+-1640438408, null)];
 cljs.core.logic.record_QMARK_ = function(a) {
   return a ? a.cljs$lang$protocol_mask$partition0$ & 67108864 || a.cljs$core$IRecord$ ? !0 : !1 : !1
 };
@@ -21164,15 +21173,15 @@ cljs.core.logic.Substitutions.prototype.cljs$core$logic$ISubstitutions$_reify_ST
   return cljs.core.logic._reify_term.call(null, c, this)
 };
 cljs.core.logic.Substitutions.prototype.cljs$core$logic$ISubstitutions$_walk_STAR_$arity$2 = function(a, b) {
-  var c = this, d = cljs.core.logic._walk.call(null, c, b);
-  return cljs.core.logic._walk_term.call(null, d, function(a) {
-    a = cljs.core.logic._walk.call(null, c, a);
-    return cljs.core.truth_(cljs.core.logic.tree_term_QMARK_.call(null, a)) ? cljs.core.logic._walk_STAR_.call(null, c, a) : a
-  })
+  for(var c = b;;) {
+    if(c = cljs.core.logic._walk.call(null, this, c), !cljs.core.truth_(cljs.core.logic.tree_term_QMARK_.call(null, c))) {
+      return cljs.core.logic._walk_term.call(null, c, this)
+    }
+  }
 };
 cljs.core.logic.Substitutions.prototype.cljs$core$logic$ISubstitutions$_reify_lvar_name$arity$1 = function(a) {
   a = cljs.core.count.call(null, this.s);
-  return 100 > a ? cljs.core.logic.unbound_names.call(null, a) : cljs.core.symbol.call(null, [cljs.core.str("_"), cljs.core.str(cljs.core.count.call(null, this.s))].join(""))
+  return 100 > a ? cljs.core.logic.unbound_names[a] : cljs.core.symbol.call(null, [cljs.core.str("_"), cljs.core.str(cljs.core.count.call(null, this.s))].join(""))
 };
 cljs.core.logic.Substitutions.prototype.cljs$core$logic$ISubstitutions$_reify$arity$2 = function(a, b) {
   var c = cljs.core.logic._walk_STAR_.call(null, this, b);
@@ -21430,7 +21439,7 @@ cljs.core.logic.LVar.prototype.cljs$core$logic$IBuildTerm$_build_term$arity$2 = 
 };
 cljs.core.logic.LVar.prototype.cljs$core$logic$IWalkTerm$ = !0;
 cljs.core.logic.LVar.prototype.cljs$core$logic$IWalkTerm$_walk_term$arity$2 = function(a, b) {
-  return b.call(null, this)
+  return this
 };
 cljs.core.logic.LVar.prototype.cljs$core$logic$IUnifyWithObject$ = !0;
 cljs.core.logic.LVar.prototype.cljs$core$logic$IUnifyWithObject$_unify_with_object$arity$3 = function(a, b, c) {
@@ -21616,7 +21625,7 @@ cljs.core.logic.LCons.prototype.cljs$core$logic$IBuildTerm$_build_term$arity$2 =
 };
 cljs.core.logic.LCons.prototype.cljs$core$logic$IWalkTerm$ = !0;
 cljs.core.logic.LCons.prototype.cljs$core$logic$IWalkTerm$_walk_term$arity$2 = function(a, b) {
-  return cljs.core.logic.lcons.call(null, b.call(null, cljs.core.logic._lfirst.call(null, this)), b.call(null, cljs.core.logic._lnext.call(null, this)))
+  return cljs.core.logic.lcons.call(null, cljs.core.logic._walk_STAR_.call(null, b, cljs.core.logic._lfirst.call(null, this)), cljs.core.logic._walk_STAR_.call(null, b, cljs.core.logic._lnext.call(null, this)))
 };
 cljs.core.logic.LCons.prototype.cljs$core$logic$IUnifyWithObject$ = !0;
 cljs.core.logic.LCons.prototype.cljs$core$logic$IUnifyWithObject$_unify_with_object$arity$3 = function(a, b, c) {
@@ -21876,9 +21885,9 @@ cljs.core.logic._reify_term["null"] = function(a, b) {
 };
 cljs.core.logic.walk_term_record = function(a, b) {
   return cljs.core.with_meta.call(null, function() {
-    for(var c = a, d = cljs.core.logic._uninitialized.call(null, c);;) {
-      if(cljs.core.seq.call(null, c)) {
-        var e = cljs.core.first.call(null, c), f = cljs.core.nth.call(null, e, 0, null), e = cljs.core.nth.call(null, e, 1, null), c = cljs.core.next.call(null, c), d = cljs.core.assoc.call(null, d, cljs.core.logic._walk_term.call(null, b.call(null, f), b), cljs.core.logic._walk_term.call(null, b.call(null, e), b))
+    for(var b = cljs.core.seq.call(null, a), d = cljs.core.logic._uninitialized.call(null, b);;) {
+      if(cljs.core.truth_(b)) {
+        var e = cljs.core.first.call(null, b), f = cljs.core.nth.call(null, e, 0, null), e = cljs.core.nth.call(null, e, 1, null), b = cljs.core.next.call(null, b), d = cljs.core.assoc.call(null, d, f, cljs.core.logic._walk_STAR_.call(null, cljs.core.logic.s, e))
       }else {
         return d
       }
@@ -21887,9 +21896,9 @@ cljs.core.logic.walk_term_record = function(a, b) {
 };
 cljs.core.logic.walk_term_map_STAR_ = function(a, b) {
   return cljs.core.with_meta.call(null, function() {
-    for(var c = a, d = cljs.core.transient$.call(null, cljs.core.PersistentArrayMap.EMPTY);;) {
-      if(cljs.core.seq.call(null, c)) {
-        var e = cljs.core.first.call(null, c), f = cljs.core.nth.call(null, e, 0, null), e = cljs.core.nth.call(null, e, 1, null), c = cljs.core.next.call(null, c), d = cljs.core._assoc_BANG_.call(null, d, cljs.core.logic._walk_term.call(null, b.call(null, f), b), cljs.core.logic._walk_term.call(null, b.call(null, e), b))
+    for(var c = cljs.core.seq.call(null, a), d = cljs.core.transient$.call(null, cljs.core.PersistentArrayMap.EMPTY);;) {
+      if(cljs.core.truth_(c)) {
+        var e = cljs.core.first.call(null, c), f = cljs.core.nth.call(null, e, 0, null), e = cljs.core.nth.call(null, e, 1, null), c = cljs.core.next.call(null, c), d = cljs.core._assoc_BANG_.call(null, d, f, cljs.core.logic._walk_STAR_.call(null, b, e))
       }else {
         return cljs.core.persistent_BANG_.call(null, d)
       }
@@ -21902,7 +21911,7 @@ cljs.core.PersistentVector.prototype.cljs$core$logic$IWalkTerm$_walk_term$arity$
   return cljs.core.with_meta.call(null, function() {
     for(var a = cljs.core.seq.call(null, c), e = cljs.core.transient$.call(null, cljs.core.PersistentVector.EMPTY);;) {
       if(cljs.core.truth_(a)) {
-        var f = cljs.core.next.call(null, a), e = cljs.core._conj_BANG_.call(null, e, cljs.core.logic._walk_term.call(null, b.call(null, cljs.core.first.call(null, a)), b)), a = f
+        var f = cljs.core.next.call(null, a), e = cljs.core._conj_BANG_.call(null, e, cljs.core.logic._walk_STAR_.call(null, b, cljs.core.first.call(null, a))), a = f
       }else {
         return cljs.core.persistent_BANG_.call(null, e)
       }
@@ -21919,19 +21928,19 @@ cljs.core.PersistentHashMap.prototype.cljs$core$logic$IWalkTerm$_walk_term$arity
 };
 cljs.core.logic.IWalkTerm._ = !0;
 cljs.core.logic._walk_term._ = function(a, b) {
-  return cljs.core.sequential_QMARK_.call(null, a) ? cljs.core.with_meta.call(null, cljs.core.doall.call(null, cljs.core.map.call(null, function(a) {
-    return cljs.core.logic._walk_term.call(null, b.call(null, a), b)
-  }, a)), cljs.core.meta.call(null, a)) : cljs.core.logic.record_QMARK_.call(null, a) ? cljs.core.logic.walk_term_record.call(null, a, b) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? b.call(null, a) : null
+  return cljs.core.sequential_QMARK_.call(null, a) ? cljs.core.with_meta.call(null, cljs.core.map.call(null, function(a) {
+    return cljs.core.logic._walk_STAR_.call(null, b, a)
+  }, a), cljs.core.meta.call(null, a)) : cljs.core.logic.record_QMARK_.call(null, a) ? cljs.core.logic.walk_term_record.call(null, a, b) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? a : null
 };
 cljs.core.logic.IWalkTerm["null"] = !0;
 cljs.core.logic._walk_term["null"] = function(a, b) {
-  return b.call(null, null)
+  return null
 };
 cljs.core.logic.IOccursCheckTerm._ = !0;
 cljs.core.logic._occurs_check_term._ = function(a, b, c) {
   if(cljs.core.sequential_QMARK_.call(null, a)) {
     for(a = cljs.core.seq.call(null, a);;) {
-      if(null != a) {
+      if(cljs.core.truth_(a)) {
         var d = cljs.core.logic._occurs_check.call(null, c, b, cljs.core.first.call(null, a));
         if(cljs.core.truth_(d)) {
           return d
@@ -22719,52 +22728,52 @@ cljs.core.logic._watched_stores = function(a) {
   return b.call(null, a)
 };
 cljs.core.logic._featurec = function _featurec(b, c) {
-  "undefined" === typeof cljs.core.logic.t64878 && (cljs.core.logic.t64878 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.t194767 && (cljs.core.logic.t194767 = function(b, c, f, g) {
     this.fs = b;
     this.x = c;
     this._featurec = f;
-    this.meta64879 = g;
+    this.meta194768 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.t64878.cljs$lang$type = !0, cljs.core.logic.t64878.cljs$lang$ctorStr = "cljs.core.logic/t64878", cljs.core.logic.t64878.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic/t64878")
-  }, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.t194767.cljs$lang$type = !0, cljs.core.logic.t194767.cljs$lang$ctorStr = "cljs.core.logic/t194767", cljs.core.logic.t194767.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic/t194767")
+  }, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.t64878.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t64878.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
+  }, cljs.core.logic.t194767.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t194767.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
     if(cljs.core.logic.lvar_QMARK_.call(null, this.fs)) {
       return g = cljs.core.logic._reify.call(null, g, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x, this.fs], null), f), f = cljs.core.nth.call(null, g, 0, null), b = cljs.core.nth.call(null, g, 1, null), cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "featurec", "cljs.core.logic/featurec", -851976461, 
-      null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1367), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, 
-      "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1367), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 21)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, f), cljs.core._conj.call(null, cljs.core.List.EMPTY, b))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, 
-      cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1367), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1367), cljs.core._conj.call(null, 
+      null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1356), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, 
+      "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1356), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 21)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, f), cljs.core._conj.call(null, cljs.core.List.EMPTY, b))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, 
+      cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1356), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1356), cljs.core._conj.call(null, 
       cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 29)))))
     }
     b = cljs.core.into.call(null, cljs.core.PersistentArrayMap.EMPTY, this.fs);
     f = cljs.core.logic._reify_STAR_.call(null, f, cljs.core.logic._walk_STAR_.call(null, g, b));
     return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "featurec", "cljs.core.logic/featurec", -851976461, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, 1365), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1365), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, 21)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._walk_STAR_.call(null, f, this.x)), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._walk_STAR_.call(null, f, b)))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1365), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1365), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 51)))))
-  }, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
-    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "featurec", "cljs.core.logic/featurec", -851976461, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1358), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
-    3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1358), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 42)))))
-  }, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+    cljs.core.List.EMPTY, 1354), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1354), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
+    cljs.core.List.EMPTY, 21)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._walk_STAR_.call(null, f, this.x)), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._walk_STAR_.call(null, f, b)))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1354), cljs.core._conj.call(null, 
+    cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1354), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 51)))))
+  }, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "featurec", "cljs.core.logic/featurec", -851976461, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1347), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
+    3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1347), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 42)))))
+  }, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x], null)
-  }, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t64878.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
-    "undefined" === typeof cljs.core.logic.t64882 && (cljs.core.logic.t64882 = function(b, c, d, e, l, m, n) {
+  }, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t194767.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+    "undefined" === typeof cljs.core.logic.t194771 && (cljs.core.logic.t194771 = function(b, c, d, e, l, m, n) {
       this.s = b;
       this.this$ = c;
-      this.meta64879 = d;
+      this.meta194768 = d;
       this.fs = e;
       this.x = l;
       this._featurec = m;
-      this.meta64883 = n;
+      this.meta194772 = n;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.t64882.cljs$lang$type = !0, cljs.core.logic.t64882.cljs$lang$ctorStr = "cljs.core.logic/t64882", cljs.core.logic.t64882.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic/t64882")
-    }, cljs.core.logic.t64882.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t64882.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.t194771.cljs$lang$type = !0, cljs.core.logic.t194771.cljs$lang$ctorStr = "cljs.core.logic/t194771", cljs.core.logic.t194771.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic/t194771")
+    }, cljs.core.logic.t194771.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t194771.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return!cljs.core.logic.lvar_QMARK_.call(null, cljs.core.logic._walk.call(null, this.s, this.x)) && !cljs.core.logic.lvar_QMARK_.call(null, cljs.core.logic._walk.call(null, this.s, this.fs))
-    }, cljs.core.logic.t64882.prototype.call = function(b, c) {
+    }, cljs.core.logic.t194771.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.logic._walk.call(null, c, b.fs);
       return cljs.core.logic.composeg.call(null, function(c) {
@@ -22772,31 +22781,31 @@ cljs.core.logic._featurec = function _featurec(b, c) {
         c = cljs.core.logic._unify.call(null, e ? new cljs.core.logic.Substitutions(c.s, cljs.core.PersistentVector.EMPTY, c.ts, c.cs, c.cq, c.cqs, c.oc, c._meta) : c, cljs.core.logic.partial_map.call(null, d), b.x);
         return cljs.core.truth_(c) ? (e = e ? c.vs : null, 0 < cljs.core.count.call(null, e) ? cljs.core.logic.run_constraints_STAR_.call(null, e, c.cs, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440)).call(null, new cljs.core.logic.Substitutions(c.s, null, c.ts, c.cs, c.cq, c.cqs, c.oc, c._meta)) : c) : null
       }, cljs.core.logic.remcg.call(null, b.this$)).call(null, c)
-    }, cljs.core.logic.t64882.prototype.apply = function(b, c) {
+    }, cljs.core.logic.t194771.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.t64882.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.t194771.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = this, d = cljs.core.logic._walk.call(null, b, c.fs);
       return cljs.core.logic.composeg.call(null, function(b) {
         var e = 0 < cljs.core.count.call(null, b.cs);
         b = cljs.core.logic._unify.call(null, e ? new cljs.core.logic.Substitutions(b.s, cljs.core.PersistentVector.EMPTY, b.ts, b.cs, b.cq, b.cqs, b.oc, b._meta) : b, cljs.core.logic.partial_map.call(null, d), c.x);
         return cljs.core.truth_(b) ? (e = e ? b.vs : null, 0 < cljs.core.count.call(null, e) ? cljs.core.logic.run_constraints_STAR_.call(null, e, b.cs, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440)).call(null, new cljs.core.logic.Substitutions(b.s, null, b.ts, b.cs, b.cq, b.cqs, b.oc, b._meta)) : b) : null
       }, cljs.core.logic.remcg.call(null, c.this$)).call(null, b)
-    }, cljs.core.logic.t64882.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta64883
-    }, cljs.core.logic.t64882.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.t64882(this.s, this.this$, this.meta64879, this.fs, this.x, this._featurec, c)
-    }, cljs.core.logic.__GT_t64882 = function(b, c, d, e, l, m, n) {
-      return new cljs.core.logic.t64882(b, c, d, e, l, m, n)
+    }, cljs.core.logic.t194771.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta194772
+    }, cljs.core.logic.t194771.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.t194771(this.s, this.this$, this.meta194768, this.fs, this.x, this._featurec, c)
+    }, cljs.core.logic.__GT_t194771 = function(b, c, d, e, l, m, n) {
+      return new cljs.core.logic.t194771(b, c, d, e, l, m, n)
     });
-    return new cljs.core.logic.t64882(c, this, this.meta64879, this.fs, this.x, this._featurec, null)
-  }, cljs.core.logic.t64878.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta64879
-  }, cljs.core.logic.t64878.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.t64878(this.fs, this.x, this._featurec, c)
-  }, cljs.core.logic.__GT_t64878 = function(b, c, f, g) {
-    return new cljs.core.logic.t64878(b, c, f, g)
+    return new cljs.core.logic.t194771(c, this, this.meta194768, this.fs, this.x, this._featurec, null)
+  }, cljs.core.logic.t194767.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta194768
+  }, cljs.core.logic.t194767.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.t194767(this.fs, this.x, this._featurec, c)
+  }, cljs.core.logic.__GT_t194767 = function(b, c, f, g) {
+    return new cljs.core.logic.t194767(b, c, f, g)
   });
-  return new cljs.core.logic.t64878(c, b, _featurec, null)
+  return new cljs.core.logic.t194767(c, b, _featurec, null)
 };
 cljs.core.logic.featurec = function(a, b) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic._featurec.call(null, a, b))
@@ -23459,7 +23468,7 @@ cljs.core.logic.reify_constraints = function(a, b, c) {
     }
   }(d), cljs.core.filter.call(null, cljs.core.logic.reifiable_QMARK_, cljs.core.vals.call(null, d.cm)))));
   return cljs.core.empty_QMARK_.call(null, d) ? cljs.core.logic.choice.call(null, a, cljs.core.logic.empty_f) : cljs.core.logic.choice.call(null, cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, a), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "-", "-", 1013904287)), d)), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, 
-  cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1888), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 16), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1888), cljs.core._conj.call(null, 
+  cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1877), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 16), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1877), cljs.core._conj.call(null, 
   cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 29))))), cljs.core.logic.empty_f)
 };
 cljs.core.logic.reifyg = function(a) {
@@ -23489,17 +23498,17 @@ cljs.core.logic._unwrap = function(a) {
   return b.call(null, a)
 };
 cljs.core.logic.cgoal = function cgoal(b) {
-  "undefined" === typeof cljs.core.logic.t64933 && (cljs.core.logic.t64933 = function(b, d, e) {
+  "undefined" === typeof cljs.core.logic.t194822 && (cljs.core.logic.t194822 = function(b, d, e) {
     this.c = b;
     this.cgoal = d;
-    this.meta64934 = e;
+    this.meta194823 = e;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393217
-  }, cljs.core.logic.t64933.cljs$lang$type = !0, cljs.core.logic.t64933.cljs$lang$ctorStr = "cljs.core.logic/t64933", cljs.core.logic.t64933.cljs$lang$ctorPrWriter = function(b, d, e) {
-    return cljs.core._write.call(null, d, "cljs.core.logic/t64933")
-  }, cljs.core.logic.t64933.prototype.cljs$core$logic$IUnwrapConstraint$ = !0, cljs.core.logic.t64933.prototype.cljs$core$logic$IUnwrapConstraint$_unwrap$arity$1 = function(b) {
+  }, cljs.core.logic.t194822.cljs$lang$type = !0, cljs.core.logic.t194822.cljs$lang$ctorStr = "cljs.core.logic/t194822", cljs.core.logic.t194822.cljs$lang$ctorPrWriter = function(b, d, e) {
+    return cljs.core._write.call(null, d, "cljs.core.logic/t194822")
+  }, cljs.core.logic.t194822.prototype.cljs$core$logic$IUnwrapConstraint$ = !0, cljs.core.logic.t194822.prototype.cljs$core$logic$IUnwrapConstraint$_unwrap$arity$1 = function(b) {
     return this.c
-  }, cljs.core.logic.t64933.prototype.call = function(b, d) {
+  }, cljs.core.logic.t194822.prototype.call = function(b, d) {
     b = this;
     var e = cljs.core.logic._step.call(null, b.c, d);
     if(cljs.core.truth_(cljs.core.logic._runnable_QMARK_.call(null, e))) {
@@ -23511,19 +23520,19 @@ cljs.core.logic.cgoal = function cgoal(b) {
       return null
     }
     return cljs.core.logic.addcg.call(null, b.c).call(null, d)
-  }, cljs.core.logic.t64933.prototype.apply = function(b, d) {
+  }, cljs.core.logic.t194822.prototype.apply = function(b, d) {
     return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, d)))
-  }, cljs.core.logic.t64933.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+  }, cljs.core.logic.t194822.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
     var d = cljs.core.logic._step.call(null, this.c, b);
     return cljs.core.truth_(cljs.core.logic._runnable_QMARK_.call(null, d)) ? (b = d.call(null, b), cljs.core.truth_(b) ? (d = cljs.core.logic._step.call(null, this.c, b), cljs.core.logic.ientailed_QMARK_.call(null, d) && !cljs.core.logic.entailed_QMARK_.call(null, this.c, d, b) ? cljs.core.logic.addcg.call(null, this.c).call(null, b) : b) : null) : cljs.core.logic.addcg.call(null, this.c).call(null, b)
-  }, cljs.core.logic.t64933.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta64934
-  }, cljs.core.logic.t64933.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
-    return new cljs.core.logic.t64933(this.c, this.cgoal, d)
-  }, cljs.core.logic.__GT_t64933 = function(b, d, e) {
-    return new cljs.core.logic.t64933(b, d, e)
+  }, cljs.core.logic.t194822.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta194823
+  }, cljs.core.logic.t194822.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
+    return new cljs.core.logic.t194822(this.c, this.cgoal, d)
+  }, cljs.core.logic.__GT_t194822 = function(b, d, e) {
+    return new cljs.core.logic.t194822(b, d, e)
   });
-  return new cljs.core.logic.t64933(b, cgoal, null)
+  return new cljs.core.logic.t194822(b, cgoal, null)
 };
 cljs.core.logic.get_dom_fd = function(a, b) {
   return cljs.core.truth_(cljs.core.logic.lvar_QMARK_.call(null, b)) ? cljs.core.logic.get_dom.call(null, a, b, new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947)) : b
@@ -23801,12 +23810,30 @@ cljs.core.logic._disunify_terms["null"] = function(a, b, c, d) {
   return null != b ? null : d
 };
 cljs.core.logic.recover_vars_from_term = function(a) {
-  var b = cljs.core.atom.call(null, cljs.core.PersistentHashSet.EMPTY);
-  cljs.core.logic._walk_term.call(null, a, function(a) {
-    cljs.core.truth_(cljs.core.logic.lvar_QMARK_.call(null, a)) && cljs.core.swap_BANG_.call(null, b, cljs.core.conj, a);
-    return a
-  });
-  return cljs.core.deref.call(null, b)
+  if(cljs.core.coll_QMARK_.call(null, a)) {
+    var b = cljs.core.first.call(null, a);
+    a = cljs.core.next.call(null, a);
+    for(var c = cljs.core.PersistentHashSet.EMPTY;;) {
+      if(cljs.core.truth_(cljs.core.logic.lvar_QMARK_.call(null, b))) {
+        var d = cljs.core.first.call(null, a);
+        a = cljs.core.next.call(null, a);
+        c = cljs.core.conj.call(null, c, b);
+        b = d
+      }else {
+        if(cljs.core.coll_QMARK_.call(null, b)) {
+          d = cljs.core.first.call(null, a), a = cljs.core.into.call(null, cljs.core.next.call(null, a), b), b = d
+        }else {
+          if(cljs.core.seq.call(null, a)) {
+            b = cljs.core.first.call(null, a), a = cljs.core.next.call(null, a)
+          }else {
+            return new cljs.core.Keyword(null, "else", "else", 1017020587) ? c : null
+          }
+        }
+      }
+    }
+  }else {
+    return cljs.core.truth_(cljs.core.logic.lvar_QMARK_.call(null, a)) ? cljs.core.PersistentHashSet.fromArray([a], !0) : null
+  }
 };
 cljs.core.logic.recover_vars = function(a) {
   a = cljs.core.seq.call(null, a);
@@ -23855,55 +23882,55 @@ cljs.core.logic._prefix = function(a) {
   return b.call(null, a)
 };
 cljs.core.logic._BANG__EQ_c = function _BANG__EQ_c(b) {
-  "undefined" === typeof cljs.core.logic.t64986 && (cljs.core.logic.t64986 = function(b, d, e) {
+  "undefined" === typeof cljs.core.logic.t194884 && (cljs.core.logic.t194884 = function(b, d, e) {
     this.p = b;
     this._BANG__EQ_c = d;
-    this.meta64987 = e;
+    this.meta194885 = e;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.t64986.cljs$lang$type = !0, cljs.core.logic.t64986.cljs$lang$ctorStr = "cljs.core.logic/t64986", cljs.core.logic.t64986.cljs$lang$ctorPrWriter = function(b, d, e) {
-    return cljs.core._write.call(null, d, "cljs.core.logic/t64986")
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.t194884.cljs$lang$type = !0, cljs.core.logic.t194884.cljs$lang$ctorStr = "cljs.core.logic/t194884", cljs.core.logic.t194884.cljs$lang$ctorPrWriter = function(b, d, e) {
+    return cljs.core._write.call(null, d, "cljs.core.logic/t194884")
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
-    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.macros", "!\x3d", "cljs.core.logic.macros/!\x3d", 1300254101, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2168), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
-    3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2168), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 43)))))
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.macros", "!\x3d", "cljs.core.logic.macros/!\x3d", 1300254101, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2161), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
+    3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2161), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 43)))))
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return cljs.core.seq.call(null, cljs.core.logic.recover_vars.call(null, this.p))
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, d, e, f) {
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, d, e, f) {
     b = cljs.core.logic._reify.call(null, f, cljs.core.map.call(null, function(b) {
       var c = cljs.core.nth.call(null, b, 0, null);
       b = cljs.core.nth.call(null, b, 1, null);
-      return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, c), cljs.core._conj.call(null, cljs.core.List.EMPTY, b))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2163), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
-      new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 48), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2163), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 59)))))
+      return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, c), cljs.core._conj.call(null, cljs.core.List.EMPTY, b))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2156), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
+      new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 48), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2156), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 59)))))
     }, this.p), e);
     return cljs.core.empty_QMARK_.call(null, b) ? cljs.core.List.EMPTY : cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Symbol(null, "!\x3d", "!\x3d", -1640530443, null)), b)), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, 2166), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2166), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
+    cljs.core.List.EMPTY, 2159), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2159), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
     cljs.core.List.EMPTY, 23)))))
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IWithPrefix$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IWithPrefix$_with_prefix$arity$2 = function(b, d) {
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IWithPrefix$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IWithPrefix$_with_prefix$arity$2 = function(b, d) {
     return this._BANG__EQ_c.call(null, d)
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IPrefix$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IPrefix$_prefix$arity$1 = function(b) {
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IPrefix$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IPrefix$_prefix$arity$1 = function(b) {
     return this.p
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t64986.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
-    "undefined" === typeof cljs.core.logic.t64991 && (cljs.core.logic.t64991 = function(b, c, d, h, k, l) {
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t194884.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
+    "undefined" === typeof cljs.core.logic.t194889 && (cljs.core.logic.t194889 = function(b, c, d, h, k, l) {
       this.s = b;
       this.this$ = c;
-      this.meta64987 = d;
+      this.meta194885 = d;
       this.p = h;
       this._BANG__EQ_c = k;
-      this.meta64992 = l;
+      this.meta194890 = l;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.t64991.cljs$lang$type = !0, cljs.core.logic.t64991.cljs$lang$ctorStr = "cljs.core.logic/t64991", cljs.core.logic.t64991.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic/t64991")
-    }, cljs.core.logic.t64991.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.t64991.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.t194889.cljs$lang$type = !0, cljs.core.logic.t194889.cljs$lang$ctorStr = "cljs.core.logic/t194889", cljs.core.logic.t194889.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic/t194889")
+    }, cljs.core.logic.t194889.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.t194889.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       return cljs.core.empty_QMARK_.call(null, this.p)
-    }, cljs.core.logic.t64991.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t64991.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.t194889.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t194889.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       var c = this;
       return cljs.core.some.call(null, function(b) {
         return cljs.core.not_EQ_.call(null, cljs.core.logic._walk.call(null, c.s, b), b)
       }, cljs.core.logic.recover_vars.call(null, c.p))
-    }, cljs.core.logic.t64991.prototype.call = function(b, c) {
+    }, cljs.core.logic.t194889.prototype.call = function(b, c) {
       b = this;
       var d;
       a: {
@@ -23929,9 +23956,9 @@ cljs.core.logic._BANG__EQ_c = function _BANG__EQ_c(b) {
         d = void 0
       }
       return cljs.core.truth_(d) ? cljs.core.empty_QMARK_.call(null, d) ? null : cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, b.this$), cljs.core.logic.cgoal.call(null, b._BANG__EQ_c.call(null, d))).call(null, c) : cljs.core.logic.remcg.call(null, b.this$).call(null, c)
-    }, cljs.core.logic.t64991.prototype.apply = function(b, c) {
+    }, cljs.core.logic.t194889.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.t64991.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.t194889.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c;
       a: {
         c = cljs.core.seq.call(null, this.p);
@@ -23956,22 +23983,22 @@ cljs.core.logic._BANG__EQ_c = function _BANG__EQ_c(b) {
         c = void 0
       }
       return cljs.core.truth_(c) ? cljs.core.empty_QMARK_.call(null, c) ? null : cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, this.this$), cljs.core.logic.cgoal.call(null, this._BANG__EQ_c.call(null, c))).call(null, b) : cljs.core.logic.remcg.call(null, this.this$).call(null, b)
-    }, cljs.core.logic.t64991.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta64992
-    }, cljs.core.logic.t64991.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.t64991(this.s, this.this$, this.meta64987, this.p, this._BANG__EQ_c, c)
-    }, cljs.core.logic.__GT_t64991 = function(b, c, d, h, k, l) {
-      return new cljs.core.logic.t64991(b, c, d, h, k, l)
+    }, cljs.core.logic.t194889.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta194890
+    }, cljs.core.logic.t194889.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.t194889(this.s, this.this$, this.meta194885, this.p, this._BANG__EQ_c, c)
+    }, cljs.core.logic.__GT_t194889 = function(b, c, d, h, k, l) {
+      return new cljs.core.logic.t194889(b, c, d, h, k, l)
     });
-    return new cljs.core.logic.t64991(d, this, this.meta64987, this.p, this._BANG__EQ_c, null)
-  }, cljs.core.logic.t64986.prototype.cljs$core$logic$ITreeConstraint$ = !0, cljs.core.logic.t64986.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta64987
-  }, cljs.core.logic.t64986.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
-    return new cljs.core.logic.t64986(this.p, this._BANG__EQ_c, d)
-  }, cljs.core.logic.__GT_t64986 = function(b, d, e) {
-    return new cljs.core.logic.t64986(b, d, e)
+    return new cljs.core.logic.t194889(d, this, this.meta194885, this.p, this._BANG__EQ_c, null)
+  }, cljs.core.logic.t194884.prototype.cljs$core$logic$ITreeConstraint$ = !0, cljs.core.logic.t194884.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta194885
+  }, cljs.core.logic.t194884.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
+    return new cljs.core.logic.t194884(this.p, this._BANG__EQ_c, d)
+  }, cljs.core.logic.__GT_t194884 = function(b, d, e) {
+    return new cljs.core.logic.t194884(b, d, e)
   });
-  return new cljs.core.logic.t64986(b, _BANG__EQ_c, null)
+  return new cljs.core.logic.t194884(b, _BANG__EQ_c, null)
 };
 cljs.core.logic.distincto = function distincto(b) {
   return function(c) {
@@ -24098,70 +24125,70 @@ cljs.core.logic._predc = function() {
   var a = null, b = function(b, c) {
     return a.call(null, b, c, c)
   }, c = function(b, c, f) {
-    "undefined" === typeof cljs.core.logic.t65026 && (cljs.core.logic.t65026 = function(a, b, c, d, e) {
+    "undefined" === typeof cljs.core.logic.t194924 && (cljs.core.logic.t194924 = function(a, b, c, d, e) {
       this.pform = a;
       this.p = b;
       this.x = c;
       this._predc = d;
-      this.meta65027 = e;
+      this.meta194925 = e;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393216
-    }, cljs.core.logic.t65026.cljs$lang$type = !0, cljs.core.logic.t65026.cljs$lang$ctorStr = "cljs.core.logic/t65026", cljs.core.logic.t65026.cljs$lang$ctorPrWriter = function(a, b, c) {
-      return cljs.core._write.call(null, b, "cljs.core.logic/t65026")
-    }, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(a) {
+    }, cljs.core.logic.t194924.cljs$lang$type = !0, cljs.core.logic.t194924.cljs$lang$ctorStr = "cljs.core.logic/t194924", cljs.core.logic.t194924.cljs$lang$ctorPrWriter = function(a, b, c) {
+      return cljs.core._write.call(null, b, "cljs.core.logic/t194924")
+    }, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(a) {
       return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-    }, cljs.core.logic.t65026.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t65026.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(a, b, c, d) {
+    }, cljs.core.logic.t194924.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t194924.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(a, b, c, d) {
       return cljs.core.not_EQ_.call(null, this.p, this.pform) && cljs.core.fn_QMARK_.call(null, this.pform) ? this.pform.call(null, this, b, c, d) : this.pform
-    }, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(a) {
+    }, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(a) {
       return cljs.core.seq_QMARK_.call(null, this.pform) ? cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "predc", "cljs.core.logic/predc", 895622310, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 
-      1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2234), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 24), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2234), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", 
-      "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 29)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.pform))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2234), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", 
-      "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 23), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2234), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 37))))) : cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", 
-      "predc", "cljs.core.logic/predc", 895622310, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2235), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 23), cljs.core._conj.call(null, 
-      cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2235), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 44)))))
-    }, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(a) {
+      1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2227), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 24), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2227), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", 
+      "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 29)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.pform))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2227), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", 
+      "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 23), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2227), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 37))))) : cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", 
+      "predc", "cljs.core.logic/predc", 895622310, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2228), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 23), cljs.core._conj.call(null, 
+      cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2228), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 44)))))
+    }, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(a) {
       return new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x], null)
-    }, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t65026.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(a, b) {
-      "undefined" === typeof cljs.core.logic.t65029 && (cljs.core.logic.t65029 = function(a, b, c, d, e, f, g, h) {
+    }, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t194924.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(a, b) {
+      "undefined" === typeof cljs.core.logic.t194927 && (cljs.core.logic.t194927 = function(a, b, c, d, e, f, g, h) {
         this.s = a;
         this.this$ = b;
-        this.meta65027 = c;
+        this.meta194925 = c;
         this.pform = d;
         this.p = e;
         this.x = f;
         this._predc = g;
-        this.meta65030 = h;
+        this.meta194928 = h;
         this.cljs$lang$protocol_mask$partition1$ = 0;
         this.cljs$lang$protocol_mask$partition0$ = 393217
-      }, cljs.core.logic.t65029.cljs$lang$type = !0, cljs.core.logic.t65029.cljs$lang$ctorStr = "cljs.core.logic/t65029", cljs.core.logic.t65029.cljs$lang$ctorPrWriter = function(a, b, c) {
-        return cljs.core._write.call(null, b, "cljs.core.logic/t65029")
-      }, cljs.core.logic.t65029.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t65029.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(a) {
+      }, cljs.core.logic.t194927.cljs$lang$type = !0, cljs.core.logic.t194927.cljs$lang$ctorStr = "cljs.core.logic/t194927", cljs.core.logic.t194927.cljs$lang$ctorPrWriter = function(a, b, c) {
+        return cljs.core._write.call(null, b, "cljs.core.logic/t194927")
+      }, cljs.core.logic.t194927.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t194927.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(a) {
         return cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, cljs.core.logic._walk.call(null, this.s, this.x)))
-      }, cljs.core.logic.t65029.prototype.call = function(a, b) {
+      }, cljs.core.logic.t194927.prototype.call = function(a, b) {
         a = this;
         var c = cljs.core.logic._walk.call(null, b, a.x);
         return cljs.core.truth_(a.p.call(null, c)) ? cljs.core.logic.remcg.call(null, a.this$).call(null, b) : null
-      }, cljs.core.logic.t65029.prototype.apply = function(a, b) {
+      }, cljs.core.logic.t194927.prototype.apply = function(a, b) {
         return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, b)))
-      }, cljs.core.logic.t65029.prototype.cljs$core$IFn$_invoke$arity$1 = function(a) {
+      }, cljs.core.logic.t194927.prototype.cljs$core$IFn$_invoke$arity$1 = function(a) {
         var b = cljs.core.logic._walk.call(null, a, this.x);
         return cljs.core.truth_(this.p.call(null, b)) ? cljs.core.logic.remcg.call(null, this.this$).call(null, a) : null
-      }, cljs.core.logic.t65029.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
-        return this.meta65030
-      }, cljs.core.logic.t65029.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
-        return new cljs.core.logic.t65029(this.s, this.this$, this.meta65027, this.pform, this.p, this.x, this._predc, b)
-      }, cljs.core.logic.__GT_t65029 = function(a, b, c, d, e, f, g, h) {
-        return new cljs.core.logic.t65029(a, b, c, d, e, f, g, h)
+      }, cljs.core.logic.t194927.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
+        return this.meta194928
+      }, cljs.core.logic.t194927.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
+        return new cljs.core.logic.t194927(this.s, this.this$, this.meta194925, this.pform, this.p, this.x, this._predc, b)
+      }, cljs.core.logic.__GT_t194927 = function(a, b, c, d, e, f, g, h) {
+        return new cljs.core.logic.t194927(a, b, c, d, e, f, g, h)
       });
-      return new cljs.core.logic.t65029(b, this, this.meta65027, this.pform, this.p, this.x, this._predc, null)
-    }, cljs.core.logic.t65026.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
-      return this.meta65027
-    }, cljs.core.logic.t65026.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
-      return new cljs.core.logic.t65026(this.pform, this.p, this.x, this._predc, b)
-    }, cljs.core.logic.__GT_t65026 = function(a, b, c, d, e) {
-      return new cljs.core.logic.t65026(a, b, c, d, e)
+      return new cljs.core.logic.t194927(b, this, this.meta194925, this.pform, this.p, this.x, this._predc, null)
+    }, cljs.core.logic.t194924.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
+      return this.meta194925
+    }, cljs.core.logic.t194924.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
+      return new cljs.core.logic.t194924(this.pform, this.p, this.x, this._predc, b)
+    }, cljs.core.logic.__GT_t194924 = function(a, b, c, d, e) {
+      return new cljs.core.logic.t194924(a, b, c, d, e)
     });
-    return new cljs.core.logic.t65026(f, c, b, a, null)
+    return new cljs.core.logic.t194924(f, c, b, a, null)
   }, a = function(a, e, f) {
     switch(arguments.length) {
       case 2:
@@ -24203,68 +24230,68 @@ cljs.core.logic.tramp = function(a) {
   }
 };
 cljs.core.logic._nafc = function _nafc(b, c) {
-  "undefined" === typeof cljs.core.logic.t65042 && (cljs.core.logic.t65042 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.t194940 && (cljs.core.logic.t194940 = function(b, c, f, g) {
     this.args = b;
     this.c = c;
     this._nafc = f;
-    this.meta65043 = g;
+    this.meta194941 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.t65042.cljs$lang$type = !0, cljs.core.logic.t65042.cljs$lang$ctorStr = "cljs.core.logic/t65042", cljs.core.logic.t65042.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic/t65042")
-  }, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.t194940.cljs$lang$type = !0, cljs.core.logic.t194940.cljs$lang$ctorStr = "cljs.core.logic/t194940", cljs.core.logic.t194940.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic/t194940")
+  }, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.t65042.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t65042.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
+  }, cljs.core.logic.t194940.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t194940.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
     return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "nafc", "cljs.core.logic/nafc", 1019102320, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
-    2276), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2276), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
-    16)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.c), cljs.core.logic._reify.call(null, g, this.args, f))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2276), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, 11), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2276), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 40)))))
-  }, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
-    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "nafc", "cljs.core.logic/nafc", 1019102320, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2272), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
-    cljs.core._conj.call(null, cljs.core.List.EMPTY, 21), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2272), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 41)))))
-  }, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+    2269), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2269), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
+    16)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.c), cljs.core.logic._reify.call(null, g, this.args, f))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2269), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, 
+    cljs.core.List.EMPTY, 11), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2269), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 40)))))
+  }, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+    return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "nafc", "cljs.core.logic/nafc", 1019102320, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2265), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
+    cljs.core._conj.call(null, cljs.core.List.EMPTY, 21), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2265), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 41)))))
+  }, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return cljs.core.vec.call(null, cljs.core.concat.call(null, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.c], null), this.args))
-  }, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t65042.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
-    "undefined" === typeof cljs.core.logic.t65045 && (cljs.core.logic.t65045 = function(b, c, d, e, l, m, n) {
+  }, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t194940.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+    "undefined" === typeof cljs.core.logic.t194943 && (cljs.core.logic.t194943 = function(b, c, d, e, l, m, n) {
       this.s = b;
       this.this$ = c;
-      this.meta65043 = d;
+      this.meta194941 = d;
       this.args = e;
       this.c = l;
       this._nafc = m;
-      this.meta65046 = n;
+      this.meta194944 = n;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.t65045.cljs$lang$type = !0, cljs.core.logic.t65045.cljs$lang$ctorStr = "cljs.core.logic/t65045", cljs.core.logic.t65045.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic/t65045")
-    }, cljs.core.logic.t65045.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t65045.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.t194943.cljs$lang$type = !0, cljs.core.logic.t194943.cljs$lang$ctorStr = "cljs.core.logic/t194943", cljs.core.logic.t194943.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic/t194943")
+    }, cljs.core.logic.t194943.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t194943.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       var c = this;
       return cljs.core.every_QMARK_.call(null, function(b) {
         return cljs.core.logic.ground_term_QMARK_.call(null, b, c.s)
       }, c.args)
-    }, cljs.core.logic.t65045.prototype.call = function(b, c) {
+    }, cljs.core.logic.t194943.prototype.call = function(b, c) {
       b = this;
       return cljs.core.truth_(cljs.core.logic.tramp.call(null, cljs.core.apply.call(null, b.c, b.args).call(null, c))) ? null : cljs.core.logic.remcg.call(null, b.this$).call(null, c)
-    }, cljs.core.logic.t65045.prototype.apply = function(b, c) {
+    }, cljs.core.logic.t194943.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.t65045.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.t194943.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       return cljs.core.truth_(cljs.core.logic.tramp.call(null, cljs.core.apply.call(null, this.c, this.args).call(null, b))) ? null : cljs.core.logic.remcg.call(null, this.this$).call(null, b)
-    }, cljs.core.logic.t65045.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta65046
-    }, cljs.core.logic.t65045.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.t65045(this.s, this.this$, this.meta65043, this.args, this.c, this._nafc, c)
-    }, cljs.core.logic.__GT_t65045 = function(b, c, d, e, l, m, n) {
-      return new cljs.core.logic.t65045(b, c, d, e, l, m, n)
+    }, cljs.core.logic.t194943.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta194944
+    }, cljs.core.logic.t194943.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.t194943(this.s, this.this$, this.meta194941, this.args, this.c, this._nafc, c)
+    }, cljs.core.logic.__GT_t194943 = function(b, c, d, e, l, m, n) {
+      return new cljs.core.logic.t194943(b, c, d, e, l, m, n)
     });
-    return new cljs.core.logic.t65045(c, this, this.meta65043, this.args, this.c, this._nafc, null)
-  }, cljs.core.logic.t65042.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta65043
-  }, cljs.core.logic.t65042.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.t65042(this.args, this.c, this._nafc, c)
-  }, cljs.core.logic.__GT_t65042 = function(b, c, f, g) {
-    return new cljs.core.logic.t65042(b, c, f, g)
+    return new cljs.core.logic.t194943(c, this, this.meta194941, this.args, this.c, this._nafc, null)
+  }, cljs.core.logic.t194940.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta194941
+  }, cljs.core.logic.t194940.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.t194940(this.args, this.c, this._nafc, c)
+  }, cljs.core.logic.__GT_t194940 = function(b, c, f, g) {
+    return new cljs.core.logic.t194940(b, c, f, g)
   });
-  return new cljs.core.logic.t65042(c, b, _nafc, null)
+  return new cljs.core.logic.t194940(c, b, _nafc, null)
 };
 cljs.core.logic.nafc = function() {
   var a = function(a, b) {
@@ -24367,75 +24394,75 @@ cljs.core.logic._fixc = function() {
   var a = null, b = function(b, c, f) {
     return a.call(null, b, c, null, f)
   }, c = function(b, c, f, g) {
-    "undefined" === typeof cljs.core.logic.t65067 && (cljs.core.logic.t65067 = function(a, b, c, d, e, f) {
+    "undefined" === typeof cljs.core.logic.t194965 && (cljs.core.logic.t194965 = function(a, b, c, d, e, f) {
       this.reifier = a;
       this.runnable = b;
       this.f = c;
       this.x = d;
       this._fixc = e;
-      this.meta65068 = f;
+      this.meta194966 = f;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393216
-    }, cljs.core.logic.t65067.cljs$lang$type = !0, cljs.core.logic.t65067.cljs$lang$ctorStr = "cljs.core.logic/t65067", cljs.core.logic.t65067.cljs$lang$ctorPrWriter = function(a, b, c) {
-      return cljs.core._write.call(null, b, "cljs.core.logic/t65067")
-    }, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(a) {
+    }, cljs.core.logic.t194965.cljs$lang$type = !0, cljs.core.logic.t194965.cljs$lang$ctorStr = "cljs.core.logic/t194965", cljs.core.logic.t194965.cljs$lang$ctorPrWriter = function(a, b, c) {
+      return cljs.core._write.call(null, b, "cljs.core.logic/t194965")
+    }, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(a) {
       return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-    }, cljs.core.logic.t65067.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t65067.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(a, b, c, d) {
+    }, cljs.core.logic.t194965.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.t194965.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(a, b, c, d) {
       if(cljs.core.fn_QMARK_.call(null, this.reifier)) {
         return this.reifier.call(null, this, this.x, b, c, d)
       }
       a = cljs.core.logic._walk_STAR_.call(null, c, this.x);
       return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "fixc", "cljs.core.logic/fixc", 1018347826, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, 
-      cljs.core.List.EMPTY, 2362), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 16), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2362), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
-      cljs.core.List.EMPTY, 20)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, a), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.reifier))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2362), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", 
-      "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 15), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2362), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 33)))))
-    }, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(a) {
-      return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "fixc", "cljs.core.logic/fixc", 1018347826, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
-      cljs.core._conj.call(null, cljs.core.List.EMPTY, 21), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 41)))))
-    }, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(a) {
+      cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 16), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, 
+      cljs.core.List.EMPTY, 20)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, a), cljs.core._conj.call(null, cljs.core.List.EMPTY, this.reifier))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", 
+      "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 15), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2355), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 33)))))
+    }, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(a) {
+      return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "fixc", "cljs.core.logic/fixc", 1018347826, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2348), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
+      cljs.core._conj.call(null, cljs.core.List.EMPTY, 21), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2348), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 41)))))
+    }, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(a) {
       return cljs.core.vector_QMARK_.call(null, this.x) ? this.x : new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x], null)
-    }, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t65067.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(a, b) {
+    }, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.t194965.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(a, b) {
       var c = cljs.core.logic._walk.call(null, b, this.x);
-      "undefined" === typeof cljs.core.logic.t65070 && (cljs.core.logic.t65070 = function(a, b, c, d, e, f, g, h, k, l) {
+      "undefined" === typeof cljs.core.logic.t194968 && (cljs.core.logic.t194968 = function(a, b, c, d, e, f, g, h, k, l) {
         this.xv = a;
         this.s = b;
         this.this$ = c;
-        this.meta65068 = d;
+        this.meta194966 = d;
         this.reifier = e;
         this.runnable = f;
         this.f = g;
         this.x = h;
         this._fixc = k;
-        this.meta65071 = l;
+        this.meta194969 = l;
         this.cljs$lang$protocol_mask$partition1$ = 0;
         this.cljs$lang$protocol_mask$partition0$ = 393217
-      }, cljs.core.logic.t65070.cljs$lang$type = !0, cljs.core.logic.t65070.cljs$lang$ctorStr = "cljs.core.logic/t65070", cljs.core.logic.t65070.cljs$lang$ctorPrWriter = function(a, b, c) {
-        return cljs.core._write.call(null, b, "cljs.core.logic/t65070")
-      }, cljs.core.logic.t65070.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t65070.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(a) {
+      }, cljs.core.logic.t194968.cljs$lang$type = !0, cljs.core.logic.t194968.cljs$lang$ctorStr = "cljs.core.logic/t194968", cljs.core.logic.t194968.cljs$lang$ctorPrWriter = function(a, b, c) {
+        return cljs.core._write.call(null, b, "cljs.core.logic/t194968")
+      }, cljs.core.logic.t194968.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.t194968.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(a) {
         return cljs.core.fn_QMARK_.call(null, this.runnable) ? this.runnable.call(null, this.x, this.s) : cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.xv))
-      }, cljs.core.logic.t65070.prototype.call = function(a, b) {
+      }, cljs.core.logic.t194968.prototype.call = function(a, b) {
         a = this;
         return cljs.core.logic.composeg.call(null, a.f.call(null, a.xv, b, a.reifier), cljs.core.logic.remcg.call(null, a.this$)).call(null, b)
-      }, cljs.core.logic.t65070.prototype.apply = function(a, b) {
+      }, cljs.core.logic.t194968.prototype.apply = function(a, b) {
         return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, b)))
-      }, cljs.core.logic.t65070.prototype.cljs$core$IFn$_invoke$arity$1 = function(a) {
+      }, cljs.core.logic.t194968.prototype.cljs$core$IFn$_invoke$arity$1 = function(a) {
         return cljs.core.logic.composeg.call(null, this.f.call(null, this.xv, a, this.reifier), cljs.core.logic.remcg.call(null, this.this$)).call(null, a)
-      }, cljs.core.logic.t65070.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
-        return this.meta65071
-      }, cljs.core.logic.t65070.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
-        return new cljs.core.logic.t65070(this.xv, this.s, this.this$, this.meta65068, this.reifier, this.runnable, this.f, this.x, this._fixc, b)
-      }, cljs.core.logic.__GT_t65070 = function(a, b, c, d, e, f, g, h, k, l) {
-        return new cljs.core.logic.t65070(a, b, c, d, e, f, g, h, k, l)
+      }, cljs.core.logic.t194968.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
+        return this.meta194969
+      }, cljs.core.logic.t194968.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
+        return new cljs.core.logic.t194968(this.xv, this.s, this.this$, this.meta194966, this.reifier, this.runnable, this.f, this.x, this._fixc, b)
+      }, cljs.core.logic.__GT_t194968 = function(a, b, c, d, e, f, g, h, k, l) {
+        return new cljs.core.logic.t194968(a, b, c, d, e, f, g, h, k, l)
       });
-      return new cljs.core.logic.t65070(c, b, this, this.meta65068, this.reifier, this.runnable, this.f, this.x, this._fixc, null)
-    }, cljs.core.logic.t65067.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
-      return this.meta65068
-    }, cljs.core.logic.t65067.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
-      return new cljs.core.logic.t65067(this.reifier, this.runnable, this.f, this.x, this._fixc, b)
-    }, cljs.core.logic.__GT_t65067 = function(a, b, c, d, e, f) {
-      return new cljs.core.logic.t65067(a, b, c, d, e, f)
+      return new cljs.core.logic.t194968(c, b, this, this.meta194966, this.reifier, this.runnable, this.f, this.x, this._fixc, null)
+    }, cljs.core.logic.t194965.prototype.cljs$core$IMeta$_meta$arity$1 = function(a) {
+      return this.meta194966
+    }, cljs.core.logic.t194965.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(a, b) {
+      return new cljs.core.logic.t194965(this.reifier, this.runnable, this.f, this.x, this._fixc, b)
+    }, cljs.core.logic.__GT_t194965 = function(a, b, c, d, e, f) {
+      return new cljs.core.logic.t194965(a, b, c, d, e, f)
     });
-    return new cljs.core.logic.t65067(g, f, c, b, a, null)
+    return new cljs.core.logic.t194965(g, f, c, b, a, null)
   }, a = function(a, e, f, g) {
     switch(arguments.length) {
       case 3:
@@ -24479,63 +24506,13 @@ cljs.core.logic.seqc = function seqc(b) {
     return cljs.core.sequential_QMARK_.call(null, b) ? cljs.core.logic.succeed : cljs.core.logic.lcons_QMARK_.call(null, b) ? seqc.call(null, cljs.core.logic._lnext.call(null, b)) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? cljs.core.logic.fail : null
   }, function(b, d, e, f, g) {
     return cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic", "seqc", "cljs.core.logic/seqc", 1018702372, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
-    2388), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2388), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
-    17)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._reify.call(null, g, d, f)))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2388), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, 
-    cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2388), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 34)))))
+    2381), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 13), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2381), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
+    17)))))), cljs.core._conj.call(null, cljs.core.List.EMPTY, cljs.core.logic._reify.call(null, g, d, f)))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2381), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, 
+    cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 2381), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 34)))))
   })
 };
 cljs.core.logic.benchmark_runner = function() {
-  var a = performance.now();
-  (function() {
-    for(var b = 0;;) {
-      if(1 > b) {
-        cljs.core.doall.call(null, function() {
-          var d = new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "occurs-check", "occurs-check", 3132413236), !0, new cljs.core.Keyword(null, "n", "n", 1013904352), 500, new cljs.core.Keyword(null, "db", "db", 1013907440), cljs.core.logic._STAR_logic_dbs_STAR_], null), e = cljs.core.logic._take_STAR_.call(null, new cljs.core.logic.Inc(function(a, b, c, d) {
-            return function() {
-              return function(a, b, c, d) {
-                return function(e) {
-                  return new cljs.core.logic.Inc(function(a, b, c, d) {
-                    return function() {
-                      var f = cljs.core.logic.lvar.call(null, new cljs.core.Symbol(null, "q", "q", -1640531414, null));
-                      return cljs.core.logic._bind.call(null, cljs.core.logic._bind.call(null, e, function(a, b, c, d, e) {
-                        return function(f) {
-                          return new cljs.core.logic.Inc(function(a, b, c, d, e) {
-                            return function() {
-                              var a = cljs.core.logic.lvar.call(null, new cljs.core.Symbol(null, "x", "x", -1640531407, null)), c = cljs.core.logic.lvar.call(null, new cljs.core.Symbol(null, "y", "y", -1640531406, null));
-                              return cljs.core.logic._bind.call(null, f, cljs.core.logic.appendo.call(null, a, c, b))
-                            }
-                          }(a, b, c, d, e))
-                        }
-                      }(a, f, b, c, d)), cljs.core.logic.reifyg.call(null, f))
-                    }
-                  }(a, b, c, d))
-                }
-              }(a, b, c, d).call(null, cljs.core.logic.tabled_s.call(null, (new cljs.core.Keyword(null, "occurs-check", "occurs-check", 3132413236)).cljs$core$IFn$_invoke$arity$1(b), cljs.core.merge.call(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "reify-vars", "reify-vars", 4368745730), !0], null), b)))
-            }
-          }(b, d, 1, a))), d = (new cljs.core.Keyword(null, "n", "n", 1013904352)).cljs$core$IFn$_invoke$arity$1(d);
-          return cljs.core.truth_(d) ? cljs.core.take.call(null, d, e) : e
-        }()), b += 1
-      }else {
-        return null
-      }
-    }
-  })();
-  cljs.core.prn.call(null, [cljs.core.str("Elapsed time: "), cljs.core.str((performance.now() - a).toFixed(6)), cljs.core.str(" msecs")].join(""));
-  var b = performance.now();
-  (function() {
-    for(var a = 0;;) {
-      if(1E6 > a) {
-        (function(a, b, c) {
-          return function() {
-            return[cljs.core.str("hello"), cljs.core.str("there")].join("")
-          }
-        })(a, 1E6, b).call(null), a += 1
-      }else {
-        return null
-      }
-    }
-  })();
-  return cljs.core.prn.call(null, [cljs.core.str("Elapsed time: "), cljs.core.str((performance.now() - b).toFixed(6)), cljs.core.str(" msecs")].join(""))
+  return null
 };
 cljs.core.logic.reset = function() {
   return location.reload(!0)
@@ -25409,176 +25386,176 @@ cljs.core.logic.fd.FiniteDomain.prototype.cljs$core$logic$IForceAnswerTerm$_forc
   }).call(null, cljs.core.logic.fd.to_vals.call(null, this))
 };
 cljs.core.logic.fd._domc = function _domc(b) {
-  "undefined" === typeof cljs.core.logic.fd.t50200 && (cljs.core.logic.fd.t50200 = function(b, d, e) {
+  "undefined" === typeof cljs.core.logic.fd.t128083 && (cljs.core.logic.fd.t128083 = function(b, d, e) {
     this.x = b;
     this._domc = d;
-    this.meta50201 = e;
+    this.meta128084 = e;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50200.cljs$lang$type = !0, cljs.core.logic.fd.t50200.cljs$lang$ctorStr = "cljs.core.logic.fd/t50200", cljs.core.logic.fd.t50200.cljs$lang$ctorPrWriter = function(b, d, e) {
-    return cljs.core._write.call(null, d, "cljs.core.logic.fd/t50200")
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128083.cljs$lang$type = !0, cljs.core.logic.fd.t128083.cljs$lang$ctorStr = "cljs.core.logic.fd/t128083", cljs.core.logic.fd.t128083.cljs$lang$ctorPrWriter = function(b, d, e) {
+    return cljs.core._write.call(null, d, "cljs.core.logic.fd/t128083")
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "domc", "cljs.core.logic.fd/domc", 1533784811, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 644), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
     cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 644), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 41)))))
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x], null)
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
     var e = cljs.core.logic._walk.call(null, d, this.x), f = (new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947)).cljs$core$IFn$_invoke$arity$1((new cljs.core.Keyword(null, "doms", "doms", 1016993507)).cljs$core$IFn$_invoke$arity$1(cljs.core.logic._root_val.call(null, d, this.x)));
-    "undefined" === typeof cljs.core.logic.fd.t50203 && (cljs.core.logic.fd.t50203 = function(b, c, d, e, f, n, p, q) {
+    "undefined" === typeof cljs.core.logic.fd.t128086 && (cljs.core.logic.fd.t128086 = function(b, c, d, e, f, n, p, q) {
       this.xd = b;
       this.xv = c;
       this.s = d;
       this.this$ = e;
-      this.meta50201 = f;
+      this.meta128084 = f;
       this.x = n;
       this._domc = p;
-      this.meta50204 = q;
+      this.meta128087 = q;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50203.cljs$lang$type = !0, cljs.core.logic.fd.t50203.cljs$lang$ctorStr = "cljs.core.logic.fd/t50203", cljs.core.logic.fd.t50203.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50203")
-    }, cljs.core.logic.fd.t50203.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50203.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128086.cljs$lang$type = !0, cljs.core.logic.fd.t128086.cljs$lang$ctorStr = "cljs.core.logic.fd/t128086", cljs.core.logic.fd.t128086.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128086")
+    }, cljs.core.logic.fd.t128086.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128086.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.xv))
-    }, cljs.core.logic.fd.t50203.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50203.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128086.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128086.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       return null == this.xd
-    }, cljs.core.logic.fd.t50203.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128086.prototype.call = function(b, c) {
       b = this;
       return cljs.core.truth_(b.xd) ? cljs.core.truth_(cljs.core.logic.fd._member_QMARK_.call(null, b.xd, b.xv)) ? cljs.core.logic.rem_dom.call(null, c, b.x, new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947)) : null : c
-    }, cljs.core.logic.fd.t50203.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128086.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50203.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128086.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       return cljs.core.truth_(this.xd) ? cljs.core.truth_(cljs.core.logic.fd._member_QMARK_.call(null, this.xd, this.xv)) ? cljs.core.logic.rem_dom.call(null, b, this.x, new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947)) : null : b
-    }, cljs.core.logic.fd.t50203.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50204
-    }, cljs.core.logic.fd.t50203.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50203(this.xd, this.xv, this.s, this.this$, this.meta50201, this.x, this._domc, c)
-    }, cljs.core.logic.fd.__GT_t50203 = function(b, c, d, e, f, n, p, q) {
-      return new cljs.core.logic.fd.t50203(b, c, d, e, f, n, p, q)
+    }, cljs.core.logic.fd.t128086.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128087
+    }, cljs.core.logic.fd.t128086.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128086(this.xd, this.xv, this.s, this.this$, this.meta128084, this.x, this._domc, c)
+    }, cljs.core.logic.fd.__GT_t128086 = function(b, c, d, e, f, n, p, q) {
+      return new cljs.core.logic.fd.t128086(b, c, d, e, f, n, p, q)
     });
-    return new cljs.core.logic.fd.t50203(f, e, d, this, this.meta50201, this.x, this._domc, null)
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50200.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50201
-  }, cljs.core.logic.fd.t50200.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
-    return new cljs.core.logic.fd.t50200(this.x, this._domc, d)
-  }, cljs.core.logic.fd.__GT_t50200 = function(b, d, e) {
-    return new cljs.core.logic.fd.t50200(b, d, e)
+    return new cljs.core.logic.fd.t128086(f, e, d, this, this.meta128084, this.x, this._domc, null)
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128083.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128084
+  }, cljs.core.logic.fd.t128083.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
+    return new cljs.core.logic.fd.t128083(this.x, this._domc, d)
+  }, cljs.core.logic.fd.__GT_t128083 = function(b, d, e) {
+    return new cljs.core.logic.fd.t128083(b, d, e)
   });
-  return new cljs.core.logic.fd.t50200(b, _domc, null)
+  return new cljs.core.logic.fd.t128083(b, _domc, null)
 };
 cljs.core.logic.fd.domc = function(a) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._domc.call(null, a))
 };
 cljs.core.logic.fd._EQ__EQ_c = function _EQ__EQ_c(b, c) {
-  "undefined" === typeof cljs.core.logic.fd.t50214 && (cljs.core.logic.fd.t50214 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.fd.t128097 && (cljs.core.logic.fd.t128097 = function(b, c, f, g) {
     this.v = b;
     this.u = c;
     this._EQ__EQ_c = f;
-    this.meta50215 = g;
+    this.meta128098 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50214.cljs$lang$type = !0, cljs.core.logic.fd.t50214.cljs$lang$ctorStr = "cljs.core.logic.fd/t50214", cljs.core.logic.fd.t50214.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50214")
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128097.cljs$lang$type = !0, cljs.core.logic.fd.t128097.cljs$lang$ctorStr = "cljs.core.logic.fd/t128097", cljs.core.logic.fd.t128097.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128097")
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947), null, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "\x3d\x3d", "cljs.core.logic.fd/\x3d\x3d", 1528485544, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 674), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 674), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 39)))))
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.u, this.v], null)
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var f = cljs.core.logic.get_dom_fd.call(null, c, this.u), g = cljs.core.logic.get_dom_fd.call(null, c, this.v);
-    "undefined" === typeof cljs.core.logic.fd.t50217 && (cljs.core.logic.fd.t50217 = function(b, c, d, e, f, g, q, r, s) {
+    "undefined" === typeof cljs.core.logic.fd.t128100 && (cljs.core.logic.fd.t128100 = function(b, c, d, e, f, g, q, r, s) {
       this.dv = b;
       this.du = c;
       this.s = d;
       this.this$ = e;
-      this.meta50215 = f;
+      this.meta128098 = f;
       this.v = g;
       this.u = q;
       this._EQ__EQ_c = r;
-      this.meta50218 = s;
+      this.meta128101 = s;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50217.cljs$lang$type = !0, cljs.core.logic.fd.t50217.cljs$lang$ctorStr = "cljs.core.logic.fd/t50217", cljs.core.logic.fd.t50217.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50217")
-    }, cljs.core.logic.fd.t50217.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50217.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128100.cljs$lang$type = !0, cljs.core.logic.fd.t128100.cljs$lang$ctorStr = "cljs.core.logic.fd/t128100", cljs.core.logic.fd.t128100.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128100")
+    }, cljs.core.logic.fd.t128100.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128100.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       b = this.du;
       return cljs.core.truth_(b) ? this.dv : b
-    }, cljs.core.logic.fd.t50217.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50217.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128100.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128100.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       return cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.du) && cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.dv) && cljs.core._EQ_.call(null, this.du, this.dv)
-    }, cljs.core.logic.fd.t50217.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128100.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.logic.fd._intersection.call(null, b.du, b.dv);
       return cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.u, d, b.du), cljs.core.logic.fd.process_dom.call(null, b.v, d, b.dv)).call(null, c)
-    }, cljs.core.logic.fd.t50217.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128100.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50217.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128100.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = cljs.core.logic.fd._intersection.call(null, this.du, this.dv);
       return cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.u, c, this.du), cljs.core.logic.fd.process_dom.call(null, this.v, c, this.dv)).call(null, b)
-    }, cljs.core.logic.fd.t50217.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50218
-    }, cljs.core.logic.fd.t50217.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50217(this.dv, this.du, this.s, this.this$, this.meta50215, this.v, this.u, this._EQ__EQ_c, c)
-    }, cljs.core.logic.fd.__GT_t50217 = function(b, c, d, e, f, g, q, r, s) {
-      return new cljs.core.logic.fd.t50217(b, c, d, e, f, g, q, r, s)
+    }, cljs.core.logic.fd.t128100.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128101
+    }, cljs.core.logic.fd.t128100.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128100(this.dv, this.du, this.s, this.this$, this.meta128098, this.v, this.u, this._EQ__EQ_c, c)
+    }, cljs.core.logic.fd.__GT_t128100 = function(b, c, d, e, f, g, q, r, s) {
+      return new cljs.core.logic.fd.t128100(b, c, d, e, f, g, q, r, s)
     });
-    return new cljs.core.logic.fd.t50217(g, f, c, this, this.meta50215, this.v, this.u, this._EQ__EQ_c, null)
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50214.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50215
-  }, cljs.core.logic.fd.t50214.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50214(this.v, this.u, this._EQ__EQ_c, c)
-  }, cljs.core.logic.fd.__GT_t50214 = function(b, c, f, g) {
-    return new cljs.core.logic.fd.t50214(b, c, f, g)
+    return new cljs.core.logic.fd.t128100(g, f, c, this, this.meta128098, this.v, this.u, this._EQ__EQ_c, null)
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128097.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128098
+  }, cljs.core.logic.fd.t128097.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128097(this.v, this.u, this._EQ__EQ_c, c)
+  }, cljs.core.logic.fd.__GT_t128097 = function(b, c, f, g) {
+    return new cljs.core.logic.fd.t128097(b, c, f, g)
   });
-  return new cljs.core.logic.fd.t50214(c, b, _EQ__EQ_c, null)
+  return new cljs.core.logic.fd.t128097(c, b, _EQ__EQ_c, null)
 };
 cljs.core.logic.fd._EQ__EQ_ = function(a, b) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._EQ__EQ_c.call(null, a, b))
 };
 cljs.core.logic.fd._BANG__EQ_c = function _BANG__EQ_c$$0(b, c) {
-  "undefined" === typeof cljs.core.logic.fd.t50228 && (cljs.core.logic.fd.t50228 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.fd.t128111 && (cljs.core.logic.fd.t128111 = function(b, c, f, g) {
     this.v = b;
     this.u = c;
     this._BANG__EQ_c = f;
-    this.meta50229 = g;
+    this.meta128112 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50228.cljs$lang$type = !0, cljs.core.logic.fd.t50228.cljs$lang$ctorStr = "cljs.core.logic.fd/t50228", cljs.core.logic.fd.t50228.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50228")
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128111.cljs$lang$type = !0, cljs.core.logic.fd.t128111.cljs$lang$ctorStr = "cljs.core.logic.fd/t128111", cljs.core.logic.fd.t128111.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128111")
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947), null, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "!\x3d", "cljs.core.logic.fd/!\x3d", 1528485316, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 711), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
     cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 711), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 39)))))
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.u, this.v], null)
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var f = cljs.core.logic.get_dom_fd.call(null, c, this.u), g = cljs.core.logic.get_dom_fd.call(null, c, this.v), h = cljs.core.logic.fd.singleton_dom_QMARK_.call(null, f), k = cljs.core.logic.fd.singleton_dom_QMARK_.call(null, g);
-    "undefined" === typeof cljs.core.logic.fd.t50231 && (cljs.core.logic.fd.t50231 = function(b, c, d, e, f, g, h, k, t, u, w) {
+    "undefined" === typeof cljs.core.logic.fd.t128114 && (cljs.core.logic.fd.t128114 = function(b, c, d, e, f, g, h, k, t, u, w) {
       this.v = b;
       this.u = c;
       this._BANG__EQ_c = d;
       this.s = e;
-      this.meta50229 = f;
+      this.meta128112 = f;
       this.du = g;
       this.dv = h;
       this.sv_QMARK_ = k;
       this.su_QMARK_ = t;
       this.this$ = u;
-      this.meta50232 = w;
+      this.meta128115 = w;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50231.cljs$lang$type = !0, cljs.core.logic.fd.t50231.cljs$lang$ctorStr = "cljs.core.logic.fd/t50231", cljs.core.logic.fd.t50231.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50231")
-    }, cljs.core.logic.fd.t50231.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50231.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128114.cljs$lang$type = !0, cljs.core.logic.fd.t128114.cljs$lang$ctorStr = "cljs.core.logic.fd/t128114", cljs.core.logic.fd.t128114.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128114")
+    }, cljs.core.logic.fd.t128114.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128114.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       b = this.du;
       return cljs.core.truth_(b) && (b = this.dv, cljs.core.truth_(b)) ? (b = this.su_QMARK_, cljs.core.truth_(b) ? b : this.sv_QMARK_) : b
-    }, cljs.core.logic.fd.t50231.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50231.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128114.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128114.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       b = this.du;
       return cljs.core.truth_(b) ? (b = this.dv, cljs.core.truth_(b) ? cljs.core.logic.fd._disjoint_QMARK_.call(null, this.du, this.dv) : b) : b
-    }, cljs.core.logic.fd.t50231.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128114.prototype.call = function(b, c) {
       b = this;
       if(cljs.core.truth_(function() {
         var c = b.su_QMARK_;
@@ -25594,9 +25571,9 @@ cljs.core.logic.fd._BANG__EQ_c = function _BANG__EQ_c$$0(b, c) {
         return cljs.core.truth_(d) ? cljs.core.logic.fd.process_dom.call(null, b.v, d, b.dv).call(null, c) : null
       }
       return new cljs.core.Keyword(null, "else", "else", 1017020587) ? (d = cljs.core.logic.fd._difference.call(null, b.du, b.dv), cljs.core.truth_(d) ? cljs.core.logic.fd.process_dom.call(null, b.u, d, b.du).call(null, c) : null) : null
-    }, cljs.core.logic.fd.t50231.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128114.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50231.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128114.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = this;
       if(cljs.core.truth_(function() {
         var b = c.su_QMARK_;
@@ -25612,90 +25589,90 @@ cljs.core.logic.fd._BANG__EQ_c = function _BANG__EQ_c$$0(b, c) {
         return cljs.core.truth_(d) ? cljs.core.logic.fd.process_dom.call(null, c.v, d, c.dv).call(null, b) : null
       }
       return new cljs.core.Keyword(null, "else", "else", 1017020587) ? (d = cljs.core.logic.fd._difference.call(null, c.du, c.dv), cljs.core.truth_(d) ? cljs.core.logic.fd.process_dom.call(null, c.u, d, c.du).call(null, b) : null) : null
-    }, cljs.core.logic.fd.t50231.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50232
-    }, cljs.core.logic.fd.t50231.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50231(this.v, this.u, this._BANG__EQ_c, this.s, this.meta50229, this.du, this.dv, this.sv_QMARK_, this.su_QMARK_, this.this$, c)
-    }, cljs.core.logic.fd.__GT_t50231 = function(b, c, d, e, f, g, h, k, t, u, w) {
-      return new cljs.core.logic.fd.t50231(b, c, d, e, f, g, h, k, t, u, w)
+    }, cljs.core.logic.fd.t128114.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128115
+    }, cljs.core.logic.fd.t128114.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128114(this.v, this.u, this._BANG__EQ_c, this.s, this.meta128112, this.du, this.dv, this.sv_QMARK_, this.su_QMARK_, this.this$, c)
+    }, cljs.core.logic.fd.__GT_t128114 = function(b, c, d, e, f, g, h, k, t, u, w) {
+      return new cljs.core.logic.fd.t128114(b, c, d, e, f, g, h, k, t, u, w)
     });
-    return new cljs.core.logic.fd.t50231(this.v, this.u, this._BANG__EQ_c, c, this.meta50229, f, g, k, h, this, null)
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50228.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50229
-  }, cljs.core.logic.fd.t50228.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50228(this.v, this.u, this._BANG__EQ_c, c)
-  }, cljs.core.logic.fd.__GT_t50228 = function(b, c, f, g) {
-    return new cljs.core.logic.fd.t50228(b, c, f, g)
+    return new cljs.core.logic.fd.t128114(this.v, this.u, this._BANG__EQ_c, c, this.meta128112, f, g, k, h, this, null)
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128111.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128112
+  }, cljs.core.logic.fd.t128111.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128111(this.v, this.u, this._BANG__EQ_c, c)
+  }, cljs.core.logic.fd.__GT_t128111 = function(b, c, f, g) {
+    return new cljs.core.logic.fd.t128111(b, c, f, g)
   });
-  return new cljs.core.logic.fd.t50228(c, b, _BANG__EQ_c$$0, null)
+  return new cljs.core.logic.fd.t128111(c, b, _BANG__EQ_c$$0, null)
 };
 cljs.core.logic.fd._BANG__EQ_ = function(a, b) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._BANG__EQ_c.call(null, a, b))
 };
 cljs.core.logic.fd._LT__EQ_c = function _LT__EQ_c(b, c) {
-  "undefined" === typeof cljs.core.logic.fd.t50242 && (cljs.core.logic.fd.t50242 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.fd.t128125 && (cljs.core.logic.fd.t128125 = function(b, c, f, g) {
     this.v = b;
     this.u = c;
     this._LT__EQ_c = f;
-    this.meta50243 = g;
+    this.meta128126 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50242.cljs$lang$type = !0, cljs.core.logic.fd.t50242.cljs$lang$ctorStr = "cljs.core.logic.fd/t50242", cljs.core.logic.fd.t50242.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50242")
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128125.cljs$lang$type = !0, cljs.core.logic.fd.t128125.cljs$lang$ctorStr = "cljs.core.logic.fd/t128125", cljs.core.logic.fd.t128125.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128125")
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947), null, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "\x3c\x3d", "cljs.core.logic.fd/\x3c\x3d", 1528485515, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 744), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 744), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 39)))))
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.u, this.v], null)
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var f = cljs.core.logic.get_dom_fd.call(null, c, this.u), g = cljs.core.logic.get_dom_fd.call(null, c, this.v);
-    "undefined" === typeof cljs.core.logic.fd.t50245 && (cljs.core.logic.fd.t50245 = function(b, c, d, e, f, g, q, r, s) {
+    "undefined" === typeof cljs.core.logic.fd.t128128 && (cljs.core.logic.fd.t128128 = function(b, c, d, e, f, g, q, r, s) {
       this.dv = b;
       this.du = c;
       this.s = d;
       this.this$ = e;
-      this.meta50243 = f;
+      this.meta128126 = f;
       this.v = g;
       this.u = q;
       this._LT__EQ_c = r;
-      this.meta50246 = s;
+      this.meta128129 = s;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50245.cljs$lang$type = !0, cljs.core.logic.fd.t50245.cljs$lang$ctorStr = "cljs.core.logic.fd/t50245", cljs.core.logic.fd.t50245.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50245")
-    }, cljs.core.logic.fd.t50245.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50245.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128128.cljs$lang$type = !0, cljs.core.logic.fd.t128128.cljs$lang$ctorStr = "cljs.core.logic.fd/t128128", cljs.core.logic.fd.t128128.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128128")
+    }, cljs.core.logic.fd.t128128.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128128.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       b = this.du;
       return cljs.core.truth_(b) ? this.dv : b
-    }, cljs.core.logic.fd.t50245.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50245.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128128.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128128.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       b = this.du;
       return cljs.core.truth_(b) ? (b = this.dv, cljs.core.truth_(b) ? cljs.core.logic.fd.interval__LT__EQ_.call(null, this.du, this.dv) : b) : b
-    }, cljs.core.logic.fd.t50245.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128128.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.logic.fd._lb.call(null, b.du), e = cljs.core.logic.fd._ub.call(null, b.dv);
       return cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.u, cljs.core.logic.fd._keep_before.call(null, b.du, e + 1), b.du), cljs.core.logic.fd.process_dom.call(null, b.v, cljs.core.logic.fd._drop_before.call(null, b.dv, d), b.dv)).call(null, c)
-    }, cljs.core.logic.fd.t50245.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128128.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50245.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128128.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = cljs.core.logic.fd._lb.call(null, this.du), d = cljs.core.logic.fd._ub.call(null, this.dv);
       return cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.u, cljs.core.logic.fd._keep_before.call(null, this.du, d + 1), this.du), cljs.core.logic.fd.process_dom.call(null, this.v, cljs.core.logic.fd._drop_before.call(null, this.dv, c), this.dv)).call(null, b)
-    }, cljs.core.logic.fd.t50245.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50246
-    }, cljs.core.logic.fd.t50245.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50245(this.dv, this.du, this.s, this.this$, this.meta50243, this.v, this.u, this._LT__EQ_c, c)
-    }, cljs.core.logic.fd.__GT_t50245 = function(b, c, d, e, f, g, q, r, s) {
-      return new cljs.core.logic.fd.t50245(b, c, d, e, f, g, q, r, s)
+    }, cljs.core.logic.fd.t128128.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128129
+    }, cljs.core.logic.fd.t128128.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128128(this.dv, this.du, this.s, this.this$, this.meta128126, this.v, this.u, this._LT__EQ_c, c)
+    }, cljs.core.logic.fd.__GT_t128128 = function(b, c, d, e, f, g, q, r, s) {
+      return new cljs.core.logic.fd.t128128(b, c, d, e, f, g, q, r, s)
     });
-    return new cljs.core.logic.fd.t50245(g, f, c, this, this.meta50243, this.v, this.u, this._LT__EQ_c, null)
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50242.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50243
-  }, cljs.core.logic.fd.t50242.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50242(this.v, this.u, this._LT__EQ_c, c)
-  }, cljs.core.logic.fd.__GT_t50242 = function(b, c, f, g) {
-    return new cljs.core.logic.fd.t50242(b, c, f, g)
+    return new cljs.core.logic.fd.t128128(g, f, c, this, this.meta128126, this.v, this.u, this._LT__EQ_c, null)
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128125.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128126
+  }, cljs.core.logic.fd.t128125.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128125(this.v, this.u, this._LT__EQ_c, c)
+  }, cljs.core.logic.fd.__GT_t128125 = function(b, c, f, g) {
+    return new cljs.core.logic.fd.t128125(b, c, f, g)
   });
-  return new cljs.core.logic.fd.t50242(c, b, _LT__EQ_c, null)
+  return new cljs.core.logic.fd.t128125(c, b, _LT__EQ_c, null)
 };
 cljs.core.logic.fd._LT__EQ_ = function(a, b) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._LT__EQ_c.call(null, a, b))
@@ -25712,46 +25689,46 @@ cljs.core.logic.fd._GT__EQ_ = function(a, b) {
   return cljs.core.logic.fd._LT__EQ_.call(null, b, a)
 };
 cljs.core.logic.fd._PLUS_c = function _PLUS_c(b, c, d) {
-  "undefined" === typeof cljs.core.logic.fd.t50262 && (cljs.core.logic.fd.t50262 = function(b, c, d, h, k) {
+  "undefined" === typeof cljs.core.logic.fd.t128145 && (cljs.core.logic.fd.t128145 = function(b, c, d, h, k) {
     this.w = b;
     this.v = c;
     this.u = d;
     this._PLUS_c = h;
-    this.meta50263 = k;
+    this.meta128146 = k;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50262.cljs$lang$type = !0, cljs.core.logic.fd.t50262.cljs$lang$ctorStr = "cljs.core.logic.fd/t50262", cljs.core.logic.fd.t50262.cljs$lang$ctorPrWriter = function(b, c, d) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50262")
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128145.cljs$lang$type = !0, cljs.core.logic.fd.t128145.cljs$lang$ctorStr = "cljs.core.logic.fd/t128145", cljs.core.logic.fd.t128145.cljs$lang$ctorPrWriter = function(b, c, d) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128145")
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947), null, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "+", "cljs.core.logic.fd/+", 1528484149, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 834), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
     cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 834), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 38)))))
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.u, this.v, this.w], null)
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var d = cljs.core.logic.get_dom_fd.call(null, c, this.u), h = cljs.core.logic.get_dom_fd.call(null, c, this.v), k = cljs.core.logic.get_dom_fd.call(null, c, this.w);
-    "undefined" === typeof cljs.core.logic.fd.t50265 && (cljs.core.logic.fd.t50265 = function(b, c, d, e, f, g, h, k, t, u, w) {
-      this.v = b;
-      this.w = c;
-      this.u = d;
-      this.s = e;
-      this._PLUS_c = f;
-      this.du = g;
-      this.dw = h;
-      this.dv = k;
-      this.meta50263 = t;
+    "undefined" === typeof cljs.core.logic.fd.t128148 && (cljs.core.logic.fd.t128148 = function(b, c, d, e, f, g, h, k, t, u, w) {
+      this.meta128146 = b;
+      this.v = c;
+      this.w = d;
+      this.u = e;
+      this.s = f;
+      this._PLUS_c = g;
+      this.du = h;
+      this.dw = k;
+      this.dv = t;
       this.this$ = u;
-      this.meta50266 = w;
+      this.meta128149 = w;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50265.cljs$lang$type = !0, cljs.core.logic.fd.t50265.cljs$lang$ctorStr = "cljs.core.logic.fd/t50265", cljs.core.logic.fd.t50265.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50265")
-    }, cljs.core.logic.fd.t50265.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50265.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128148.cljs$lang$type = !0, cljs.core.logic.fd.t128148.cljs$lang$ctorStr = "cljs.core.logic.fd/t128148", cljs.core.logic.fd.t128148.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128148")
+    }, cljs.core.logic.fd.t128148.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128148.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.truth_(this.du) ? (b = this.dv, cljs.core.truth_(b) ? b : this.dw) : cljs.core.truth_(this.dv) ? (b = this.du, cljs.core.truth_(b) ? b : this.dw) : cljs.core.truth_(this.dw) ? (b = this.du, cljs.core.truth_(b) ? b : this.dv) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? !1 : null
-    }, cljs.core.logic.fd.t50265.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50265.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128148.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128148.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       return cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.du) && cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.dv) && cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.dw) && cljs.core._EQ_.call(null, cljs.core._PLUS_.call(null, this.du, this.dv), this.dw)
-    }, cljs.core.logic.fd.t50265.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128148.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.truth_(b.dw) ? cljs.core.logic.fd.bounds.call(null, b.dw) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._PLUS_.call(null, cljs.core.logic.fd._lb.call(null, b.du), cljs.core.logic.fd._lb.call(null, b.dv)), cljs.core._PLUS_.call(null, cljs.core.logic.fd._ub.call(null, b.du), cljs.core.logic.fd._ub.call(null, b.dv))], null), e = cljs.core.nth.call(null, d, 0, null), d = cljs.core.nth.call(null, d, 1, null), f = cljs.core.truth_(b.du) ? 
       cljs.core.logic.fd.bounds.call(null, b.du) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._.call(null, cljs.core.logic.fd._lb.call(null, b.dw), cljs.core.logic.fd._ub.call(null, b.dv)), cljs.core._.call(null, cljs.core.logic.fd._ub.call(null, b.dw), cljs.core.logic.fd._lb.call(null, b.dv))], null), g = cljs.core.nth.call(null, f, 0, null), f = cljs.core.nth.call(null, f, 1, null), h = cljs.core.truth_(b.dv) ? cljs.core.logic.fd.bounds.call(null, 
@@ -25759,31 +25736,31 @@ cljs.core.logic.fd._PLUS_c = function _PLUS_c(b, c, d) {
       f, t)), k = cljs.core.logic.fd.interval.call(null, cljs.core._.call(null, e, t), cljs.core._.call(null, d, k)), e = cljs.core.logic.fd.interval.call(null, cljs.core._.call(null, e, f), cljs.core._.call(null, d, g)), d = cljs.core.truth_(cljs.core.truth_(h) ? b.dw : h) ? cljs.core.logic.fd._intersection.call(null, h, b.dw) : h;
       return cljs.core.truth_(d) && (g = cljs.core.truth_(cljs.core.truth_(k) ? b.du : k) ? cljs.core.logic.fd._intersection.call(null, k, b.du) : k, cljs.core.truth_(g)) ? (e = cljs.core.truth_(cljs.core.truth_(e) ? b.dv : e) ? cljs.core.logic.fd._intersection.call(null, e, b.dv) : e, cljs.core.truth_(e) ? !cljs.core.every_QMARK_.call(null, cljs.core.logic.fd.singleton_dom_QMARK_, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [d, g, e], null)) || cljs.core._EQ_.call(null, 
       cljs.core._PLUS_.call(null, g, e), d) ? cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.w, d, b.dw), cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.u, g, b.du), cljs.core.logic.fd.process_dom.call(null, b.v, e, b.dv))).call(null, c) : null : null) : null
-    }, cljs.core.logic.fd.t50265.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128148.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50265.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128148.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = cljs.core.truth_(this.dw) ? cljs.core.logic.fd.bounds.call(null, this.dw) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._PLUS_.call(null, cljs.core.logic.fd._lb.call(null, this.du), cljs.core.logic.fd._lb.call(null, this.dv)), cljs.core._PLUS_.call(null, cljs.core.logic.fd._ub.call(null, this.du), cljs.core.logic.fd._ub.call(null, this.dv))], null), d = cljs.core.nth.call(null, c, 0, null), c = cljs.core.nth.call(null, c, 1, null), e = 
       cljs.core.truth_(this.du) ? cljs.core.logic.fd.bounds.call(null, this.du) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._.call(null, cljs.core.logic.fd._lb.call(null, this.dw), cljs.core.logic.fd._ub.call(null, this.dv)), cljs.core._.call(null, cljs.core.logic.fd._ub.call(null, this.dw), cljs.core.logic.fd._lb.call(null, this.dv))], null), f = cljs.core.nth.call(null, e, 0, null), e = cljs.core.nth.call(null, e, 1, null), g = cljs.core.truth_(this.dv) ? 
       cljs.core.logic.fd.bounds.call(null, this.dv) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._.call(null, cljs.core.logic.fd._lb.call(null, this.dw), cljs.core.logic.fd._ub.call(null, this.du)), cljs.core._.call(null, cljs.core.logic.fd._ub.call(null, this.dw), cljs.core.logic.fd._lb.call(null, this.du))], null), h = cljs.core.nth.call(null, g, 0, null), k = cljs.core.nth.call(null, g, 1, null), g = cljs.core.logic.fd.interval.call(null, cljs.core._PLUS_.call(null, 
       f, h), cljs.core._PLUS_.call(null, e, k)), h = cljs.core.logic.fd.interval.call(null, cljs.core._.call(null, d, k), cljs.core._.call(null, c, h)), d = cljs.core.logic.fd.interval.call(null, cljs.core._.call(null, d, e), cljs.core._.call(null, c, f)), c = cljs.core.truth_(cljs.core.truth_(g) ? this.dw : g) ? cljs.core.logic.fd._intersection.call(null, g, this.dw) : g;
       return cljs.core.truth_(c) && (f = cljs.core.truth_(cljs.core.truth_(h) ? this.du : h) ? cljs.core.logic.fd._intersection.call(null, h, this.du) : h, cljs.core.truth_(f)) ? (d = cljs.core.truth_(cljs.core.truth_(d) ? this.dv : d) ? cljs.core.logic.fd._intersection.call(null, d, this.dv) : d, cljs.core.truth_(d) ? !cljs.core.every_QMARK_.call(null, cljs.core.logic.fd.singleton_dom_QMARK_, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [c, f, d], null)) || cljs.core._EQ_.call(null, 
       cljs.core._PLUS_.call(null, f, d), c) ? cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.w, c, this.dw), cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.u, f, this.du), cljs.core.logic.fd.process_dom.call(null, this.v, d, this.dv))).call(null, b) : null : null) : null
-    }, cljs.core.logic.fd.t50265.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50266
-    }, cljs.core.logic.fd.t50265.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50265(this.v, this.w, this.u, this.s, this._PLUS_c, this.du, this.dw, this.dv, this.meta50263, this.this$, c)
-    }, cljs.core.logic.fd.__GT_t50265 = function(b, c, d, e, f, g, h, k, t, u, w) {
-      return new cljs.core.logic.fd.t50265(b, c, d, e, f, g, h, k, t, u, w)
+    }, cljs.core.logic.fd.t128148.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128149
+    }, cljs.core.logic.fd.t128148.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128148(this.meta128146, this.v, this.w, this.u, this.s, this._PLUS_c, this.du, this.dw, this.dv, this.this$, c)
+    }, cljs.core.logic.fd.__GT_t128148 = function(b, c, d, e, f, g, h, k, t, u, w) {
+      return new cljs.core.logic.fd.t128148(b, c, d, e, f, g, h, k, t, u, w)
     });
-    return new cljs.core.logic.fd.t50265(this.v, this.w, this.u, c, this._PLUS_c, d, k, h, this.meta50263, this, null)
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50262.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50263
-  }, cljs.core.logic.fd.t50262.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50262(this.w, this.v, this.u, this._PLUS_c, c)
-  }, cljs.core.logic.fd.__GT_t50262 = function(b, c, d, h, k) {
-    return new cljs.core.logic.fd.t50262(b, c, d, h, k)
+    return new cljs.core.logic.fd.t128148(this.meta128146, this.v, this.w, this.u, c, this._PLUS_c, d, k, h, this, null)
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128145.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128146
+  }, cljs.core.logic.fd.t128145.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128145(this.w, this.v, this.u, this._PLUS_c, c)
+  }, cljs.core.logic.fd.__GT_t128145 = function(b, c, d, h, k) {
+    return new cljs.core.logic.fd.t128145(b, c, d, h, k)
   });
-  return new cljs.core.logic.fd.t50262(d, c, b, _PLUS_c, null)
+  return new cljs.core.logic.fd.t128145(d, c, b, _PLUS_c, null)
 };
 cljs.core.logic.fd._PLUS_ = function(a, b, c) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._PLUS_c.call(null, a, b, c))
@@ -25792,48 +25769,48 @@ cljs.core.logic.fd._ = function(a, b, c) {
   return cljs.core.logic.fd._PLUS_.call(null, b, c, a)
 };
 cljs.core.logic.fd._STAR_c = function _STAR_c(b, c, d) {
-  "undefined" === typeof cljs.core.logic.fd.t50292 && (cljs.core.logic.fd.t50292 = function(b, c, d, h, k, l) {
+  "undefined" === typeof cljs.core.logic.fd.t128175 && (cljs.core.logic.fd.t128175 = function(b, c, d, h, k, l) {
     this.safe_div = b;
     this.w = c;
     this.v = d;
     this.u = h;
     this._STAR_c = k;
-    this.meta50293 = l;
+    this.meta128176 = l;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50292.cljs$lang$type = !0, cljs.core.logic.fd.t50292.cljs$lang$ctorStr = "cljs.core.logic.fd/t50292", cljs.core.logic.fd.t50292.cljs$lang$ctorPrWriter = function(b, c, d) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50292")
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128175.cljs$lang$type = !0, cljs.core.logic.fd.t128175.cljs$lang$ctorStr = "cljs.core.logic.fd/t128175", cljs.core.logic.fd.t128175.cljs$lang$ctorPrWriter = function(b, c, d) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128175")
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword("cljs.core.logic", "fd", "cljs.core.logic/fd", 3673845947), null, new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "*", "cljs.core.logic.fd/*", 1528484146, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 918), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), 
     cljs.core._conj.call(null, cljs.core.List.EMPTY, 20), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 918), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 40)))))
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.u, this.v, this.w], null)
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var d = cljs.core.logic.get_dom_fd.call(null, c, this.u), h = cljs.core.logic.get_dom_fd.call(null, c, this.v), k = cljs.core.logic.get_dom_fd.call(null, c, this.w);
-    "undefined" === typeof cljs.core.logic.fd.t50295 && (cljs.core.logic.fd.t50295 = function(b, c, d, e, f, g, h, k, t, u, w, x) {
+    "undefined" === typeof cljs.core.logic.fd.t128178 && (cljs.core.logic.fd.t128178 = function(b, c, d, e, f, g, h, k, t, u, w, x) {
       this.v = b;
       this.w = c;
       this.u = d;
-      this.s = e;
-      this.du = f;
-      this._STAR_c = g;
-      this.dw = h;
-      this.dv = k;
-      this.meta50293 = t;
+      this.meta128176 = e;
+      this.s = f;
+      this.du = g;
+      this._STAR_c = h;
+      this.dw = k;
+      this.dv = t;
       this.safe_div = u;
       this.this$ = w;
-      this.meta50296 = x;
+      this.meta128179 = x;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50295.cljs$lang$type = !0, cljs.core.logic.fd.t50295.cljs$lang$ctorStr = "cljs.core.logic.fd/t50295", cljs.core.logic.fd.t50295.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50295")
-    }, cljs.core.logic.fd.t50295.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50295.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128178.cljs$lang$type = !0, cljs.core.logic.fd.t128178.cljs$lang$ctorStr = "cljs.core.logic.fd/t128178", cljs.core.logic.fd.t128178.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128178")
+    }, cljs.core.logic.fd.t128178.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128178.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.truth_(this.du) ? (b = this.dv, cljs.core.truth_(b) ? b : this.dw) : cljs.core.truth_(this.dv) ? (b = this.du, cljs.core.truth_(b) ? b : this.dw) : cljs.core.truth_(this.dw) ? (b = this.du, cljs.core.truth_(b) ? b : this.dv) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? !1 : null
-    }, cljs.core.logic.fd.t50295.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t50295.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128178.prototype.cljs$core$logic$IEntailed$ = !0, cljs.core.logic.fd.t128178.prototype.cljs$core$logic$IEntailed$_entailed_QMARK_$arity$1 = function(b) {
       return cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.du) && cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.dv) && cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.dw) && cljs.core._EQ_.call(null, cljs.core._STAR_.call(null, this.du, this.dv), this.dw)
-    }, cljs.core.logic.fd.t50295.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128178.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.truth_(b.dw) ? cljs.core.logic.fd.bounds.call(null, b.dw) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._STAR_.call(null, cljs.core.logic.fd._lb.call(null, b.du), cljs.core.logic.fd._lb.call(null, b.dv)), cljs.core._STAR_.call(null, cljs.core.logic.fd._ub.call(null, b.du), cljs.core.logic.fd._ub.call(null, b.dv))], null), e = cljs.core.nth.call(null, d, 0, null), d = cljs.core.nth.call(null, d, 1, null), f = cljs.core.truth_(b.du) ? 
       cljs.core.logic.fd.bounds.call(null, b.du) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [b.safe_div.call(null, cljs.core.logic.fd._ub.call(null, b.dv), cljs.core.logic.fd._lb.call(null, b.dw), cljs.core.logic.fd._lb.call(null, b.dw), new cljs.core.Keyword(null, "lower", "lower", 1117068915)), b.safe_div.call(null, cljs.core.logic.fd._lb.call(null, b.dv), cljs.core.logic.fd._lb.call(null, b.dw), cljs.core.logic.fd._ub.call(null, b.dw), new cljs.core.Keyword(null, 
@@ -25842,9 +25819,9 @@ cljs.core.logic.fd._STAR_c = function _STAR_c(b, c, d) {
       "lower", 1117068915)), b.safe_div.call(null, k, h, d, new cljs.core.Keyword(null, "upper", "upper", 1125403668))), e = cljs.core.logic.fd.interval.call(null, b.safe_div.call(null, h, k, e, new cljs.core.Keyword(null, "lower", "lower", 1117068915)), b.safe_div.call(null, g, t, d, new cljs.core.Keyword(null, "upper", "upper", 1125403668))), d = cljs.core.truth_(cljs.core.truth_(u) ? b.dw : u) ? cljs.core.logic.fd._intersection.call(null, u, b.dw) : u;
       return cljs.core.truth_(d) && (g = cljs.core.truth_(cljs.core.truth_(f) ? b.du : f) ? cljs.core.logic.fd._intersection.call(null, f, b.du) : f, cljs.core.truth_(g)) ? (e = cljs.core.truth_(cljs.core.truth_(e) ? b.dv : e) ? cljs.core.logic.fd._intersection.call(null, e, b.dv) : e, cljs.core.truth_(e) ? !cljs.core.every_QMARK_.call(null, cljs.core.logic.fd.singleton_dom_QMARK_, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [d, g, e], null)) || cljs.core._EQ_.call(null, 
       cljs.core._STAR_.call(null, g, e), d) ? cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.w, d, b.dw), cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, b.u, g, b.du), cljs.core.logic.fd.process_dom.call(null, b.v, e, b.dv))).call(null, c) : null : null) : null
-    }, cljs.core.logic.fd.t50295.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128178.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50295.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128178.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = cljs.core.truth_(this.dw) ? cljs.core.logic.fd.bounds.call(null, this.dw) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core._STAR_.call(null, cljs.core.logic.fd._lb.call(null, this.du), cljs.core.logic.fd._lb.call(null, this.dv)), cljs.core._STAR_.call(null, cljs.core.logic.fd._ub.call(null, this.du), cljs.core.logic.fd._ub.call(null, this.dv))], null), d = cljs.core.nth.call(null, c, 0, null), c = cljs.core.nth.call(null, c, 1, null), e = 
       cljs.core.truth_(this.du) ? cljs.core.logic.fd.bounds.call(null, this.du) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.safe_div.call(null, cljs.core.logic.fd._ub.call(null, this.dv), cljs.core.logic.fd._lb.call(null, this.dw), cljs.core.logic.fd._lb.call(null, this.dw), new cljs.core.Keyword(null, "lower", "lower", 1117068915)), this.safe_div.call(null, cljs.core.logic.fd._lb.call(null, this.dv), cljs.core.logic.fd._lb.call(null, this.dw), cljs.core.logic.fd._ub.call(null, 
       this.dw), new cljs.core.Keyword(null, "upper", "upper", 1125403668))], null), f = cljs.core.nth.call(null, e, 0, null), g = cljs.core.nth.call(null, e, 1, null), e = cljs.core.truth_(this.dv) ? cljs.core.logic.fd.bounds.call(null, this.dv) : new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.safe_div.call(null, cljs.core.logic.fd._ub.call(null, this.du), cljs.core.logic.fd._lb.call(null, this.dw), cljs.core.logic.fd._lb.call(null, this.dw), new cljs.core.Keyword(null, 
@@ -25853,22 +25830,22 @@ cljs.core.logic.fd._STAR_c = function _STAR_c(b, c, d) {
       t, this.dw) : t;
       return cljs.core.truth_(c) && (f = cljs.core.truth_(cljs.core.truth_(e) ? this.du : e) ? cljs.core.logic.fd._intersection.call(null, e, this.du) : e, cljs.core.truth_(f)) ? (d = cljs.core.truth_(cljs.core.truth_(d) ? this.dv : d) ? cljs.core.logic.fd._intersection.call(null, d, this.dv) : d, cljs.core.truth_(d) ? !cljs.core.every_QMARK_.call(null, cljs.core.logic.fd.singleton_dom_QMARK_, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [c, f, d], null)) || cljs.core._EQ_.call(null, 
       cljs.core._STAR_.call(null, f, d), c) ? cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.w, c, this.dw), cljs.core.logic.composeg.call(null, cljs.core.logic.fd.process_dom.call(null, this.u, f, this.du), cljs.core.logic.fd.process_dom.call(null, this.v, d, this.dv))).call(null, b) : null : null) : null
-    }, cljs.core.logic.fd.t50295.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50296
-    }, cljs.core.logic.fd.t50295.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50295(this.v, this.w, this.u, this.s, this.du, this._STAR_c, this.dw, this.dv, this.meta50293, this.safe_div, this.this$, c)
-    }, cljs.core.logic.fd.__GT_t50295 = function(b, c, d, e, f, g, h, k, t, u, w, x) {
-      return new cljs.core.logic.fd.t50295(b, c, d, e, f, g, h, k, t, u, w, x)
+    }, cljs.core.logic.fd.t128178.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128179
+    }, cljs.core.logic.fd.t128178.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128178(this.v, this.w, this.u, this.meta128176, this.s, this.du, this._STAR_c, this.dw, this.dv, this.safe_div, this.this$, c)
+    }, cljs.core.logic.fd.__GT_t128178 = function(b, c, d, e, f, g, h, k, t, u, w, x) {
+      return new cljs.core.logic.fd.t128178(b, c, d, e, f, g, h, k, t, u, w, x)
     });
-    return new cljs.core.logic.fd.t50295(this.v, this.w, this.u, c, d, this._STAR_c, k, h, this.meta50293, this.safe_div, this, null)
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50292.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50293
-  }, cljs.core.logic.fd.t50292.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50292(this.safe_div, this.w, this.v, this.u, this._STAR_c, c)
-  }, cljs.core.logic.fd.__GT_t50292 = function(b, c, d, h, k, l) {
-    return new cljs.core.logic.fd.t50292(b, c, d, h, k, l)
+    return new cljs.core.logic.fd.t128178(this.v, this.w, this.u, this.meta128176, c, d, this._STAR_c, k, h, this.safe_div, this, null)
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128175.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128176
+  }, cljs.core.logic.fd.t128175.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128175(this.safe_div, this.w, this.v, this.u, this._STAR_c, c)
+  }, cljs.core.logic.fd.__GT_t128175 = function(b, c, d, h, k, l) {
+    return new cljs.core.logic.fd.t128175(b, c, d, h, k, l)
   });
-  return new cljs.core.logic.fd.t50292(function(b, c, d, h) {
+  return new cljs.core.logic.fd.t128175(function(b, c, d, h) {
     if(0 === b) {
       return c
     }
@@ -25892,41 +25869,41 @@ cljs.core.logic.fd.quot = function(a, b, c) {
   return cljs.core.logic.fd._STAR_.call(null, b, c, a)
 };
 cljs.core.logic.fd._distinctc = function _distinctc(b, c, d) {
-  "undefined" === typeof cljs.core.logic.fd.t50312 && (cljs.core.logic.fd.t50312 = function(b, c, d, h, k) {
+  "undefined" === typeof cljs.core.logic.fd.t128195 && (cljs.core.logic.fd.t128195 = function(b, c, d, h, k) {
     this.n_STAR_ = b;
     this.y_STAR_ = c;
     this.x = d;
     this._distinctc = h;
-    this.meta50313 = k;
+    this.meta128196 = k;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50312.cljs$lang$type = !0, cljs.core.logic.fd.t50312.cljs$lang$ctorStr = "cljs.core.logic.fd/t50312", cljs.core.logic.fd.t50312.cljs$lang$ctorPrWriter = function(b, c, d) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50312")
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128195.cljs$lang$type = !0, cljs.core.logic.fd.t128195.cljs$lang$ctorStr = "cljs.core.logic.fd/t128195", cljs.core.logic.fd.t128195.cljs$lang$ctorPrWriter = function(b, c, d) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128195")
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "-distinct", "cljs.core.logic.fd/-distinct", 73212723, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 970), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 970), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 46)))))
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.x], null)
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var d = cljs.core.logic._walk.call(null, c, this.x);
-    "undefined" === typeof cljs.core.logic.fd.t50315 && (cljs.core.logic.fd.t50315 = function(b, c, d, e, f, g, q, r) {
+    "undefined" === typeof cljs.core.logic.fd.t128198 && (cljs.core.logic.fd.t128198 = function(b, c, d, e, f, g, q, r) {
       this.s = b;
       this.this$ = c;
-      this.meta50313 = d;
+      this.meta128196 = d;
       this.n_STAR_ = e;
       this.y_STAR_ = f;
       this.x = g;
       this._distinctc = q;
-      this.meta50316 = r;
+      this.meta128199 = r;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50315.cljs$lang$type = !0, cljs.core.logic.fd.t50315.cljs$lang$ctorStr = "cljs.core.logic.fd/t50315", cljs.core.logic.fd.t50315.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50315")
-    }, cljs.core.logic.fd.t50315.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50315.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128198.cljs$lang$type = !0, cljs.core.logic.fd.t128198.cljs$lang$ctorStr = "cljs.core.logic.fd/t128198", cljs.core.logic.fd.t128198.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128198")
+    }, cljs.core.logic.fd.t128198.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128198.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.logic.fd.singleton_dom_QMARK_.call(null, this.x)
-    }, cljs.core.logic.fd.t50315.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128198.prototype.call = function(b, c) {
       b = this;
       if(cljs.core.truth_(b.n_STAR_.call(null, b.x))) {
         return null
@@ -25946,9 +25923,9 @@ cljs.core.logic.fd._distinctc = function _distinctc(b, c, d) {
           return cljs.core.logic.remcg.call(null, b.this$).call(null, e)
         }
       }
-    }, cljs.core.logic.fd.t50315.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128198.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50315.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128198.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       if(cljs.core.truth_(this.n_STAR_.call(null, this.x))) {
         return null
       }
@@ -25967,22 +25944,22 @@ cljs.core.logic.fd._distinctc = function _distinctc(b, c, d) {
           return cljs.core.logic.remcg.call(null, this.this$).call(null, b)
         }
       }
-    }, cljs.core.logic.fd.t50315.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50316
-    }, cljs.core.logic.fd.t50315.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50315(this.s, this.this$, this.meta50313, this.n_STAR_, this.y_STAR_, this.x, this._distinctc, c)
-    }, cljs.core.logic.fd.__GT_t50315 = function(b, c, d, e, f, g, q, r) {
-      return new cljs.core.logic.fd.t50315(b, c, d, e, f, g, q, r)
+    }, cljs.core.logic.fd.t128198.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128199
+    }, cljs.core.logic.fd.t128198.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128198(this.s, this.this$, this.meta128196, this.n_STAR_, this.y_STAR_, this.x, this._distinctc, c)
+    }, cljs.core.logic.fd.__GT_t128198 = function(b, c, d, e, f, g, q, r) {
+      return new cljs.core.logic.fd.t128198(b, c, d, e, f, g, q, r)
     });
-    return new cljs.core.logic.fd.t50315(c, this, this.meta50313, this.n_STAR_, this.y_STAR_, d, this._distinctc, null)
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50312.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50313
-  }, cljs.core.logic.fd.t50312.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.fd.t50312(this.n_STAR_, this.y_STAR_, this.x, this._distinctc, c)
-  }, cljs.core.logic.fd.__GT_t50312 = function(b, c, d, h, k) {
-    return new cljs.core.logic.fd.t50312(b, c, d, h, k)
+    return new cljs.core.logic.fd.t128198(c, this, this.meta128196, this.n_STAR_, this.y_STAR_, d, this._distinctc, null)
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128195.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128196
+  }, cljs.core.logic.fd.t128195.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.fd.t128195(this.n_STAR_, this.y_STAR_, this.x, this._distinctc, c)
+  }, cljs.core.logic.fd.__GT_t128195 = function(b, c, d, h, k) {
+    return new cljs.core.logic.fd.t128195(b, c, d, h, k)
   });
-  return new cljs.core.logic.fd.t50312(d, c, b, _distinctc, null)
+  return new cljs.core.logic.fd.t128195(d, c, b, _distinctc, null)
 };
 cljs.core.logic.fd._distinct = function(a, b, c) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd._distinctc.call(null, a, b, c))
@@ -26005,37 +25982,37 @@ cljs.core.logic.fd.list_sorted_QMARK_ = function(a, b) {
   }
 };
 cljs.core.logic.fd.distinctc = function distinctc(b) {
-  "undefined" === typeof cljs.core.logic.fd.t50334 && (cljs.core.logic.fd.t50334 = function(b, d, e) {
+  "undefined" === typeof cljs.core.logic.fd.t128217 && (cljs.core.logic.fd.t128217 = function(b, d, e) {
     this.v_STAR_ = b;
     this.distinctc = d;
-    this.meta50335 = e;
+    this.meta128218 = e;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.fd.t50334.cljs$lang$type = !0, cljs.core.logic.fd.t50334.cljs$lang$ctorStr = "cljs.core.logic.fd/t50334", cljs.core.logic.fd.t50334.cljs$lang$ctorPrWriter = function(b, d, e) {
-    return cljs.core._write.call(null, d, "cljs.core.logic.fd/t50334")
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128217.cljs$lang$type = !0, cljs.core.logic.fd.t128217.cljs$lang$ctorStr = "cljs.core.logic.fd/t128217", cljs.core.logic.fd.t128217.cljs$lang$ctorPrWriter = function(b, d, e) {
+    return cljs.core._write.call(null, d, "cljs.core.logic.fd/t128217")
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.fd", "distinct", "cljs.core.logic.fd/distinct", 1952820740, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1019), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 1019), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 45)))))
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.v_STAR_], null)
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, d) {
     var e = cljs.core.logic._walk.call(null, d, this.v_STAR_);
-    "undefined" === typeof cljs.core.logic.fd.t50337 && (cljs.core.logic.fd.t50337 = function(b, c, d, e, l, m) {
+    "undefined" === typeof cljs.core.logic.fd.t128220 && (cljs.core.logic.fd.t128220 = function(b, c, d, e, l, m) {
       this.s = b;
       this.this$ = c;
-      this.meta50335 = d;
+      this.meta128218 = d;
       this.v_STAR_ = e;
       this.distinctc = l;
-      this.meta50338 = m;
+      this.meta128221 = m;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.fd.t50337.cljs$lang$type = !0, cljs.core.logic.fd.t50337.cljs$lang$ctorStr = "cljs.core.logic.fd/t50337", cljs.core.logic.fd.t50337.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t50337")
-    }, cljs.core.logic.fd.t50337.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t50337.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128220.cljs$lang$type = !0, cljs.core.logic.fd.t128220.cljs$lang$ctorStr = "cljs.core.logic.fd/t128220", cljs.core.logic.fd.t128220.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.fd/t128220")
+    }, cljs.core.logic.fd.t128220.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.fd.t128220.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.v_STAR_))
-    }, cljs.core.logic.fd.t50337.prototype.call = function(b, c) {
+    }, cljs.core.logic.fd.t128220.prototype.call = function(b, c) {
       b = this;
       var d = cljs.core.group_by.call(null, cljs.core.logic.lvar_QMARK_, b.v_STAR_), e = cljs.core.seq_QMARK_.call(null, d) ? cljs.core.apply.call(null, cljs.core.hash_map, d) : d, d = cljs.core.get.call(null, e, !0), e = cljs.core.get.call(null, e, !1), e = cljs.core.sort.call(null, cljs.core._LT_, e);
       if(cljs.core.logic.fd.list_sorted_QMARK_.call(null, cljs.core._LT_, e)) {
@@ -26054,9 +26031,9 @@ cljs.core.logic.fd.distinctc = function distinctc(b) {
       }else {
         return null
       }
-    }, cljs.core.logic.fd.t50337.prototype.apply = function(b, c) {
+    }, cljs.core.logic.fd.t128220.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.fd.t50337.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.fd.t128220.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = cljs.core.group_by.call(null, cljs.core.logic.lvar_QMARK_, this.v_STAR_), d = cljs.core.seq_QMARK_.call(null, c) ? cljs.core.apply.call(null, cljs.core.hash_map, c) : c, c = cljs.core.get.call(null, d, !0), d = cljs.core.get.call(null, d, !1), d = cljs.core.sort.call(null, cljs.core._LT_, d);
       if(cljs.core.logic.fd.list_sorted_QMARK_.call(null, cljs.core._LT_, d)) {
         for(var c = cljs.core.into.call(null, cljs.core.PersistentHashSet.EMPTY, c), d = cljs.core.into.call(null, cljs.core.sorted_set.call(null), d), e = cljs.core.seq.call(null, c);;) {
@@ -26075,22 +26052,22 @@ cljs.core.logic.fd.distinctc = function distinctc(b) {
       }else {
         return null
       }
-    }, cljs.core.logic.fd.t50337.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50338
-    }, cljs.core.logic.fd.t50337.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.fd.t50337(this.s, this.this$, this.meta50335, this.v_STAR_, this.distinctc, c)
-    }, cljs.core.logic.fd.__GT_t50337 = function(b, c, d, e, l, m) {
-      return new cljs.core.logic.fd.t50337(b, c, d, e, l, m)
+    }, cljs.core.logic.fd.t128220.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128221
+    }, cljs.core.logic.fd.t128220.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.fd.t128220(this.s, this.this$, this.meta128218, this.v_STAR_, this.distinctc, c)
+    }, cljs.core.logic.fd.__GT_t128220 = function(b, c, d, e, l, m) {
+      return new cljs.core.logic.fd.t128220(b, c, d, e, l, m)
     });
-    return new cljs.core.logic.fd.t50337(d, this, this.meta50335, e, this.distinctc, null)
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t50334.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50335
-  }, cljs.core.logic.fd.t50334.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
-    return new cljs.core.logic.fd.t50334(this.v_STAR_, this.distinctc, d)
-  }, cljs.core.logic.fd.__GT_t50334 = function(b, d, e) {
-    return new cljs.core.logic.fd.t50334(b, d, e)
+    return new cljs.core.logic.fd.t128220(d, this, this.meta128218, e, this.distinctc, null)
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$logic$IEnforceableConstraint$ = !0, cljs.core.logic.fd.t128217.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128218
+  }, cljs.core.logic.fd.t128217.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, d) {
+    return new cljs.core.logic.fd.t128217(this.v_STAR_, this.distinctc, d)
+  }, cljs.core.logic.fd.__GT_t128217 = function(b, d, e) {
+    return new cljs.core.logic.fd.t128217(b, d, e)
   });
-  return new cljs.core.logic.fd.t50334(b, distinctc, null)
+  return new cljs.core.logic.fd.t128217(b, distinctc, null)
 };
 cljs.core.logic.fd.distinct = function(a) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.fd.distinctc.call(null, a))
@@ -26627,43 +26604,43 @@ cljs.core.logic.nominal.nom_QMARK_ = function(a) {
   return a instanceof cljs.core.logic.nominal.Nom
 };
 cljs.core.logic.nominal._hash = function _hash$$0(b, c) {
-  "undefined" === typeof cljs.core.logic.nominal.t50374 && (cljs.core.logic.nominal.t50374 = function(b, c, f, g) {
+  "undefined" === typeof cljs.core.logic.nominal.t128257 && (cljs.core.logic.nominal.t128257 = function(b, c, f, g) {
     this.x = b;
     this.a = c;
     this._hash = f;
-    this.meta50375 = g;
+    this.meta128258 = g;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.nominal.t50374.cljs$lang$type = !0, cljs.core.logic.nominal.t50374.cljs$lang$ctorStr = "cljs.core.logic.nominal/t50374", cljs.core.logic.nominal.t50374.cljs$lang$ctorPrWriter = function(b, c, f) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t50374")
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128257.cljs$lang$type = !0, cljs.core.logic.nominal.t128257.cljs$lang$ctorStr = "cljs.core.logic.nominal/t128257", cljs.core.logic.nominal.t128257.cljs$lang$ctorPrWriter = function(b, c, f) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t128257")
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, f, g) {
     b = cljs.core.logic._walk_STAR_.call(null, f, cljs.core.logic._walk_STAR_.call(null, g, this.x));
     f = cljs.core.logic._walk_STAR_.call(null, f, cljs.core.logic._walk_STAR_.call(null, g, this.a));
     return f instanceof cljs.core.Symbol && cljs.core.empty_QMARK_.call(null, cljs.core.filter.call(null, cljs.core.logic.lvar_QMARK_, cljs.core.flatten.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, b)))) ? cljs.core.symbol.call(null, [cljs.core.str(f), cljs.core.str("#"), cljs.core.str(b)].join("")) : null
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.nominal", "hash", "cljs.core.logic.nominal/hash", 99352748, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 175), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 175), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 46)))))
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.a, this.x], null)
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.nominal.t50374.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.nominal.t128257.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var f = cljs.core.logic._walk.call(null, c, this.a), g = cljs.core.logic._walk.call(null, c, this.x);
-    "undefined" === typeof cljs.core.logic.nominal.t50377 && (cljs.core.logic.nominal.t50377 = function(b, c, d, e, f, g, q) {
+    "undefined" === typeof cljs.core.logic.nominal.t128260 && (cljs.core.logic.nominal.t128260 = function(b, c, d, e, f, g, q) {
       this.s = b;
       this.this$ = c;
-      this.meta50375 = d;
+      this.meta128258 = d;
       this.x = e;
       this.a = f;
       this._hash = g;
-      this.meta50378 = q;
+      this.meta128261 = q;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.nominal.t50377.cljs$lang$type = !0, cljs.core.logic.nominal.t50377.cljs$lang$ctorStr = "cljs.core.logic.nominal/t50377", cljs.core.logic.nominal.t50377.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t50377")
-    }, cljs.core.logic.nominal.t50377.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.nominal.t50377.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.nominal.t128260.cljs$lang$type = !0, cljs.core.logic.nominal.t128260.cljs$lang$ctorStr = "cljs.core.logic.nominal/t128260", cljs.core.logic.nominal.t128260.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t128260")
+    }, cljs.core.logic.nominal.t128260.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.nominal.t128260.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.truth_(cljs.core.logic.lvar_QMARK_.call(null, this.a)) ? (b = cljs.core.logic.lvar_QMARK_.call(null, this.x), b = cljs.core.truth_(b) ? cljs.core._EQ_.call(null, this.x, this.a) : b, cljs.core.truth_(b) ? b : cljs.core.logic.tree_term_QMARK_.call(null, this.x) && cljs.core.not.call(null, cljs.core.logic.nominal.tie_QMARK_.call(null, this.x))) : !cljs.core.logic.nominal.nom_QMARK_.call(null, this.a) || cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.x))
-    }, cljs.core.logic.nominal.t50377.prototype.call = function(b, c) {
+    }, cljs.core.logic.nominal.t128260.prototype.call = function(b, c) {
       b = this;
       return cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, b.this$), function(c) {
         return cljs.core.truth_(function() {
@@ -26676,9 +26653,9 @@ cljs.core.logic.nominal._hash = function _hash$$0(b, c) {
           return cljs.core.logic.nominal.hash.call(null, b.a, c).call(null, d)
         }).call(null, c) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? c : null
       }).call(null, c)
-    }, cljs.core.logic.nominal.t50377.prototype.apply = function(b, c) {
+    }, cljs.core.logic.nominal.t128260.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.nominal.t50377.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.nominal.t128260.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = this;
       return cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, c.this$), function(b) {
         return cljs.core.truth_(function() {
@@ -26691,24 +26668,24 @@ cljs.core.logic.nominal._hash = function _hash$$0(b, c) {
           return cljs.core.logic.nominal.hash.call(null, c.a, b).call(null, d)
         }).call(null, b) : new cljs.core.Keyword(null, "else", "else", 1017020587) ? b : null
       }).call(null, b)
-    }, cljs.core.logic.nominal.t50377.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50378
-    }, cljs.core.logic.nominal.t50377.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.nominal.t50377(this.s, this.this$, this.meta50375, this.x, this.a, this._hash, c)
-    }, cljs.core.logic.nominal.__GT_t50377 = function(b, c, d, e, f, g, q) {
-      return new cljs.core.logic.nominal.t50377(b, c, d, e, f, g, q)
+    }, cljs.core.logic.nominal.t128260.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128261
+    }, cljs.core.logic.nominal.t128260.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.nominal.t128260(this.s, this.this$, this.meta128258, this.x, this.a, this._hash, c)
+    }, cljs.core.logic.nominal.__GT_t128260 = function(b, c, d, e, f, g, q) {
+      return new cljs.core.logic.nominal.t128260(b, c, d, e, f, g, q)
     });
-    return new cljs.core.logic.nominal.t50377(c, this, this.meta50375, g, f, this._hash, null)
-  }, cljs.core.logic.nominal.t50374.prototype.toString = function() {
+    return new cljs.core.logic.nominal.t128260(c, this, this.meta128258, g, f, this._hash, null)
+  }, cljs.core.logic.nominal.t128257.prototype.toString = function() {
     return[cljs.core.str(this.a), cljs.core.str("#"), cljs.core.str(this.x)].join("")
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50375
-  }, cljs.core.logic.nominal.t50374.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.nominal.t50374(this.x, this.a, this._hash, c)
-  }, cljs.core.logic.nominal.__GT_t50374 = function(b, c, f, g) {
-    return new cljs.core.logic.nominal.t50374(b, c, f, g)
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128258
+  }, cljs.core.logic.nominal.t128257.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.nominal.t128257(this.x, this.a, this._hash, c)
+  }, cljs.core.logic.nominal.__GT_t128257 = function(b, c, f, g) {
+    return new cljs.core.logic.nominal.t128257(b, c, f, g)
   });
-  return new cljs.core.logic.nominal.t50374(c, b, _hash$$0, null)
+  return new cljs.core.logic.nominal.t128257(c, b, _hash$$0, null)
 };
 cljs.core.logic.nominal.hash = function(a, b) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.nominal._hash.call(null, a, b))
@@ -26751,50 +26728,50 @@ cljs.core.logic.nominal._do_suspc = function(a, b, c, d) {
   return null
 };
 cljs.core.logic.nominal._suspc = function _suspc(b, c, d) {
-  "undefined" === typeof cljs.core.logic.nominal.t50393 && (cljs.core.logic.nominal.t50393 = function(b, c, d, h, k) {
+  "undefined" === typeof cljs.core.logic.nominal.t128276 && (cljs.core.logic.nominal.t128276 = function(b, c, d, h, k) {
     this.swap = b;
     this.v2 = c;
     this.v1 = d;
     this._suspc = h;
-    this.meta50394 = k;
+    this.meta128277 = k;
     this.cljs$lang$protocol_mask$partition1$ = 0;
     this.cljs$lang$protocol_mask$partition0$ = 393216
-  }, cljs.core.logic.nominal.t50393.cljs$lang$type = !0, cljs.core.logic.nominal.t50393.cljs$lang$ctorStr = "cljs.core.logic.nominal/t50393", cljs.core.logic.nominal.t50393.cljs$lang$ctorPrWriter = function(b, c, d) {
-    return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t50393")
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128276.cljs$lang$type = !0, cljs.core.logic.nominal.t128276.cljs$lang$ctorStr = "cljs.core.logic.nominal/t128276", cljs.core.logic.nominal.t128276.cljs$lang$ctorPrWriter = function(b, c, d) {
+    return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t128276")
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintWatchedStores$ = !0, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintWatchedStores$_watched_stores$arity$1 = function(b) {
     return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword("cljs.core.logic", "subst", "cljs.core.logic/subst", 3549233440), null], null), null)
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, d, h) {
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IReifiableConstraint$ = !0, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IReifiableConstraint$_reifyc$arity$4 = function(b, c, d, h) {
     b = cljs.core.logic._walk_STAR_.call(null, d, cljs.core.logic._walk_STAR_.call(null, h, this.v1));
     h = cljs.core.logic._walk_STAR_.call(null, d, cljs.core.logic._walk_STAR_.call(null, h, this.v2));
     d = cljs.core.logic._walk_STAR_.call(null, d, this.swap);
     return cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, b)) && cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, h)) && cljs.core.first.call(null, d) instanceof cljs.core.Symbol && cljs.core.second.call(null, d) instanceof cljs.core.Symbol ? cljs.core.with_meta.call(null, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Symbol(null, "swap", "swap", -1636988084, null)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 
     d), cljs.core._conj.call(null, cljs.core.List.EMPTY, b), cljs.core._conj.call(null, cljs.core.List.EMPTY, h))), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 247), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 3954034376)), cljs.core._conj.call(null, 
     cljs.core.List.EMPTY, 12), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 247), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 34))))) : null
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintOp$ = !0, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintOp$_rator$arity$1 = function(b) {
     return cljs.core.with_meta.call(null, new cljs.core.Symbol("cljs.core.logic.nominal", "suspc", "cljs.core.logic.nominal/suspc", 54642610, null), cljs.core.apply.call(null, cljs.core.hash_map, cljs.core.seq.call(null, cljs.core.concat.call(null, cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "line", "line", 1017226086)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 235), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "column", "column", 
     3954034376)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 18), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-line", "end-line", 2693041432)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 235), cljs.core._conj.call(null, cljs.core.List.EMPTY, new cljs.core.Keyword(null, "end-column", "end-column", 3799845882)), cljs.core._conj.call(null, cljs.core.List.EMPTY, 47)))))
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintOp$_rands$arity$1 = function(b) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [this.v1, this.v2], null)
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.nominal.t50393.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintStep$ = !0, cljs.core.logic.nominal.t128276.prototype.cljs$core$logic$IConstraintStep$_step$arity$2 = function(b, c) {
     var d = cljs.core.logic._walk.call(null, c, this.v1), h = cljs.core.logic._walk.call(null, c, this.v2);
-    "undefined" === typeof cljs.core.logic.nominal.t50396 && (cljs.core.logic.nominal.t50396 = function(b, c, d, e, f, g, h, s, v, t) {
+    "undefined" === typeof cljs.core.logic.nominal.t128279 && (cljs.core.logic.nominal.t128279 = function(b, c, d, e, f, g, h, s, v, t) {
       this.t2 = b;
       this.t1 = c;
       this.a = d;
       this.this$ = e;
-      this.meta50394 = f;
+      this.meta128277 = f;
       this.swap = g;
       this.v2 = h;
       this.v1 = s;
       this._suspc = v;
-      this.meta50397 = t;
+      this.meta128280 = t;
       this.cljs$lang$protocol_mask$partition1$ = 0;
       this.cljs$lang$protocol_mask$partition0$ = 393217
-    }, cljs.core.logic.nominal.t50396.cljs$lang$type = !0, cljs.core.logic.nominal.t50396.cljs$lang$ctorStr = "cljs.core.logic.nominal/t50396", cljs.core.logic.nominal.t50396.cljs$lang$ctorPrWriter = function(b, c, d) {
-      return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t50396")
-    }, cljs.core.logic.nominal.t50396.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.nominal.t50396.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
+    }, cljs.core.logic.nominal.t128279.cljs$lang$type = !0, cljs.core.logic.nominal.t128279.cljs$lang$ctorStr = "cljs.core.logic.nominal/t128279", cljs.core.logic.nominal.t128279.cljs$lang$ctorPrWriter = function(b, c, d) {
+      return cljs.core._write.call(null, c, "cljs.core.logic.nominal/t128279")
+    }, cljs.core.logic.nominal.t128279.prototype.cljs$core$logic$IRunnable$ = !0, cljs.core.logic.nominal.t128279.prototype.cljs$core$logic$IRunnable$_runnable_QMARK_$arity$1 = function(b) {
       return cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.t1)) || cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, this.t2)) || cljs.core._EQ_.call(null, this.t1, this.t2)
-    }, cljs.core.logic.nominal.t50396.prototype.call = function(b, c) {
+    }, cljs.core.logic.nominal.t128279.prototype.call = function(b, c) {
       b = this;
       return cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, b.this$), function(c) {
         if(cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, b.t1))) {
@@ -26816,9 +26793,9 @@ cljs.core.logic.nominal._suspc = function _suspc(b, c, d) {
           return null
         }
       }).call(null, c)
-    }, cljs.core.logic.nominal.t50396.prototype.apply = function(b, c) {
+    }, cljs.core.logic.nominal.t128279.prototype.apply = function(b, c) {
       return this.call.apply(this, [this].concat(cljs.core.aclone.call(null, c)))
-    }, cljs.core.logic.nominal.t50396.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
+    }, cljs.core.logic.nominal.t128279.prototype.cljs$core$IFn$_invoke$arity$1 = function(b) {
       var c = this;
       return cljs.core.logic.composeg.call(null, cljs.core.logic.remcg.call(null, c.this$), function(b) {
         if(cljs.core.not.call(null, cljs.core.logic.lvar_QMARK_.call(null, c.t1))) {
@@ -26840,24 +26817,24 @@ cljs.core.logic.nominal._suspc = function _suspc(b, c, d) {
           return null
         }
       }).call(null, b)
-    }, cljs.core.logic.nominal.t50396.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-      return this.meta50397
-    }, cljs.core.logic.nominal.t50396.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-      return new cljs.core.logic.nominal.t50396(this.t2, this.t1, this.a, this.this$, this.meta50394, this.swap, this.v2, this.v1, this._suspc, c)
-    }, cljs.core.logic.nominal.__GT_t50396 = function(b, c, d, e, f, g, h, s, v, t) {
-      return new cljs.core.logic.nominal.t50396(b, c, d, e, f, g, h, s, v, t)
+    }, cljs.core.logic.nominal.t128279.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+      return this.meta128280
+    }, cljs.core.logic.nominal.t128279.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+      return new cljs.core.logic.nominal.t128279(this.t2, this.t1, this.a, this.this$, this.meta128277, this.swap, this.v2, this.v1, this._suspc, c)
+    }, cljs.core.logic.nominal.__GT_t128279 = function(b, c, d, e, f, g, h, s, v, t) {
+      return new cljs.core.logic.nominal.t128279(b, c, d, e, f, g, h, s, v, t)
     });
-    return new cljs.core.logic.nominal.t50396(h, d, c, this, this.meta50394, this.swap, this.v2, this.v1, this._suspc, null)
-  }, cljs.core.logic.nominal.t50393.prototype.toString = function() {
+    return new cljs.core.logic.nominal.t128279(h, d, c, this, this.meta128277, this.swap, this.v2, this.v1, this._suspc, null)
+  }, cljs.core.logic.nominal.t128276.prototype.toString = function() {
     return[cljs.core.str("suspc"), cljs.core.str(this.v1), cljs.core.str(this.v2), cljs.core.str(this.swap)].join("")
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
-    return this.meta50394
-  }, cljs.core.logic.nominal.t50393.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
-    return new cljs.core.logic.nominal.t50393(this.swap, this.v2, this.v1, this._suspc, c)
-  }, cljs.core.logic.nominal.__GT_t50393 = function(b, c, d, h, k) {
-    return new cljs.core.logic.nominal.t50393(b, c, d, h, k)
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$IMeta$_meta$arity$1 = function(b) {
+    return this.meta128277
+  }, cljs.core.logic.nominal.t128276.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(b, c) {
+    return new cljs.core.logic.nominal.t128276(this.swap, this.v2, this.v1, this._suspc, c)
+  }, cljs.core.logic.nominal.__GT_t128276 = function(b, c, d, h, k) {
+    return new cljs.core.logic.nominal.t128276(b, c, d, h, k)
   });
-  return new cljs.core.logic.nominal.t50393(d, c, b, _suspc, null)
+  return new cljs.core.logic.nominal.t128276(d, c, b, _suspc, null)
 };
 cljs.core.logic.nominal.suspc = function(a, b, c) {
   return cljs.core.logic.cgoal.call(null, cljs.core.logic.nominal._suspc.call(null, a, b, c))

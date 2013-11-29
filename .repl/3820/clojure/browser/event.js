@@ -7,21 +7,21 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events');
 goog.require('goog.events');
-clojure.browser.event.EventType = (function (){var obj130404 = {};return obj130404;
+clojure.browser.event.EventType = (function (){var obj68242 = {};return obj68242;
 })();
-clojure.browser.event.event_types = (function event_types(this$){if((function (){var and__9617__auto__ = this$;if(and__9617__auto__)
+clojure.browser.event.event_types = (function event_types(this$){if((function (){var and__7856__auto__ = this$;if(and__7856__auto__)
 {return this$.clojure$browser$event$EventType$event_types$arity$1;
 } else
-{return and__9617__auto__;
+{return and__7856__auto__;
 }
 })())
 {return this$.clojure$browser$event$EventType$event_types$arity$1(this$);
 } else
-{var x__10232__auto__ = (((this$ == null))?null:this$);return (function (){var or__9629__auto__ = (clojure.browser.event.event_types[goog.typeOf(x__10232__auto__)]);if(or__9629__auto__)
-{return or__9629__auto__;
+{var x__8471__auto__ = (((this$ == null))?null:this$);return (function (){var or__7868__auto__ = (clojure.browser.event.event_types[goog.typeOf(x__8471__auto__)]);if(or__7868__auto__)
+{return or__7868__auto__;
 } else
-{var or__9629__auto____$1 = (clojure.browser.event.event_types["_"]);if(or__9629__auto____$1)
-{return or__9629__auto____$1;
+{var or__7868__auto____$1 = (clojure.browser.event.event_types["_"]);if(or__7868__auto____$1)
+{return or__7868__auto____$1;
 } else
 {throw cljs.core.missing_protocol.call(null,"EventType.event-types",this$);
 }
@@ -30,11 +30,11 @@ clojure.browser.event.event_types = (function event_types(this$){if((function ()
 }
 });
 Element.prototype.clojure$browser$event$EventType$ = true;
-Element.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,(function (p__130405){var vec__130406 = p__130405;var k = cljs.core.nth.call(null,vec__130406,0,null);var v = cljs.core.nth.call(null,vec__130406,1,null);return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core.keyword.call(null,k.toLowerCase()),v], null);
+Element.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,(function (p__68243){var vec__68244 = p__68243;var k = cljs.core.nth.call(null,vec__68244,0,null);var v = cljs.core.nth.call(null,vec__68244,1,null);return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core.keyword.call(null,k.toLowerCase()),v], null);
 }),cljs.core.merge.call(null,cljs.core.js__GT_clj.call(null,goog.events.EventType))));
 });
 goog.events.EventTarget.prototype.clojure$browser$event$EventType$ = true;
-goog.events.EventTarget.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,(function (p__130407){var vec__130408 = p__130407;var k = cljs.core.nth.call(null,vec__130408,0,null);var v = cljs.core.nth.call(null,vec__130408,1,null);return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core.keyword.call(null,k.toLowerCase()),v], null);
+goog.events.EventTarget.prototype.clojure$browser$event$EventType$event_types$arity$1 = (function (this$){var this$__$1 = this;return cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,(function (p__68245){var vec__68246 = p__68245;var k = cljs.core.nth.call(null,vec__68246,0,null);var v = cljs.core.nth.call(null,vec__68246,1,null);return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core.keyword.call(null,k.toLowerCase()),v], null);
 }),cljs.core.merge.call(null,cljs.core.js__GT_clj.call(null,goog.events.EventType))));
 });
 clojure.browser.event.listen = (function() {

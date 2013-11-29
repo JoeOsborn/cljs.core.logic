@@ -12,9 +12,9 @@ goog.require('cljs.core.logic');
 goog.require('cljs.core.logic');
 cljs.core.logic.dcg.__GT_lcons = (function() {
 var __GT_lcons = null;
-var __GT_lcons__3 = (function (env,p__50091,i){var vec__50095 = p__50091;var m = cljs.core.nth.call(null,vec__50095,0,null);var c = vec__50095;return __GT_lcons.call(null,env,c,i,false);
+var __GT_lcons__3 = (function (env,p__127974,i){var vec__127978 = p__127974;var m = cljs.core.nth.call(null,vec__127978,0,null);var c = vec__127978;return __GT_lcons.call(null,env,c,i,false);
 });
-var __GT_lcons__4 = (function (env,p__50092,i,quoted){var vec__50096 = p__50092;var m = cljs.core.nth.call(null,vec__50096,0,null);var c = vec__50096;if(cljs.core.empty_QMARK_.call(null,c))
+var __GT_lcons__4 = (function (env,p__127975,i,quoted){var vec__127979 = p__127975;var m = cljs.core.nth.call(null,vec__127979,0,null);var c = vec__127979;if(cljs.core.empty_QMARK_.call(null,c))
 {return cljs.core.with_meta.call(null,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.with_meta.call(null,new cljs.core.Symbol("cljs.core.logic.dcg","fresh","cljs.core.logic.dcg/fresh",1129292213,null),cljs.core.apply.call(null,cljs.core.hash_map,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"line","line",1017226086)),cljs.core._conj.call(null,cljs.core.List.EMPTY,16),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"column","column",3954034376)),cljs.core._conj.call(null,cljs.core.List.EMPTY,20),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-line","end-line",2693041432)),cljs.core._conj.call(null,cljs.core.List.EMPTY,16),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-column","end-column",3799845882)),cljs.core._conj.call(null,cljs.core.List.EMPTY,25)))))),cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.with_meta.call(null,cljs.core.apply.call(null,cljs.core.vector,cljs.core.seq.call(null,cljs.core.concat.call(null))),cljs.core.apply.call(null,cljs.core.hash_map,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"line","line",1017226086)),cljs.core._conj.call(null,cljs.core.List.EMPTY,16),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"column","column",3954034376)),cljs.core._conj.call(null,cljs.core.List.EMPTY,26),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-line","end-line",2693041432)),cljs.core._conj.call(null,cljs.core.List.EMPTY,16),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-column","end-column",3799845882)),cljs.core._conj.call(null,cljs.core.List.EMPTY,28)))))),cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.with_meta.call(null,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.with_meta.call(null,new cljs.core.Symbol("cljs.core.logic.dcg","==","cljs.core.logic.dcg/==",-1197280473,null),cljs.core.apply.call(null,cljs.core.hash_map,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"line","line",1017226086)),cljs.core._conj.call(null,cljs.core.List.EMPTY,17),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"column","column",3954034376)),cljs.core._conj.call(null,cljs.core.List.EMPTY,22),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-line","end-line",2693041432)),cljs.core._conj.call(null,cljs.core.List.EMPTY,17),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-column","end-column",3799845882)),cljs.core._conj.call(null,cljs.core.List.EMPTY,24)))))),cljs.core._conj.call(null,cljs.core.List.EMPTY,env.call(null,(i - 1))),cljs.core._conj.call(null,cljs.core.List.EMPTY,env.call(null,i)))),cljs.core.apply.call(null,cljs.core.hash_map,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"line","line",1017226086)),cljs.core._conj.call(null,cljs.core.List.EMPTY,17),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"column","column",3954034376)),cljs.core._conj.call(null,cljs.core.List.EMPTY,21),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-line","end-line",2693041432)),cljs.core._conj.call(null,cljs.core.List.EMPTY,17),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-column","end-column",3799845882)),cljs.core._conj.call(null,cljs.core.List.EMPTY,49)))))))),cljs.core.apply.call(null,cljs.core.hash_map,cljs.core.seq.call(null,cljs.core.concat.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"line","line",1017226086)),cljs.core._conj.call(null,cljs.core.List.EMPTY,16),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"column","column",3954034376)),cljs.core._conj.call(null,cljs.core.List.EMPTY,19),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-line","end-line",2693041432)),cljs.core._conj.call(null,cljs.core.List.EMPTY,17),cljs.core._conj.call(null,cljs.core.List.EMPTY,new cljs.core.Keyword(null,"end-column","end-column",3799845882)),cljs.core._conj.call(null,cljs.core.List.EMPTY,50)))));
 } else
 {if(new cljs.core.Keyword(null,"else","else",1017020587))
@@ -24,12 +24,12 @@ var __GT_lcons__4 = (function (env,p__50092,i,quoted){var vec__50096 = p__50092;
 }
 }
 });
-__GT_lcons = function(env,p__50092,i,quoted){
+__GT_lcons = function(env,p__127975,i,quoted){
 switch(arguments.length){
 case 3:
-return __GT_lcons__3.call(this,env,p__50092,i);
+return __GT_lcons__3.call(this,env,p__127975,i);
 case 4:
-return __GT_lcons__4.call(this,env,p__50092,i,quoted);
+return __GT_lcons__4.call(this,env,p__127975,i,quoted);
 }
 throw(new Error('Invalid arity: ' + arguments.length));
 };
@@ -56,7 +56,7 @@ cljs.core.logic.dcg.mark_clauses = (function() {
 var mark_clauses = null;
 var mark_clauses__1 = (function (cs){return mark_clauses.call(null,cs,cljs.core.atom.call(null,0));
 });
-var mark_clauses__2 = (function (p__50097,i){var vec__50099 = p__50097;var c = cljs.core.nth.call(null,vec__50099,0,null);var r = cljs.core.nthnext.call(null,vec__50099,1);var cs = vec__50099;if((cljs.core.seq.call(null,cs) == null))
+var mark_clauses__2 = (function (p__127980,i){var vec__127982 = p__127980;var c = cljs.core.nth.call(null,vec__127982,0,null);var r = cljs.core.nthnext.call(null,vec__127982,1);var cs = vec__127982;if((cljs.core.seq.call(null,cs) == null))
 {return cljs.core.List.EMPTY;
 } else
 {if(cljs.core.logic.dcg.fresh_expr_QMARK_.call(null,c))
@@ -74,12 +74,12 @@ var mark_clauses__2 = (function (p__50097,i){var vec__50099 = p__50097;var c = c
 }
 }
 });
-mark_clauses = function(p__50097,i){
+mark_clauses = function(p__127980,i){
 switch(arguments.length){
 case 1:
-return mark_clauses__1.call(this,p__50097);
+return mark_clauses__1.call(this,p__127980);
 case 2:
-return mark_clauses__2.call(this,p__50097,i);
+return mark_clauses__2.call(this,p__127980,i);
 }
 throw(new Error('Invalid arity: ' + arguments.length));
 };
@@ -88,7 +88,7 @@ mark_clauses.cljs$core$IFn$_invoke$arity$2 = mark_clauses__2;
 return mark_clauses;
 })()
 ;
-cljs.core.logic.dcg.handle_clauses = (function handle_clauses(env,p__50100){var vec__50102 = p__50100;var c = cljs.core.nth.call(null,vec__50102,0,null);var r = cljs.core.nthnext.call(null,vec__50102,1);var cs = vec__50102;if((cljs.core.seq.call(null,cs) == null))
+cljs.core.logic.dcg.handle_clauses = (function handle_clauses(env,p__127983){var vec__127985 = p__127983;var c = cljs.core.nth.call(null,vec__127985,0,null);var r = cljs.core.nthnext.call(null,vec__127985,1);var cs = vec__127985;if((cljs.core.seq.call(null,cs) == null))
 {return cljs.core.List.EMPTY;
 } else
 {if(cljs.core.logic.dcg.fresh_expr_QMARK_.call(null,c))

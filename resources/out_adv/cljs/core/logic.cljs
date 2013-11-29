@@ -7,7 +7,8 @@
   (:require-macros [cljs.core.logic.macros :as m
                     :refer [composeg* bind* mplus* -inc
                             conde fresh run run*  all is project trace-lvars
-                            condu defne let-dom == != time bench]]))
+                            condu defne let-dom == != time bench lazy-run
+                            lazy-run* gen-unbound-names]]))
 
 (def ^:dynamic *logic-dbs* [])
 
@@ -41,7 +42,7 @@
   (-reify-term [v s]))
 
 (defprotocol IWalkTerm
-  (-walk-term [v f]))
+  (-walk-term [v s]))
 
 (defprotocol IOccursCheckTerm
   (-occurs-check-term [v u s]))
@@ -79,9 +80,7 @@
 (defn dissoc-dom [x k]
   (subst-val (.-v x) (dissoc (.-doms x) k) (.-eset x) (meta x)))
 
-(def unbound-names
-  (let [r (range 100)]
-    (zipmap r (map (comp symbol str) (repeat "_") r))))
+(def unbound-names (gen-unbound-names))
 
 (defn ^boolean record? [x]
   (implements? IRecord x))
@@ -297,13 +296,11 @@
       v))
 
   (-walk* [this v]
-    (let [v (-walk this v)]
-      (-walk-term v
-                  (fn [x]
-                    (let [x (-walk this x)]
-                      (if (tree-term? x)
-                        (-walk* this x)
-                        x))))))
+    (loop [^not-native s this v v]
+      (let [v (-walk this v)]
+        (if (tree-term? v)
+          (recur this v)
+          (-walk-term v this)))))
 
   (-unify [this u v]
     (if (identical? u v)
@@ -319,7 +316,7 @@
   (-reify-lvar-name [this]
     (let [c (count s)]
       (if (< c 100)
-        (unbound-names c)
+        (aget unbound-names c)
         (symbol (str "_" (count s))))))
 
   (-reify* [this v]
@@ -509,7 +506,7 @@
           (-ext s v (.-oname v))))))
 
   IWalkTerm
-  (-walk-term [v f] (f v))
+  (-walk-term [v s] v)
 
   IOccursCheckTerm
   (-occurs-check-term [v x ^not-native s]
@@ -660,9 +657,9 @@
         (-reify* s v))))
 
   IWalkTerm
-  (-walk-term [v f]
-    (lcons (f (-lfirst v))
-           (f (-lnext v))))
+  (-walk-term [v s]
+    (lcons (-walk* s (-lfirst v))
+           (-walk* s (-lnext v))))
 
   IOccursCheckTerm
   (-occurs-check-term [v x ^not-native s]
@@ -867,56 +864,48 @@
 
 (defn walk-term-record [^not-native v f]
   (with-meta
-    (loop [^not-native v v
+    (loop [^not-native v (seq v)
            ^not-native r (-uninitialized v)]
-      (if (seq v)
+      (if v
         (let [[vfk vfv] (first v)]
-          (recur (next v) (assoc r
-                            (-walk-term (f vfk) f)
-                            (-walk-term (f vfv) f))))
+          (recur (next v) (assoc r vfk (-walk* s vfv))))
         r))
     (meta v)))
 
-(defn walk-term-map* [^not-native v f]
+(defn walk-term-map* [^not-native v ^not-native s]
   (with-meta
-    (loop [^not-native v v
+    (loop [^not-native v (seq v)
            ^not-native r (transient {})]
-      (if (seq v)
+      (if v
         (let [[vfk vfv] (first v)]
-          (recur (next v)
-                 (-assoc! r
-                          (-walk-term (f vfk) f)
-                          (-walk-term (f vfv) f))))
+          (recur (next v) (-assoc! r vfk (-walk* s vfv))))
         (persistent! r)))
     (meta v)))
 
 (extend-protocol IWalkTerm
   nil
-  (-walk-term [v f] (f nil))
+  (-walk-term [v s] nil)
 
   default
-  (-walk-term [v f]
+  (-walk-term [v ^not-native s]
     (cond
-      (sequential? v)
-      (with-meta
-        (doall (map #(-walk-term (f %) f) v))
-        (meta v))
-      (record? v) (walk-term-record v f)
-      :else (f v)))
+      (sequential? v) (with-meta (map #(-walk* s %) v) (meta v))
+      (record? v) (walk-term-record v s)
+      :else v))
 
   PersistentHashMap
-  (-walk-term [v f]  (walk-term-map* v f))
+  (-walk-term [v s] (walk-term-map* v s))
 
   PersistentArrayMap
-  (-walk-term [v f] (walk-term-map* v f))
+  (-walk-term [v s] (walk-term-map* v s))
 
   PersistentVector
-  (-walk-term [^not-native v f]
+  (-walk-term [^not-native v ^not-native s]
     (with-meta
       (loop [^not-native v (seq v)
              ^not-native r (transient [])]
         (if v
-          (recur (next v) (-conj! r (-walk-term (f (first v)) f)))
+          (recur (next v) (-conj! r (-walk* s (first v))))
           (persistent! r)))
       (meta v))))
 
@@ -931,7 +920,7 @@
   (-occurs-check-term [v x ^not-native s]
     (if (sequential? v)
       (loop [^not-native v (seq v) x x s s]
-        (if-not (nil? v)
+        (if v
           (or (-occurs-check s x (first v))
               (recur (next v) x s))
           false))
@@ -1259,8 +1248,8 @@
       nil))
 
   IWalkTerm
-  (-walk-term [v f]
-    (walk-term-map* v f))
+  (-walk-term [v s]
+    (walk-term-map* v s))
 
   IUninitialized
   (-uninitialized [_] (PMap.)))
@@ -2096,13 +2085,17 @@
               cs))))
 
 (defn recover-vars-from-term [x]
-  (let [r (atom #{})]
-    (-walk-term x
-                (fn [x]
-                  (if (lvar? x)
-                    (do (swap! r conj x) x)
-                    x)))
-    @r))
+  (if (coll? x)
+    (loop [head (first x) tail (next x) r #{}]
+      (cond
+        (lvar? head)
+        (recur (first tail) (next tail) (conj r head))
+        (coll? head)
+        (recur (first tail) (into (next tail) head) r)
+        (seq tail)
+        (recur (first tail) (next tail) r)
+        :else r))
+    (when (lvar? x) #{x})))
 
 (defn recover-vars [p]
   (loop [^not-native p (seq p) ^not-native r #{}]
@@ -2391,13 +2384,9 @@
   []
   ;; (bench (run* [q] (== q true)) 1000)
   
-  ;; (bench
-  ;;  (run 500 [q]
-  ;;    (fresh [x y]
-  ;;      (appendo x y q))) 1)
-
-  (bench ((fn [] (str "hello" "there"))) 1000000)
-
+  ;; (time (run 10 [q]
+  ;;         (fresh [x y]
+  ;;           (appendo x y q))))
   
   )
 
